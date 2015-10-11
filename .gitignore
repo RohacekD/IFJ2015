@@ -1,3 +1,4 @@
+*.vcxproj*
 # Object files
 *.o
 *.ko
