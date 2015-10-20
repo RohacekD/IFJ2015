@@ -1,5 +1,6 @@
 #include "scanner.h"
-
+#include "str.h"
+#include <stdio.h>
 /*
  * Výèet možných stavù FSM.
  */
@@ -10,6 +11,9 @@ enum states {
 	STRING_ESCAPE,
 	ERROR
 };
+/* @var int citac radku*/
+int line = 1;
+
 
 /*
 * KEY WORDS
@@ -22,7 +26,7 @@ enum states {
  * Musi vracet nìjakou reprezentaci tokenu
  * Dostávat ukazatel na otevøený soubor (DI)
  */
-smth getTocen(char*, smth, smth) {
+int getToken(int* p, FILE* source) {
 
 	/* @var prevRest int poslední naètený znak (Zbytek posledního prùchodu) */
 	static int prevRest = -1;
@@ -31,8 +35,7 @@ smth getTocen(char*, smth, smth) {
 
 	int state = START;
 	while (1) {
-		c = getc(FILE*);
-		
+		c = getc(source);
 		switch (state)
 		{
 		case START:
@@ -41,6 +44,26 @@ smth getTocen(char*, smth, smth) {
 			}
 			else if (isspace(c)) {
 				state = START;
+			}
+			else if (c == "\"") {
+				state = STRING;
+			}
+			break;
+		case STRING:
+			if (c == EOF) {
+				//error
+			}
+			else if (c == "\\") {
+				state = STRING_ESCAPE;
+			}
+			else if (c == "\"") {//konec retezce uloz ho
+
+			}
+			else if (c < 1 || c>255) {//nejaky znak mimo ASCII chyba
+
+			}
+			else {//uloz si znak
+
 			}
 			break;
 		default:
