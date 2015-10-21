@@ -14,7 +14,8 @@ enum tTokenTypes
 	INTEGER,
 	DOUBLE,
 	STRING,
-	??,
+	BOOL,
+	DIVISION,
 	MULTIPLY,
 	ADD,
 	SUBTRACTION,
@@ -30,6 +31,8 @@ enum tTokenTypes
 	LOG_OR,
 	LOG_NOT,
 	MINUS,
+	KEYW_INT,
+	END_OF_FILE
 };
 
 typedef struct {

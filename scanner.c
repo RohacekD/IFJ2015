@@ -18,7 +18,7 @@ enum states {
 };
 /* @var int citac radku*/
 int line = 1;
-
+//TODO Doca's kravinka
 
 /*
 * KEY WORDS
@@ -136,4 +136,8 @@ int getToken(int* p, FILE* source) {
 			break;
 		}
 	}
+}
+
+void f() {
+
 }
