@@ -1,4 +1,4 @@
-#ifndef SCANNER_H
+﻿#ifndef SCANNER_H
 #define SCANNER_H
 #include <stdbool.h>
 #include "token.h"
@@ -10,7 +10,8 @@ int getToken(int*, FILE*);
  vraci int urcujici uspech/neuspech
  v pointeru vraci hodnotu
 */
-int strToDouble(string, double*);
-int strToInt(string, int*);
-int strToBool(string, bool*);
+int strToDouble(const string, double*);
+int strToInt(const string, int*);
+int strToBool(const string, bool*);
+int unescapeStr(string*);
 #endif

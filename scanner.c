@@ -1,8 +1,8 @@
-#include "scanner.h"
+Ôªø#include "scanner.h"
 #include "str.h"
 #include <stdio.h>
 /*
- * V˝Ëet moûn˝ch stav˘ FSM.
+ * V√Ωƒçet mo≈æn√Ωch stav≈Ø FSM.
  */
 enum states {
 	START,
@@ -28,15 +28,23 @@ int line = 1;
 *
 */
 /*
- * Musi vracet nÏjakou reprezentaci tokenu
- * Dost·vat ukazatel na otev¯en˝ soubor (DI)
+ * Musi vracet nƒõjakou reprezentaci tokenu
+ * Dost√°vat ukazatel na otev≈ôen√Ω soubor (DI)
  */
 int getToken(int* p, FILE* source) {
 
-	/* @var prevRest int poslednÌ naËten˝ znak (Zbytek poslednÌho pr˘chodu) */
+	/* @var prevRest int posledn√≠ naƒçten√Ω znak (Zbytek posledn√≠ho pr≈Øchodu) */
 	static int prevRest = -1;
 	/* @var c int actual character*/
 	static int c = -1;
+	tToken token = {
+		.typ = END_OF_FILE,
+	};
+	string s;
+	//strInit vraci 1 p≈ôi chybe
+	if (strInit(&s)) {
+		//return ERROR_ALOK;
+	}
 
 	int state = START;
 	while (1) {
@@ -50,10 +58,10 @@ int getToken(int* p, FILE* source) {
 			else if (isspace(c)) {
 				state = START;
 			}
-			else if (c == "\"") {
+			else if (c == '\"') {
 				state = STRING;
 			}
-			else if (c == "/") {
+			else if (c == '/') {
 
 			}
 			break;
@@ -61,24 +69,27 @@ int getToken(int* p, FILE* source) {
 			if (c == EOF) {
 				//error
 			}
-			else if (c == "\\") {
+			else if (c == '\\') {
+				if (strAddChar(&s, c)) {
+					//return ERROR_ALLOC;
+				}
 				state = STRING_ESCAPE;
 			}
-			else if (c == "\"") {//konec retezce uloz ho
+			else if (c == '\"') {//konec retezce uloz ho
 
 			}
 			else if (c < 1 || c>255) {//nejaky znak mimo ASCII chyba
 
 			}
 			else {//uloz si znak
-
+				strAddChar(&s, c);
 			}
 			break;
 		case DIVISION_COMMENT:
-			if (c == "*") {
+			if (c == '*') {
 				state = BLOCK_COMMENT;
 			}
-			else if (c == "/") {
+			else if (c == '/') {
 				state = LINE_COMMENT;
 			}
 			else {//jednoznakovy operator deleni
@@ -89,15 +100,15 @@ int getToken(int* p, FILE* source) {
 			if (c == EOF) {
 				//TODO: error
 			}
-			else if (c=="/") {
+			else if (c=='/') {
 				state = NESTED_BLOCK_COMMENT_CHECK;
 			}
-			else if (c=="*") {
+			else if (c=='*') {
 				state = END_BLOCK_COMMENT;
 			}
 			break;
 		case LINE_COMMENT:
-			if (c == "\n") {//konec radkoveho komentare hledame dalsi lexem
+			if (c=='\n') {//konec radkoveho komentare hledame dalsi lexem
 				state = START;
 			}
 			else if (c == EOF) {//TODO: je to chyba??
@@ -108,13 +119,13 @@ int getToken(int* p, FILE* source) {
 			}
 			break;
 		case END_BLOCK_COMMENT:
-			if (c == "*") {
-				//z˘staneme tady koment·¯ m˘ûe konËit x hvÏzdiËkama
+			if (c == '*') {
+				//z≈Østaneme tady koment√°≈ô m≈Ø≈æe konƒçit x hvƒõzdiƒçkama
 			}
 			else if (c == EOF) {
 				//todo: error
 			}
-			else if (c == "/") {//konec blokovÈho koment·¯e jdeme hledat dalöÌ lexÈm
+			else if (c == '/') {//konec blokov√©ho koment√°≈ôe jdeme hledat dal≈°√≠ lex√©m
 				state = START;
 			}
 			else {
@@ -122,7 +133,7 @@ int getToken(int* p, FILE* source) {
 			}
 			break;
 		case NESTED_BLOCK_COMMENT_CHECK:
-			if (c == "*") {
+			if (c == '*') {
 				//TODO: error 
 			}
 			else if (c == EOF) {
@@ -136,8 +147,4 @@ int getToken(int* p, FILE* source) {
 			break;
 		}
 	}
-}
-
-void f() {
-
 }

@@ -1,4 +1,4 @@
-//jednoducha knihovna pro praci s nekonecne dlouhymi retezci
+﻿//jednoducha knihovna pro praci s nekonecne dlouhymi retezci
 #include <string.h>
 #include <malloc.h>
 #include "str.h"

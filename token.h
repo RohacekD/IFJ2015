@@ -1,11 +1,11 @@
-#ifndef TOKEN_H
+ï»¿#ifndef TOKEN_H
 #define TOKEN_H
 #include "str.h"
 /*
-Tabulka tokenù - typ a union mezi pointrem do tabulky symbolù a ordinální hodnotou
-typ je enum ("integer","double" nebo "dìlení", "násobení", etc.)
-typ mùe bıt i operátor (*,/, etc)
-getToken vrací "STAV" jestli je v poøádku, nesestavil token a parametrem ukazatel do vıše zmínìné tabulky tokenù
+Tabulka tokenÅ¯ - typ a union mezi pointrem do tabulky symbolÅ¯ a ordinÃ¡lnÃ­ hodnotou
+typ je enum ("integer","double" nebo "dÄ›lenÃ­", "nÃ¡sobenÃ­", etc.)
+typ mÅ¯Å¾e bÃ½t i operÃ¡tor (*,/, etc)
+getToken vracÃ­ "STAV" jestli je v poÅ™Ã¡dku, nesestavil token a parametrem ukazatel do vÃ½Å¡e zmÃ­nÄ›nÃ© tabulky tokenÅ¯
 
 */
 
