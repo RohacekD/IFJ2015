@@ -148,3 +148,47 @@ int getToken(int* p, FILE* source) {
 		}
 	}
 }
+
+int strToInt(string* forConversion, int* val){
+	/** todo rozdelane, mozno vymazat cele
+	number = strtol(cString, &pEnd, 0);
+	//kontrola
+	if (errno == ERANGE || *pEnd != '\0' || number > INT_MAX || number < INT_MIN) {
+		return 0;
+	}
+	*converted = (int) number;
+	*converted */
+}
+
+int strToBool(string* forConversion, bool* val){
+	const char trueString="true";
+	const char falseString="false";
+	char * compareWith;
+
+	if(forConversion->length==4){
+		//dle delky porovnavame na true
+		compareWith=&trueString;
+	}else if(forConversion->length!=5){
+		//dle delky porovnavame na false
+		compareWith=&falseString;
+	}else{
+		//chyba nesedi delka
+		return 0;
+	}
+
+	//zkontrolujeme na schodu, pokud se lisi vratime chybu
+	for(int i=0;i<forConversion->length; i++){
+		if(forConversion->str[i]==compareWith[i]){
+			return 0;
+		}
+	}
+
+	//vse v poradku vratime prevedenou hodnu ve val.
+	if(forConversion->length==4){
+		*val=true;
+	}else{
+		*val=false;
+	}
+
+	return 1;
+}

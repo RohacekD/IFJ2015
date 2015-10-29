@@ -11,7 +11,20 @@ int getToken(int*, FILE*);
  v pointeru vraci hodnotu
 */
 int strToDouble(const string, double*);
-int strToInt(const string, int*);
-int strToBool(const string, bool*);
+
+/**
+ * Prevede obsah string na int. Pokud je obsah platnym celym cislem.
+ * @param forConversion	-	string, ktery bude preveden na int
+ * @param val	-	ukazatel pomoci, ktereho vraci prevedenou hodnotu (v pripade chyby neprepisuje)
+ * @return	1 - pokud prevod probehne v poradku, jinak 0.
+ */
+int strToInt(string* forConversion, int* val);
+/**
+ * Prevede obsah string na bool. Pokud obsahuje true/false.
+ * @param forConversion	-	string, ktery bude preveden na bool
+ * @param val	-	ukazatel pomoci, ktereho vraci prevedenou hodnotu (v pripade chyby neprepisuje)
+ * @return	1 - pokud prevod probehne v poradku, jinak 0.
+ */
+int strToBool(string* forConversion, bool* val);
 int unescapeStr(string*);
 #endif
