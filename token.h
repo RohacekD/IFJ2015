@@ -11,10 +11,10 @@ getToken vrací "STAV" jestli je v pořádku, nesestavil token a parametrem ukaz
 
 enum tTokenTypes
 {
-	INTEGER,
-	DOUBLE,
-	STRING,
-	BOOL,
+	TYPE_INTEGER,
+	TYPE_DOUBLE,
+	TYPE_STRING,
+	TYPE_BOOL,
 	DIVISION,
 	MULTIPLY,
 	ADD,

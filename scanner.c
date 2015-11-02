@@ -14,7 +14,12 @@ enum states {
 	BLOCK_COMMENT,
 	LINE_COMMENT,
 	NESTED_BLOCK_COMMENT_CHECK,
-	END_BLOCK_COMMENT
+	END_BLOCK_COMMENT,
+	TWO_CHAR_OPER,
+	DEKTCREMENT_OPERATOR,
+	INCREMENT_OPERATOR,
+	LOGICAL_AND,
+	LOGICAL_OR
 };
 /* @var int citac radku*/
 int line = 1;
@@ -62,7 +67,13 @@ int getToken(int* p, FILE* source) {
 				state = STRING;
 			}
 			else if (c == '/') {
-
+				state = DIVISION_COMMENT;
+			}
+			else if (c == '-') {
+				state = DEKTCREMENT_OPERATOR;
+			}
+			else if (c == '+') {
+				state = INCREMENT_OPERATOR;
 			}
 			break;
 		case STRING:
@@ -75,14 +86,18 @@ int getToken(int* p, FILE* source) {
 				}
 				state = STRING_ESCAPE;
 			}
-			else if (c == '\"') {//konec retezce uloz ho
-
+			else if (c == '"') {//konec retezce uloz ho
+				token.typ = TYPE_STRING;
+				strCopyString(&s, &token.stringVal);
+				return 42;//TODO return succ
 			}
 			else if (c < 1 || c>255) {//nejaky znak mimo ASCII chyba
 
 			}
 			else {//uloz si znak
-				strAddChar(&s, c);
+				if (strAddChar(&s, c)) {
+					//return ERROR_ALLOC;
+				}
 			}
 			break;
 		case DIVISION_COMMENT:
@@ -93,7 +108,8 @@ int getToken(int* p, FILE* source) {
 				state = LINE_COMMENT;
 			}
 			else {//jednoznakovy operator deleni
-
+				token.typ = DIVISION;
+				return 42;//todo return success
 			}
 			break;
 		case BLOCK_COMMENT:
@@ -142,6 +158,10 @@ int getToken(int* p, FILE* source) {
 			else {
 				state = BLOCK_COMMENT;
 			}
+			break;
+		case TWO_CHAR_OPER:
+			break;
+		case DEKTCREMENT_OPERATOR:
 			break;
 		default:
 			break;

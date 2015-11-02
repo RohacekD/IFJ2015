@@ -1,6 +1,8 @@
 ﻿#ifndef SCANNER_H
 #define SCANNER_H
 #include <stdbool.h>
+#include <stdio.h>
+#include <ctype.h>
 #include "token.h"
 extern int line;
 int getToken(int*, FILE*);
