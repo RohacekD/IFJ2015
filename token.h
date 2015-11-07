@@ -32,12 +32,15 @@ enum tTokenTypes
 	LOG_NOT,
 	MINUS,
 	KEYW_INT,
+	KEYW_DOUBLE,
+	KEYW_BOOL,
+	KEYW_STRING,
 	END_OF_FILE
 };
 
 typedef struct {
 	int typ;
-	union 
+	union
 	{
 		//nejak implementovany pointer do tabulky symbolu
 		int intVal;
