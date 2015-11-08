@@ -47,6 +47,6 @@ typedef struct {
 		double doubleVal;
 		string stringVal;
 		//etc
-	};
+	}value;
 } tToken;
 #endif
