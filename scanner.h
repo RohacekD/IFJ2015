@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include "token.h"
 extern int line;
-int getToken(int*, FILE*);
+int getToken(tToken*, FILE*);
 /*
  prevede string v tokenu na hodnotu double
  konverze vedeckeho zapisu cisla na double

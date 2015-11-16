@@ -15,6 +15,7 @@ enum tTokenTypes
 	TYPE_DOUBLE,
 	TYPE_STRING,
 	TYPE_BOOL,
+	TYPE_IDENTIFICATOR,
 	DIVISION,
 	MULTIPLY,
 	ADD,
@@ -24,26 +25,30 @@ enum tTokenTypes
 	LESS,
 	LESS_EQUAL,
 	EQUAL,
-	NOT_EQUAL,
+	NOT_EQUAL_OPER,
 	INCREMENTATION,
 	DECREMENTATION,
-	LOG_AND,
-	LOG_OR,
-	LOG_NOT,
+	LOG_AND_OPER,
+	LOG_OR_OPER,
+	//LOG_NOT_OPER, neni v IFJ2015
 	MINUS,
+	PLUS,
 	KEYW_INT,
+	PARENTHESIS_OPENING,
+	PARENTHESIS_CLOSING,
+	SEMICOLON,
 	END_OF_FILE
 };
-
+typedef union
+{
+	//nejak implementovany pointer do tabulky symbolu
+	int intVal;
+	double doubleVal;
+	string stringVal;
+	//etc
+}tokenValue;
 typedef struct {
 	int typ;
-	union 
-	{
-		//nejak implementovany pointer do tabulky symbolu
-		int intVal;
-		double doubleVal;
-		string stringVal;
-		//etc
-	};
+	tokenValue value;
 } tToken;
 #endif

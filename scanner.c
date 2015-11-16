@@ -16,10 +16,12 @@ enum states {
 	NESTED_BLOCK_COMMENT_CHECK,
 	END_BLOCK_COMMENT,
 	TWO_CHAR_OPER,
-	DEKTCREMENT_OPERATOR,
+	DECREMENT_OPERATOR,
 	INCREMENT_OPERATOR,
 	LOGICAL_AND,
-	LOGICAL_OR
+	LOGICAL_OR,
+	IDENTIFICATOR,
+	NOT_EQUAL
 };
 /* @var int citac radku*/
 int line = 1;
@@ -36,15 +38,12 @@ int line = 1;
  * Musi vracet nějakou reprezentaci tokenu
  * Dostávat ukazatel na otevřený soubor (DI)
  */
-int getToken(int* p, FILE* source) {
-
-	/* @var prevRest int poslední načtený znak (Zbytek posledního průchodu) */
-	static int prevRest = -1;
+int getToken(tToken *Token, FILE* source) {
 	/* @var c int actual character*/
-	static int c = -1;
-	tToken token = {
-		.typ = END_OF_FILE,
-	};
+	int c = -1;
+	/* @var prevRest int poslední načtený znak (Zbytek posledního průchodu) */
+	static int pom = -1;
+
 	string s;
 	//strInit vraci 1 při chybe
 	if (strInit(&s)) {
@@ -53,7 +52,14 @@ int getToken(int* p, FILE* source) {
 
 	int state = START;
 	while (1) {
-		c = getc(source);
+		if (pom > 0) {//pozustatek z minuleho cteni
+			c = pom;
+			pom = -1;
+		}
+		else {
+			c = getc(source);
+		}
+
 		switch (state)
 		{
 		case START:
@@ -63,6 +69,12 @@ int getToken(int* p, FILE* source) {
 			else if (isspace(c)) {
 				state = START;
 			}
+			else if (isalpha(c) || c == '_') {
+				state = IDENTIFICATOR;
+				if (strAddChar(&s, c)) {
+					//return ERROR_ALLOC;
+				}
+			}
 			else if (c == '\"') {
 				state = STRING;
 			}
@@ -70,10 +82,63 @@ int getToken(int* p, FILE* source) {
 				state = DIVISION_COMMENT;
 			}
 			else if (c == '-') {
-				state = DEKTCREMENT_OPERATOR;
+				state = DECREMENT_OPERATOR;
 			}
 			else if (c == '+') {
 				state = INCREMENT_OPERATOR;
+			}
+			else if (c == '*') {
+				Token->typ = MULTIPLY;
+				return 1;
+			}
+			else if (c == '!') {
+				state = NOT_EQUAL;
+			}
+			else if (c == ')') {
+				Token->typ = PARENTHESIS_CLOSING;
+				return 1;
+			}
+			else if (c == '(') {
+				Token->typ = PARENTHESIS_OPENING;
+				return 1;
+			}
+			else if (c == '|') {
+				state = LOGICAL_OR;
+			}
+			else if (c == '&') {
+				state = LOGICAL_AND;
+			}
+			else if (c==EOF) {
+				Token->typ = END_OF_FILE;
+				return 1;
+			}
+			break;
+		case NOT_EQUAL:
+			if (c == '=') {
+				Token->typ = NOT_EQUAL_OPER;
+				return 1;
+			}
+			else {
+				pom = c;
+				return 42;
+			}
+			break;
+		case LOGICAL_AND:
+			if (c == '&') {
+				Token->typ = LOG_AND_OPER;
+				return 1;
+			}
+			else {
+				return 42;
+			}
+			break;
+		case LOGICAL_OR:
+			if (c == '|') {
+				Token->typ = LOG_OR_OPER;
+				return 1;
+			}
+			else {
+				return 42;
 			}
 			break;
 		case STRING:
@@ -87,9 +152,14 @@ int getToken(int* p, FILE* source) {
 				state = STRING_ESCAPE;
 			}
 			else if (c == '"') {//konec retezce uloz ho
-				token.typ = TYPE_STRING;
-				strCopyString(&s, &token.stringVal);
-				return 42;//TODO return succ
+				Token->typ = TYPE_STRING;
+				if (strInit(&Token->value.stringVal)) {
+					//return stringval
+				}
+				if (strCopyString(&Token->value.stringVal, &s)) {
+					//return error;
+				}
+				return 1;
 			}
 			else if (c < 1 || c>255) {//nejaky znak mimo ASCII chyba
 
@@ -100,6 +170,25 @@ int getToken(int* p, FILE* source) {
 				}
 			}
 			break;
+		case IDENTIFICATOR:
+			if (isalnum(c) || c == '_') {
+				state = state;
+				if (strAddChar(&s, c)) {
+					//return ERROR_ALLOC;
+				}
+			}
+			else {
+				pom = c;
+				Token->typ = TYPE_IDENTIFICATOR;
+				if (strInit(&(Token->value.stringVal))) {
+					//return stringval
+				}
+				if (strCopyString(&(Token->value.stringVal), &s)) {
+					return 0;//todo
+				}
+				return 1;//todo
+			}
+			break;
 		case DIVISION_COMMENT:
 			if (c == '*') {
 				state = BLOCK_COMMENT;
@@ -108,13 +197,27 @@ int getToken(int* p, FILE* source) {
 				state = LINE_COMMENT;
 			}
 			else {//jednoznakovy operator deleni
-				token.typ = DIVISION;
-				return 42;//todo return success
+				Token->typ = DIVISION;
+				pom = c;
+				return 1;//todo return success
+			}
+			break;
+		case LINE_COMMENT:
+			if (c == '\n') {//konec radkoveho komentare hledame dalsi lexem
+				state = START;
+			}
+			else if (c == EOF) {//nemusi byt lf pred koncem souboru
+				pom = c;
+				state = START;
+			}
+			else {//komentar pokracuje
+				  //reflection nepodporujeme takže komentáře zahodíme
 			}
 			break;
 		case BLOCK_COMMENT:
 			if (c == EOF) {
-				//TODO: error
+				//blokovy komentár chceme ukoncit
+				return 0;
 			}
 			else if (c=='/') {
 				state = NESTED_BLOCK_COMMENT_CHECK;
@@ -123,23 +226,12 @@ int getToken(int* p, FILE* source) {
 				state = END_BLOCK_COMMENT;
 			}
 			break;
-		case LINE_COMMENT:
-			if (c=='\n') {//konec radkoveho komentare hledame dalsi lexem
-				state = START;
-			}
-			else if (c == EOF) {//TODO: je to chyba??
-
-			}
-			else {//komentar pokracuje
-				
-			}
-			break;
 		case END_BLOCK_COMMENT:
 			if (c == '*') {
 				//zůstaneme tady komentář může končit x hvězdičkama
 			}
 			else if (c == EOF) {
-				//todo: error
+				return 42;//todo
 			}
 			else if (c == '/') {//konec blokového komentáře jdeme hledat další lexém
 				state = START;
@@ -150,7 +242,7 @@ int getToken(int* p, FILE* source) {
 			break;
 		case NESTED_BLOCK_COMMENT_CHECK:
 			if (c == '*') {
-				//TODO: error 
+				return 42;//TODO: error 
 			}
 			else if (c == EOF) {
 				//TODO: error
@@ -161,14 +253,34 @@ int getToken(int* p, FILE* source) {
 			break;
 		case TWO_CHAR_OPER:
 			break;
-		case DEKTCREMENT_OPERATOR:
+		case DECREMENT_OPERATOR:
+			if (c == '-') {
+				Token->typ = DECREMENTATION;
+				return 1;
+			}
+			else {
+				pom = c;
+				Token->typ = MINUS;
+				return 1;
+			}
+			break;
+		case INCREMENT_OPERATOR:
+			if (c == '+') {
+				Token->typ = INCREMENTATION;
+				return 1;
+			}
+			else {
+				pom = c;
+				Token->typ = PLUS;
+				return 1;
+			}
 			break;
 		default:
 			break;
 		}
 	}
 }
-
+/*
 int strToInt(string* forConversion, int* val){
 	/** todo rozdelane, mozno vymazat cele
 	number = strtol(cString, &pEnd, 0);
@@ -178,8 +290,8 @@ int strToInt(string* forConversion, int* val){
 	}
 	*converted = (int) number;
 	*converted */
-}
-
+/*}*/
+/*
 int strToBool(string* forConversion, bool* val){
 	const char trueString="true";
 	const char falseString="false";
@@ -212,3 +324,4 @@ int strToBool(string* forConversion, bool* val){
 
 	return 1;
 }
+*/

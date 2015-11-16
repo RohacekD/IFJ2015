@@ -1,0 +1,16 @@
+identifikator = 
+*
+/
+(
+)
+--
+-
+++
++
+"string"
+&&
+||
+&//neni v IFJ2015
+|//neni v IFJ2015
+!//neni v IFJ2015
+!=
