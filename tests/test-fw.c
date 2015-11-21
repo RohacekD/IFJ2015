@@ -56,16 +56,19 @@ void printToken(tToken *token) {
 		"Mensi nez rovno",
 		"Rovno",
 		"Nerovno",
+		"Pøiøazení",
 		"Inkrementace",
 		"Dekrementace",
 		"Logicky and",
 		"Logicky or",
-		//"Logicky not",
+		"Logicky not",
 		"minus",
 		"plus",
 		"keyword int",
 		"Oteviraci zavorka",
 		"Uzaviraci zavorka",
+		"Oteviraci slozena zavorka",
+		"Uzaviraci slozena zavorka",
 		"Strednik",
 		"konec souboru"
 	};
@@ -82,7 +85,7 @@ void printToken(tToken *token) {
 		printf("%s = %s\n", tokenNames[token->typ], token->value.stringVal.str);
 		break;
 	case TYPE_BOOL:
-		printf("%s = %s\n", tokenNames[token->typ], "EEEEEEEEEEEEEEEEE");
+		printf("%s = %s\n", tokenNames[token->typ], token->value.boolVal ? "true" : "false");
 		break;
 	case TYPE_IDENTIFICATOR:
 		printf("%s = %s\n", tokenNames[token->typ], token->value.stringVal.str);

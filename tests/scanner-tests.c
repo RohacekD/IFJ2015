@@ -31,6 +31,7 @@ int test_1() {
 
 	} while (token.typ!=END_OF_FILE);
 	fclose(file);
+	return 1;
 }
 
 int test_2() {
@@ -49,6 +50,7 @@ int test_2() {
 
 	} while (token.typ != END_OF_FILE);
 	fclose(file);
+	return 1;
 }
 
 int main() {

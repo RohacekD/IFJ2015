@@ -1,6 +1,7 @@
 ﻿#ifndef TOKEN_H
 #define TOKEN_H
 #include "str.h"
+#include <stdbool.h>
 /*
 Tabulka tokenů - typ a union mezi pointrem do tabulky symbolů a ordinální hodnotou
 typ je enum ("integer","double" nebo "dělení", "násobení", etc.)
@@ -26,16 +27,19 @@ enum tTokenTypes
 	LESS_EQUAL,
 	EQUAL,
 	NOT_EQUAL_OPER,
+	SET_OPER,
 	INCREMENTATION,
 	DECREMENTATION,
 	LOG_AND_OPER,
 	LOG_OR_OPER,
-	//LOG_NOT_OPER, neni v IFJ2015
+	LOG_NOT_OPER,
 	MINUS,
 	PLUS,
 	KEYW_INT,
 	PARENTHESIS_OPENING,
 	PARENTHESIS_CLOSING,
+	BRACES_OPENING,
+	BRACES_CLOSING,
 	SEMICOLON,
 	END_OF_FILE
 };
@@ -45,7 +49,7 @@ typedef union
 	int intVal;
 	double doubleVal;
 	string stringVal;
-	//etc
+	bool boolVal;
 }tokenValue;
 typedef struct {
 	int typ;
