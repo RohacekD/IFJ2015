@@ -16,6 +16,9 @@
 
 #include "str.h"
 #include <stdbool.h>
+
+typedef struct tBSTNode *tBSTNodePtr;
+
 typedef enum
 {
 	TAB_SYM_VARIABLE,

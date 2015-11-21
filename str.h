@@ -1,5 +1,7 @@
 ﻿//hlavickovy soubor pro praci s nekonecne dlouhymi retezci
 
+#ifndef STR_H_
+#define STR_H_
 typedef struct
 {
 	char* str;		// misto pro dany retezec ukonceny znakem '\0'
@@ -19,3 +21,4 @@ int strCmpConstStr(string *s1, char *s2);
 
 char *strGetStr(string *s);
 int strGetLength(string *s);
+#endif /* STR_H_ */

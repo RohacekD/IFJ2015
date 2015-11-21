@@ -168,9 +168,12 @@ void BSTCreateNode(tBSTNodePtr* node, string* key, tData* data) {
 		//pokus o alokaci se nazdaril
 		return;
 	}
+
 	//naplneni stringu
-	strInit(newString);
-	strCopyString(newString, key);
+	if (strInit(newString) || strCopyString(newString, key)) {
+		//pokus o alokaci se nazdaril
+		return;
+	}
 
 	newNode->key = newString;
 	newNode->data = data;
@@ -223,9 +226,15 @@ void BSTDeleteVictimSearch(tBSTNodePtr* rootPtr, tBSTNodePtr* assistPtr) {
 		return;
 	}
 	//nejpravejsi ukazatel je nalezen
-	//prepiseme uzel
+	//prepiseme navzajem uzly
+	tData* forDelData=(*assistPtr)->data;
+	string* forDelKey=(*assistPtr)->key;
+
 	(*assistPtr)->data = workWithRootPtr->data;
 	(*assistPtr)->key = workWithRootPtr->key;
+
+	workWithRootPtr->data=forDelData;
+	workWithRootPtr->key=forDelKey;
 	(*assistPtr) = workWithRootPtr;
 
 	//uvolnime uzel
