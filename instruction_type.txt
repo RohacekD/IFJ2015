@@ -1,0 +1,63 @@
+//spusteni
+#define Inst_START
+//ukonceni
+#define Inst_END
+//main
+#define Inst_MAIN
+//cout - vypis
+#define Inst_COUT
+//cin - cteni
+#define Inst_CIN
+//scitani +
+#define Inst_PLUS
+//odcitani -
+#define Inst_MINUS
+//nasobeni *
+#define Inst_NASOBENI
+//deleni /
+#define Inst_DELENI
+//==
+#define Inst_EQUAL
+//!=
+#define Inst_NEQUAL
+//<=
+#define Inst_LEQUAL
+//>=
+#define Inst_GEQUAL
+//vetsi >
+#define Inst_VETSI
+//mensi
+#define Inst_MENSI
+//prirazeni
+#define Inst_PRIRAZENI
+//postfix ++
+#define Inst_POSTPP
+//postfix --
+#define Inst_POSTMM
+//prefix ++
+#define Inst_PREPP
+//prefix --
+#define Inst_PREMM
+//not !
+#define Inst_NOT
+//&& AND
+#define Inst_AND
+//OR ||
+#define Inst_OR
+//unarni minus
+#define Inst_UNARNI
+//if
+#define Inst_IF
+//skoky - bude se pres ne resit if else
+#define Inst_JUMP
+//then ??
+#define Inst_THEN
+//else ??
+#define Inst_ELSE
+//end if
+#define Inst_ENDIF
+//zacina funkce ?
+#define Inst_FUNKCE
+//return pro navrat z funkce
+#define Inst_RETURN
+
