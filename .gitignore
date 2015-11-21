@@ -1,4 +1,7 @@
+nbproject
+
 *.vcxproj*
+Debug/
 # Object files
 *.o
 *.ko

@@ -1,6 +1,7 @@
 ﻿#ifndef TOKEN_H
 #define TOKEN_H
 #include "str.h"
+#include <stdbool.h>
 /*
 Tabulka tokenů - typ a union mezi pointrem do tabulky symbolů a ordinální hodnotou
 typ je enum ("integer","double" nebo "dělení", "násobení", etc.)
@@ -11,10 +12,11 @@ getToken vrací "STAV" jestli je v pořádku, nesestavil token a parametrem ukaz
 
 enum tTokenTypes
 {
-	INTEGER,
-	DOUBLE,
-	STRING,
-	BOOL,
+	TYPE_INTEGER,
+	TYPE_DOUBLE,
+	TYPE_STRING,
+	TYPE_BOOL,
+	TYPE_IDENTIFICATOR,
 	DIVISION,
 	MULTIPLY,
 	ADD,
@@ -24,26 +26,33 @@ enum tTokenTypes
 	LESS,
 	LESS_EQUAL,
 	EQUAL,
-	NOT_EQUAL,
+	NOT_EQUAL_OPER,
+	SET_OPER,
 	INCREMENTATION,
 	DECREMENTATION,
-	LOG_AND,
-	LOG_OR,
-	LOG_NOT,
+	LOG_AND_OPER,
+	LOG_OR_OPER,
+	LOG_NOT_OPER,
 	MINUS,
+	PLUS,
 	KEYW_INT,
+	PARENTHESIS_OPENING,
+	PARENTHESIS_CLOSING,
+	BRACES_OPENING,
+	BRACES_CLOSING,
+	SEMICOLON,
 	END_OF_FILE
 };
-
+typedef union
+{
+	//nejak implementovany pointer do tabulky symbolu
+	int intVal;
+	double doubleVal;
+	string stringVal;
+	bool boolVal;
+}tokenValue;
 typedef struct {
 	int typ;
-	union 
-	{
-		//nejak implementovany pointer do tabulky symbolu
-		int intVal;
-		double doubleVal;
-		string stringVal;
-		//etc
-	};
+	tokenValue value;
 } tToken;
 #endif

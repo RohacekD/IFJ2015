@@ -1,4 +1,4 @@
-﻿//hlavickovy soubor pro praci s nekonecne dlouhymi retezci
+//hlavickovy soubor pro praci s nekonecne dlouhymi retezci
 
 #ifndef STR_H_
 #define STR_H_
