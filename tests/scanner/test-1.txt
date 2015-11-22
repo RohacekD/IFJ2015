@@ -12,7 +12,7 @@ identifikator =
 ||
 &//neni v IFJ2015
 |//neni v IFJ2015
-!//neni v IFJ2015
+!//soucast rozsireni
 !=
 //maji byt escape sekvence pred cisly case sensitive?
 ;//konecne nam funguje
@@ -21,7 +21,7 @@ identifikator =
 \b001
 \b00100000
 \0777
-\0001
+\00015i
 \04
 \xFf
 \x0f

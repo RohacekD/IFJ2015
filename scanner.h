@@ -5,8 +5,12 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "token.h"
+/* @var int citac radku*/
 extern int line;
+/* @var int citac znaku na radku*/
 extern int character;
+/* @var int priznak chyby */
+extern int errorFlag;
 int getToken(tToken*, FILE*);
 /*
  prevede string v tokenu na hodnotu double
@@ -34,4 +38,5 @@ int strBinToInt(string* forConversion, int* val);
 int strHexToInt(string* forConversion, int* val);
 int strOctToInt(string* forConversion, int* val);
 int unescapeStr(string*);
+int isKeyWord(string*);
 #endif

@@ -10,7 +10,7 @@ getToken vrací "STAV" jestli je v pořádku, nesestavil token a parametrem ukaz
 
 */
 
-enum tTokenTypes
+typedef enum tTokenTypes
 {
 	TYPE_INTEGER,
 	TYPE_DOUBLE,
@@ -35,14 +35,26 @@ enum tTokenTypes
 	LOG_NOT_OPER,
 	MINUS,
 	PLUS,
-	KEYW_INT,
 	PARENTHESIS_OPENING,
 	PARENTHESIS_CLOSING,
 	BRACES_OPENING,
 	BRACES_CLOSING,
 	SEMICOLON,
+
+	KEYW_AUTO,
+	KEYW_CIN,
+	KEYW_COUT,
+	KEYW_INT,
+	KEYW_DOUBLE,
+	KEYW_STRING,
+	KEYW_IF,
+	KEYW_ELSE,
+	KEYW_FOR,
+	KEYW_WHILE,
+	KEYW_RETURN,
+
 	END_OF_FILE
-};
+}TokenTypes;
 typedef union
 {
 	//nejak implementovany pointer do tabulky symbolu
@@ -52,7 +64,7 @@ typedef union
 	bool boolVal;
 }tokenValue;
 typedef struct {
-	int typ;
+	TokenTypes typ;
 	tokenValue value;
 } tToken;
 #endif

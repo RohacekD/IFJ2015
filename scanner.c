@@ -37,13 +37,11 @@ enum states {
 };
 /* @var int citac radku*/
 int line = 1;
+/* @var int citac znaku na radku*/
 int character = 0;
+/* @var int priznak chyby */
+int errorFlag = 0;
 
-/*
-* KEY WORDS
-* auto, cin, cout, double, else,
-* for, if, int, return, string
-*/
 int getToken(tToken *Token, FILE* source) {
 	/* @var c int actual character*/
 	int c = -1;
@@ -159,6 +157,9 @@ int getToken(tToken *Token, FILE* source) {
 			else if (c==EOF) {
 				Token->typ = END_OF_FILE;
 				strFree(&s);
+				if (errorFlag) {
+					FatalError(errorFlag, ERR_MESSAGES[ERR_LEX]);
+				}
 				return 1;
 			}
 			else {
@@ -224,8 +225,9 @@ int getToken(tToken *Token, FILE* source) {
 			else {
 				int val = 42;
 				if (!strToInt(&s, &val)) {
-					//todo error
-				strFree(&s);
+					errorFlag = 1;
+					Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n",ERR_MESSAGES[ERR_LEX], line, character);
+					strFree(&s);
 					return 42;
 				}
 				Token->typ = TYPE_INTEGER;
@@ -251,7 +253,8 @@ int getToken(tToken *Token, FILE* source) {
 			else {
 				double val = 42;
 				if (!strToDouble(&s, &val)) {
-					//todo error
+					errorFlag = 1;
+					Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n",ERR_MESSAGES[ERR_LEX], line, character);
 					strFree(&s);
 					return 42;
 				}
@@ -275,8 +278,10 @@ int getToken(tToken *Token, FILE* source) {
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
-			else {
-				//error
+			//nemuzeme napsat exponent a neudat ho
+			else{
+				errorFlag = 1;
+				Warning("%sLine - %d:%d\t-  Exponent musi obsahovat validni cislici.\n",ERR_MESSAGES[ERR_LEX], line, character);
 				pom = c;
 				strFree(&s);
 				return 42;
@@ -290,7 +295,8 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else {
-				//error
+				errorFlag = 1;
+				Warning("%sLine - %d:%d\t-  Exponent musi obsahovat validni cislici.\n",ERR_MESSAGES[ERR_LEX], line, character);
 				pom = c;
 				strFree(&s);
 				return 42;
@@ -306,7 +312,8 @@ int getToken(tToken *Token, FILE* source) {
 			else {
 				double val = 42;
 				if (!strToDouble(&s, &val)) {
-					//todo error
+					errorFlag = 1;
+					Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n",ERR_MESSAGES[ERR_LEX], line, character);
 					strFree(&s);
 					return 42;
 				}
@@ -331,7 +338,8 @@ int getToken(tToken *Token, FILE* source) {
 				state = HEX_DEC_NUMBER;
 				break;
 			default:
-				//TODO: error
+				errorFlag = 1;
+				Warning("%sLine - %d:%d\t-  Ocekavan symbol pro ciselnou soustavu.\n",ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
 				return 42;
 				break;
@@ -361,6 +369,7 @@ int getToken(tToken *Token, FILE* source) {
 			break;
 		case OCTAL_NUMBER:
 			if (c >= '0' && c <= '7') {
+				//zahazuji nevyznamne nuly
 				if (!(c == '0' && strGetLength(&s) == 0)) {
 					if (strAddChar(&s, c)) {
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
@@ -382,6 +391,7 @@ int getToken(tToken *Token, FILE* source) {
 			break;
 		case HEX_DEC_NUMBER:
 			if (c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F') {
+				//zahazuji nevyznamne nuly
 				if (!(c == '0' && strGetLength(&s)==0)) {
 					if (strAddChar(&s, c)) {
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
@@ -408,9 +418,10 @@ int getToken(tToken *Token, FILE* source) {
 				return 1;
 			}
 			else {
-				/*Abych se zotavil po teto chybe a docetl soubor*/
 				pom = c;
 				strFree(&s);
+				errorFlag = 1;
+				Warning("%sLine - %d:%d\t-  Binarni and neni podporovan v IFJ2015.\n",ERR_MESSAGES[ERR_LEX], line, character-1);
 				return 42;
 			}
 			break;
@@ -422,6 +433,8 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			else {
 				/*Abych se zotavil po teto chybe a docetl soubor*/
+				errorFlag = 1;
+				Warning("%sLine - %d:%d\t-  Binarni or neni podporovan v IFJ2015.\n",ERR_MESSAGES[ERR_LEX], line, character - 1);
 				pom = c;
 				strFree(&s);
 				return 42;
@@ -429,7 +442,8 @@ int getToken(tToken *Token, FILE* source) {
 			break;
 		case STRING:
 			if (c == EOF) {
-				//error
+				errorFlag = 1;
+				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n",ERR_MESSAGES[ERR_LEX], line, character);
 			}
 			else if (c == '\\') {
 				if (strAddChar(&s, c)) {
@@ -458,21 +472,26 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			break;
 		case IDENTIFICATOR:
+			//ctu cislice, pismena nebo podtrzitka
 			if (isalnum(c) || c == '_') {
 				state = state;
 				if (strAddChar(&s, c)) {
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
+			//konec identifikatoru
 			else {
 				pom = c;
-				Token->typ = TYPE_IDENTIFICATOR;
-				if (strInit(&(Token->value.stringVal))) {
-					//return stringval
-				}
-				if (strCopyString(&(Token->value.stringVal), &s)) {
-					strFree(&s);
-					return 0;//todo
+				int isIdent = isKeyWord(&s);
+				Token->typ = isIdent;
+				if (isIdent == TYPE_IDENTIFICATOR) {
+					if (strInit(&(Token->value.stringVal))) {
+						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+					}
+					if (strCopyString(&(Token->value.stringVal), &s)) {
+						strFree(&s);
+						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+					}
 				}
 				strFree(&s);
 				return 1;//todo
@@ -506,9 +525,9 @@ int getToken(tToken *Token, FILE* source) {
 			break;
 		case BLOCK_COMMENT:
 			if (c == EOF) {
-				//blokovy komentár chceme ukoncit
+				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
-				return 0;
+				return 42;
 			}
 			else if (c=='/') {
 				state = NESTED_BLOCK_COMMENT_CHECK;
@@ -522,8 +541,9 @@ int getToken(tToken *Token, FILE* source) {
 				//zůstaneme tady komentář může končit x hvězdičkama
 			}
 			else if (c == EOF) {
+				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
-				return 42;//todo
+				return 42;
 			}
 			else if (c == '/') {//konec blokového komentáře jdeme hledat další lexém
 				state = START;
@@ -538,7 +558,9 @@ int getToken(tToken *Token, FILE* source) {
 				return 42;//TODO: error 
 			}
 			else if (c == EOF) {
-				//TODO: error
+				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n", ERR_MESSAGES[ERR_LEX], line, character);
+				strFree(&s);
+				return 42;
 			}
 			else {
 				state = BLOCK_COMMENT;
@@ -656,6 +678,53 @@ int strToDouble(string* forConversion, double* val) {
 	return 1;
 }
 
+
+
+/*
+* KEY WORDS
+* auto, cin, cout, double, else,
+* for, if, int, return, string
+*/
+/*
+ * Pole vsech klicovych slov
+ * @warning nechte v tomto poradi dulezite pro funkcnost
+ */
+const char* keyWords[] = {
+	"auto",
+	"cin",
+	"cout",
+	"int",
+	"double",
+	"string",
+	"if",
+	"else",
+	"for",
+	"while",
+	"return",
+	""
+};
+
+/*
+ * Prohleda tabulku klicovych slov a zjisti zda prijaty string neni mezi nimi 
+ *
+ * @uses keyWords
+ * @param string* s zkoumany string
+ * @return TokenTypes Type of token (TYPE_IDENTIFICATOR|[KEYW_AUTO-KEYW_RETURN])
+ *
+ */
+int isKeyWord(string* s) {
+	int ret = 0;
+	int i = 0;
+	for (i = 0; i < 12; i++) {
+		if (strCmpConstStr(s, keyWords[i])==0) {
+			break;
+		}
+	}
+	if (i == 12) {
+		return TYPE_IDENTIFICATOR;
+	}
+	return KEYW_AUTO + i;
+}
 /*
 int strToBool(string* forConversion, bool* val){
 	const char trueString="true";

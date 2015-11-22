@@ -23,10 +23,9 @@ int test_1() {
 	tToken token;
 	do {
 		if ((ret = getToken(&token, file)) != 1) {
-			printf("getToken: %d\n", ret);
 		}
 		else {
-			printToken(&token);
+			//printToken(&token);
 		}
 
 	} while (token.typ!=END_OF_FILE);

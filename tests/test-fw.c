@@ -64,12 +64,22 @@ void printToken(tToken *token) {
 		"Logicky not",
 		"minus",
 		"plus",
-		"keyword int",
 		"Oteviraci zavorka",
 		"Uzaviraci zavorka",
 		"Oteviraci slozena zavorka",
 		"Uzaviraci slozena zavorka",
 		"Strednik",
+		"keyword auto",
+		"keyword cin",
+		"keyword cout",
+		"keyword int",
+		"keyword double",
+		"keyword string",
+		"keyword if",
+		"keyword else",
+		"keyword for",
+		"keyword while",
+		"keyword return",
 		"konec souboru"
 	};
 	printf("***Token => ");
