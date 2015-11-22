@@ -15,6 +15,26 @@
 #define ERROR_H_
 
 /**
+ * Kody pro chybove hlasky
+ */
+typedef enum{
+	ERROR_ALLOC,//!< ERROR_ALLOC
+
+	// posledni
+	ERROR_OK    //!< ERROR_OK
+}ERROR_CODES;
+
+/**
+ * Chybove hlasky
+ */
+const char ERROR_MESSAGES[][]={
+		"Chyba pri alokaci pameti.\n",
+
+		// posledni
+		"Vse v poradku.\n"
+};
+
+/**
  * Tiskne warning na stderr. S formatem *fmt.
  * @param fmt[in]	-	format hlaseni
  */
