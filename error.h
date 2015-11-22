@@ -18,20 +18,20 @@
  * Kody pro chybove hlasky
  */
 typedef enum{
-	ERROR_ALLOC,//!< ERROR_ALLOC
+	ERROR_ALLOC,//!< ERROR_ALLOC	Chyba alokace
 
 	// posledni
-	ERROR_OK    //!< ERROR_OK
+	ERROR_OK    //!< ERROR_OK	Vse v poradku
 }ERROR_CODES;
 
 /**
  * Chybove hlasky
  */
 const char* ERROR_MESSAGES[]={
-		"Chyba pri alokaci pameti.\n",
+		[ERROR_ALLOC]="Chyba pri alokaci pameti.\n",
 
 		// posledni
-		"Vse v poradku.\n"
+		[ERROR_OK]="Vse v poradku.\n"
 };
 
 /**
