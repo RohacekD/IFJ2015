@@ -389,6 +389,7 @@ void printBST(tBSTNodePtr originalRoot){
 	//prevedem tBSTNodePtr na tree
 	Tree * root=createTreeFromBST(originalRoot);
 	print_ascii_tree(root);
+	make_empty(root);
 }
 
 int main() {
