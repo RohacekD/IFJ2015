@@ -238,7 +238,7 @@ void BSTDeleteVictimSearch(tBSTNodePtr* rootPtr, tBSTNodePtr* assistPtr) {
 	(*assistPtr) = workWithRootPtr;
 
 	//uvolnime uzel
-	*rootPtr=workWithRootPtr->l;	/**todo Proc to tu je?*/
+	*rootPtr=workWithRootPtr->l;
 
 }
 
