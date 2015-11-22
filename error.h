@@ -27,7 +27,7 @@ typedef enum{
 /**
  * Chybove hlasky
  */
-const char ERROR_MESSAGES[][]={
+const char* ERROR_MESSAGES[]={
 		"Chyba pri alokaci pameti.\n",
 
 		// posledni
