@@ -21,7 +21,6 @@ typedef struct tBSTNode{
 	void* data;
 	struct tBSTNode *l;
 	struct tBSTNode *r;
-
 } *tBSTNodePtr;
 
 
