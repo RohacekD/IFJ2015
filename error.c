@@ -17,6 +17,17 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+/**
+ * Chybove hlasky
+ */
+const char* ERR_MESSAGES[]={
+		[ERR_ALLOC]="Chyba pri alokaci pameti.\n",
+
+		[ERR_LEX]="Error lexikalni analyzy.\n",
+
+		// posledni
+		[ERR_OK]="Vse v poradku.\n"
+};
 
 void Warning(const char *fmt, ...){
 	fprintf(stderr, "Chyba: ");

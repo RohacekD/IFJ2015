@@ -18,7 +18,7 @@ int main() {
 
 	Warning("Vypsane chybove hlaseni.\n");
 
-	FatalError(111,"Ukoncuji po bestialni chybe.\n");
+	FatalError(111,ERR_MESSAGES[ERR_OK]);
 
 	return 0;
 }

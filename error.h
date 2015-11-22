@@ -18,25 +18,18 @@
  * Kody pro chybove hlasky
  */
 typedef enum{
-	ERROR_ALLOC,//!< ERROR_ALLOC	Chyba alokace
+	ERR_ALLOC,//!< ERR_ALLOC	Chyba alokace
 
-	ERROR_LEX,//!< ERROR_LEX
+	ERR_LEX,//!< ERR_LEX
 
 	// posledni
-	ERROR_OK    //!< ERROR_OK	Vse v poradku
-}ERROR_CODES;
+	ERR_OK    //!< ERR_OK	Vse v poradku
+}ERR_CODES;
 
 /**
  * Chybove hlasky
  */
-const char* ERROR_MESSAGES[]={
-		[ERROR_ALLOC]="Chyba pri alokaci pameti.\n",
-
-		"Error lexikalni analyzy.\n",
-
-		// posledni
-		[ERROR_OK]="Vse v poradku.\n"
-};
+extern const char* ERR_MESSAGES[];
 
 /**
  * Tiskne warning na stderr. S formatem *fmt.
