@@ -16,9 +16,6 @@
 
 #include "str.h"
 
-typedef struct tBSTNode *tBSTNodePtr;
-
-
 typedef struct tBSTNode{
 	string* key;
 	void* data;
