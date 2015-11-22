@@ -20,7 +20,25 @@
 typedef enum{
 	ERR_ALLOC,//!< ERR_ALLOC	Chyba alokace
 
-	ERR_LEX,//!< ERR_LEX
+	ERR_LEX,//!< ERR_LEX Chyba lexikalni analyzy
+
+	ERR_SYNTAX,//!< ERR_SYNTAX Syntaktická chyba
+
+	ERR_SEM_DEF,//!< ERR_SEM_DEF Prace s nedefinouvanou promennou/funkcí
+
+	ERR_SEM_COM,//!< ERR_SEM_COM Chyba kompatibilty dat. typu
+
+	ERR_SEM_AUTO,//!< ERR_SEM_AUTO chyba v odvozeni dat. typu
+
+	ERR_SEM_REST,//!< ERR_SEM_REST Ostatni semanticke chyby
+
+	ERR_RUNTIME_INPUT,//!< ERR_RUNTIME_INPUT Chyba cteni cisla ze vstupu
+
+	ERR_RUNTIME_INIT_VAR,//!< ERR_RUNTIME_INIT_VAR Prace s neinicializovanou promennou
+
+	ERR_RUNTIME_ZERO_DIV,//!< ERR_RUNTIME_ZERO_DIV Deleni nulou
+
+	ERR_RUNTIME_REST,//!< ERR_RUNTIME_REST Ostatni behove chyby
 
 	// posledni
 	ERR_OK    //!< ERR_OK	Vse v poradku

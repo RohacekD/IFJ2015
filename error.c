@@ -22,9 +22,16 @@
  */
 const char* ERR_MESSAGES[]={
 		[ERR_ALLOC]="Chyba pri alokaci pameti.\n",
-
 		[ERR_LEX]="Error lexikalni analyzy.\n",
-
+		[ERR_SYNTAX] = "Syntaktická chyba.\n",
+		[ERR_SEM_DEF] = "Prace s nedefinouvanou promennou/funkcí.\n",
+		[ERR_SEM_COM] = "Chyba kompatibilty datoveho typu.\n",
+		[ERR_SEM_AUTO] = "chyba v odvozeni datoveho typu.\n",
+		[ERR_SEM_REST] = "Ostatni semanticke chyby.\n",
+		[ERR_RUNTIME_INPUT] = "Chyba cteni cisla ze vstupu.\n",
+		[ERR_RUNTIME_INIT_VAR] = "Prace s neinicializovanou promennou.\n",
+		[ERR_RUNTIME_ZERO_DIV] = "Deleni nulou.\n",
+		[ERR_RUNTIME_REST] = "Ostatni behove chyby.\n",
 		// posledni
 		[ERR_OK]="Vse v poradku.\n"
 };
