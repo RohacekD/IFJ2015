@@ -15,69 +15,13 @@
 #define IAL_H_
 
 #include "str.h"
-#include <stdbool.h>
 
 typedef struct tBSTNode *tBSTNodePtr;
 
-typedef enum
-{
-	TAB_SYM_VARIABLE,
-	TAB_SYM_FUNCTION
-}tTabSymDataType;
-
-typedef enum
-{
-	TAB_SYM_VAR_INTEGER,
-	TAB_SYM_VAR_DOUBLE,
-	TAB_SYM_VAR_STRING,
-	TAB_SYM_VAR_BOOLEAN,
-	TAB_SYM_VAR_AUTO
-}tTabSymVarDataType;
-
-typedef enum
-{
-	TAB_SYM_RET_INTEGER,
-	TAB_SYM_RET_DOUBLE,
-	TAB_SYM_RET_STRING,
-	TAB_SYM_RET_BOOLEAN
-}tTabSymRetDataType;
-
-typedef struct{
-	tTabSymVarDataType dataType;
-}tVariableInfo;
-
-
-typedef struct tParamListElem {
-    struct tParamListElem *next;
-    string idName;
-    tTabSymVarDataType dataType;
-} *tParamListElemPtr;
-
-typedef struct{
-	tParamListElemPtr first;
-}*tParamListPtr;
-
-
-typedef struct{
-	tParamListPtr params;		// parametry funkce
-	tTabSymRetDataType retType;	// navratovy typ funkce
-	tBSTNodePtr	locTab;			// lokalni tabulka symbolu
-	bool defined;				// byla definovana
-
-}tFuncInfo;
-
-
-typedef struct{
-	tTabSymDataType type;	//druh identifikatoru
-	union{
-		tVariableInfo *var;
-		tFuncInfo * func;
-	}info;
-}tData;
 
 typedef struct tBSTNode{
 	string* key;
-	tData * data;
+	void* data;
 	struct tBSTNode *l;
 	struct tBSTNode *r;
 
@@ -132,7 +76,7 @@ void BSTSearchTree(tBSTNodePtr rootPtr, string* key, tBSTNodePtr* store);
  * @param key		-	klic vkladaneho/aktualizovaneho uzlu
  * @param data		-	data vkladaneho/aktualizovaneho uzlu
  */
-void BSTInsert(tBSTNodePtr* rootPtr, string* key, tData* data);
+void BSTInsert(tBSTNodePtr* rootPtr, string* key, void* data);
 
 /**
  * Maze z binarniho vyhledavaciho stromu uzel s danym klicem key.

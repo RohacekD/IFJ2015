@@ -161,7 +161,7 @@ void BSTSearchTree(tBSTNodePtr rootPtr, string* key, tBSTNodePtr* store) {
  * @param key	-	klic noveho uzlo
  * @param data	-	data noveho uzlo
  */
-void BSTCreateNode(tBSTNodePtr* node, string* key, tData* data) {
+void BSTCreateNode(tBSTNodePtr* node, string* key, void* data) {
 	tBSTNodePtr newNode = malloc(sizeof(struct tBSTNode));
 	string* newString = malloc(sizeof(string));
 	if (newNode == NULL || newString==NULL) {
@@ -181,7 +181,7 @@ void BSTCreateNode(tBSTNodePtr* node, string* key, tData* data) {
 	newNode->r = NULL;
 	*node=newNode;
 }
-void BSTInsert(tBSTNodePtr* rootPtr, string* key, tData* data) {
+void BSTInsert(tBSTNodePtr* rootPtr, string* key, void* data) {
 	if(rootPtr == NULL){
 		//chyba nelze
 		return;
@@ -227,7 +227,7 @@ void BSTDeleteVictimSearch(tBSTNodePtr* rootPtr, tBSTNodePtr* assistPtr) {
 	}
 	//nejpravejsi ukazatel je nalezen
 	//prepiseme navzajem uzly
-	tData* forDelData=(*assistPtr)->data;
+	void* forDelData=(*assistPtr)->data;
 	string* forDelKey=(*assistPtr)->key;
 
 	(*assistPtr)->data = workWithRootPtr->data;

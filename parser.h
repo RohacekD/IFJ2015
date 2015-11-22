@@ -19,6 +19,7 @@
  * Provede syntaktickou analyzu pro vyraz.
  * TODO:	Bere parametr pro ukladani triadresneho kodu.
  * 			SEMANTICKA
+ * 			datovy typ vyrazu
  * @return kod chyby / uspechu
  */
 int parseExpression();

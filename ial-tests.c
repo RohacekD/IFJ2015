@@ -471,7 +471,7 @@ int main() {
 	//operace na BST
 	printf("BST insert:\n");
 	tBSTNodePtr root=NULL;
-	tData data;
+	void* data;
 	string seven,four, nine, one, six, zero, fifteen;
 
 	strInit(&seven);
