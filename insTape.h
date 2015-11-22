@@ -37,7 +37,7 @@ typedef enum{
 	I_CNF, //create new frame
 	I_ASSIGN, //prirazeni =
 	I_SP, //set parametr - musis se podivat o jeden niz
-	I_RETURN //navrat z ramce
+	I_RETURN, //navrat z ramce
 	I_IFZERO,
 	I_SETRESULT, //navratova hodnota z fce
 	I_SORT,
