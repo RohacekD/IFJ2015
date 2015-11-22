@@ -14,7 +14,37 @@
 #define INSTAPE_H_
 
 typedef enum{
-
+	I_CIN,
+	I_COUT,
+	I_PLUS,
+	I_MINUS,
+	I_MUL,
+	I_DIV,
+	I_EQUAL,
+	I_NOTEQUAL,
+	I_GREATER,
+	I_LESSER,
+	I_GEQUAL,
+	I_LEQUAL,
+	I_UMINUS,
+	I_POSTPP,
+	I_POSTMM,
+	I_PREPP,
+	I_PREMM,
+	I_NOT,
+	I_AND,
+	I_OR,
+	I_CNF, //create new frame
+	I_ASSIGN, //prirazeni =
+	I_SP, //set parametr - musis se podivat o jeden niz
+	I_RETURN //navrat z ramce
+	I_IFZERO,
+	I_SETRESULT, //navratova hodnota z fce
+	I_SORT,
+	I_FIND,
+	I_CONCAT,
+	I_SUBSTR,
+	I_LENGTH
 }tInstructTypes;
 
 
