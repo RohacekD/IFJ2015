@@ -20,6 +20,8 @@
 typedef enum{
 	ERROR_ALLOC,//!< ERROR_ALLOC	Chyba alokace
 
+	ERROR_LEX,//!< ERROR_LEX
+
 	// posledni
 	ERROR_OK    //!< ERROR_OK	Vse v poradku
 }ERROR_CODES;
@@ -29,6 +31,8 @@ typedef enum{
  */
 const char* ERROR_MESSAGES[]={
 		[ERROR_ALLOC]="Chyba pri alokaci pameti.\n",
+
+		"Error lexikalni analyzy.\n",
 
 		// posledni
 		[ERROR_OK]="Vse v poradku.\n"

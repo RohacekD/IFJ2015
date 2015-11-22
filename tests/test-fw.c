@@ -79,7 +79,7 @@ void printToken(tToken *token) {
 		printf("%s = %i\n", tokenNames[token->typ], token->value.intVal);
 		break;
 	case TYPE_DOUBLE:
-		printf("%s = %d\n", tokenNames[token->typ], token->value.doubleVal);
+		printf("%s = %f\n", tokenNames[token->typ], token->value.doubleVal);
 		break;
 	case TYPE_STRING:
 		printf("%s = %s\n", tokenNames[token->typ], token->value.stringVal.str);

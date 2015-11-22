@@ -1,6 +1,8 @@
 ﻿#include "scanner.h"
+#include "error.h"
 #include "str.h"
 #include <stdio.h>
+
 /*
  * Výčet možných stavů FSM.
  */
@@ -51,7 +53,7 @@ int getToken(tToken *Token, FILE* source) {
 	string s;
 	//strInit vraci 1 při chybe
 	if (strInit(&s)) {
-		//return ERROR_ALOK;
+		//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 	}
 
 	int state = START;
@@ -81,20 +83,20 @@ int getToken(tToken *Token, FILE* source) {
 			else if (isalpha(c) || c == '_') {
 				state = IDENTIFICATOR;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			//ulozi prvni nulu v cisle
 			else if (c == '0') {
 				state = FLOAT_OR_INT;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else if (c >= '1' && c <= '9') {
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else if (c == ';') {
@@ -125,7 +127,7 @@ int getToken(tToken *Token, FILE* source) {
 			else if (c == '!' || c == '<' || c == '>' || c == '=') {
 				state = TWO_CHAR_OPER;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else if (c == ')') {
@@ -167,25 +169,25 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9') {
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else if (c == 'e' || c == 'E') {
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else if (c == '.') {
 				state = FLOAT_PART;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else {
 				int val = 42;
 				if (!strToInt(&s, &val)) {
-					//todo error
+					//FatalError(99, "%s-%d: Chyba pri nacteni celeho cisla.", ERROR_MESSAGES[ERROR_ALLOC], line);
 					strFree(&s);
 					return 42;
 				}
@@ -204,19 +206,19 @@ int getToken(tToken *Token, FILE* source) {
 			else if (c >= '1' && c<='9') {
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else if (c == '.') {
 				state = FLOAT_PART;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else if (c == 'e' || c == 'E') {
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else {
@@ -237,13 +239,13 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9') {
 				state = FLOAT_PART;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else if (c == 'e' || c == 'E') {
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else {
@@ -264,13 +266,13 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9') {
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else if (c == '+' || c == '-') {
 				state = EXPONENT_PLUS_MINUS_CHECK;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else {
@@ -284,7 +286,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9') {
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else {
@@ -298,14 +300,14 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9') {
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else {
 				double val = 42;
 				if (!strToDouble(&s, &val)) {
 					//todo error
-				strFree(&s);
+					strFree(&s);
 					return 42;
 				}
 				Token->typ = TYPE_DOUBLE;
@@ -340,7 +342,7 @@ int getToken(tToken *Token, FILE* source) {
 				//zahazuji nevyznamne nuly
 				if (!(c == '0' && strGetLength(&s) == 0)) {
 					if (strAddChar(&s, c)) {
-						//return ERROR_ALLOC;
+						//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 					}
 				}
 			}
@@ -361,7 +363,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '7') {
 				if (!(c == '0' && strGetLength(&s) == 0)) {
 					if (strAddChar(&s, c)) {
-						//return ERROR_ALLOC;
+						//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 					}
 				}
 			}
@@ -382,7 +384,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F') {
 				if (!(c == '0' && strGetLength(&s)==0)) {
 					if (strAddChar(&s, c)) {
-						//return ERROR_ALLOC;
+						//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 					}
 				}
 			}
@@ -431,7 +433,7 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			else if (c == '\\') {
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 				state = STRING_ESCAPE;
 			}
@@ -451,7 +453,7 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			else {//uloz si znak
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			break;
@@ -459,7 +461,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (isalnum(c) || c == '_') {
 				state = state;
 				if (strAddChar(&s, c)) {
-					//return ERROR_ALLOC;
+					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
 				}
 			}
 			else {
@@ -623,9 +625,6 @@ int strToInt(string* forConversion, int* val){
 }
 
 int strBinToInt(string* forConversion, int* val) {
-	if (strGetLength(forConversion) != 8) {
-		return 0;
-	}
 	char* ptr = NULL;
 
 	*val = (int)strtol(forConversion->str, &ptr, 2);
@@ -634,9 +633,6 @@ int strBinToInt(string* forConversion, int* val) {
 	return 1;
 }
 int strHexToInt(string* forConversion, int* val) {
-	if (strGetLength(forConversion) != 2) {
-		return 0;
-	}
 	char* ptr = NULL;
 
 	*val = (int)strtol(forConversion->str, &ptr, 16);
@@ -645,9 +641,6 @@ int strHexToInt(string* forConversion, int* val) {
 	return 1;
 }
 int strOctToInt(string* forConversion, int* val) {
-	if (strGetLength(forConversion) != 3) {
-		return 0;
-	}
 	char* ptr = NULL;
 
 	*val = (int)strtol(forConversion->str, &ptr, 8);
@@ -657,7 +650,10 @@ int strOctToInt(string* forConversion, int* val) {
 }
 
 int strToDouble(string* forConversion, double* val) {
-	return 42;
+	char* ptr = NULL;
+	*val = (double)strtod(forConversion->str, &ptr);
+	if (ptr == forConversion->str || *ptr != '\0') return 0;
+	return 1;
 }
 
 /*

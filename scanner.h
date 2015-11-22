@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "token.h"
 extern int line;
 extern int character;
@@ -28,7 +29,7 @@ int strToInt(string* forConversion, int* val);
  * @param val	-	ukazatel pomoci, ktereho vraci prevedenou hodnotu (v pripade chyby neprepisuje)
  * @return	1 - pokud prevod probehne v poradku, jinak 0.
  */
-int strToBool(string* forConversion, bool* val);
+//int strToBool(string* forConversion, bool* val);
 int strBinToInt(string* forConversion, int* val);
 int strHexToInt(string* forConversion, int* val);
 int strOctToInt(string* forConversion, int* val);

@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="(@1 @10)" Category="CodeSchema_ProjectItem" Bounds="275.687987062697,132.281575997658,85.8746667437457,25.998000077079" FilePath="$(VsSolution)\IFJ2015\tests\test-fw.c" Label="test-fw.c" />
+    <Node Id="(@1 @3)" Category="CodeSchema_ProjectItem" Bounds="16.0000008159527,244.963391211608,88.3580000770791,25.998000077079" FilePath="$(VsSolution)\IFJ2015\IFJ2015.c" Label="IFJ2015.c" />
+    <Node Id="(@1 @30)" Category="CodeSchema_ProjectItem" Bounds="374.749317067464,18.3998389583477,62.308000077079,25.998000077079" FilePath="$(VsSolution)\IFJ2015\ial.h" Label="ial.h" UseManualLocation="True" />
+    <Node Id="(@1 @4)" Category="CodeSchema_ProjectItem" Bounds="275.687991742059,16.5140409916845,61.0613334104124,25.998000077079" FilePath="$(VsSolution)\IFJ2015\ial.c" Label="ial.c" />
+    <Node Id="(@1 @57)" Category="CodeSchema_ProjectItem" Bounds="275.687990521356,188.279676074737,87.1213334104124,25.998000077079" FilePath="$(VsSolution)\IFJ2015\tests\test-fw.h" Label="test-fw.h" />
+    <Node Id="(@1 @7)" Category="CodeSchema_ProjectItem" Bounds="372.962667287191,74.3978429180034,74.9680000770791,25.998000077079" FilePath="$(VsSolution)\IFJ2015\error.c" Label="error.c" />
+    <Node Id="(@1 @8)" Category="CodeSchema_ProjectItem" Bounds="280.487989959717,74.3978429180034,62.4746667437457,25.998000077079" FilePath="$(VsSolution)\IFJ2015\str.c" Label="str.c" />
+    <Node Id="(@1 @9)" Category="CodeSchema_ProjectItem" Bounds="134.358005169794,246.849256152862,119.311333410412,25.998000077079" FilePath="$(VsSolution)\IFJ2015\tests\scanner-tests.c" Label="scanner-tests.c" />
+    <Node Id="@13" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\10\Include\10.0.10150.0\ucrt\corecrt_wstdlib.h" Label="corecrt_wstdlib.h" />
+    <Node Id="@15" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\10\Include\10.0.10150.0\ucrt\stdlib.h" Label="stdlib.h" />
+    <Node Id="@17" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\10\Include\10.0.10150.0\ucrt\corecrt_malloc.h" Label="corecrt_malloc.h" />
+    <Node Id="@19" Category="CodeSchema_ProjectItem" FilePath="$(VsInstallDir)\VC\include\vcruntime.h" Label="vcruntime.h" />
+    <Node Id="@2" Category="CodeSchema_PoundIncludeFile" Bounds="-16.8000019157631,-24.9147966486964,484.730669280033,317.762152878637" FilePath="$(VsSolution)\IFJ2015\IFJ2015.vcxproj" Group="Expanded" Label="IFJ2015.vcxproj" Language="{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}" UseManualLocation="True" />
+    <Node Id="@21" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\10\Include\10.0.10150.0\ucrt\corecrt_wctype.h" Label="corecrt_wctype.h" />
+    <Node Id="@23" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\10\Include\10.0.10150.0\ucrt\ctype.h" Label="ctype.h" />
+    <Node Id="@25" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\10\Include\10.0.10150.0\ucrt\stddef.h" Label="stddef.h" />
+    <Node Id="@27" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\10\Include\10.0.10150.0\ucrt\corecrt_stdio_config.h" Label="corecrt_stdio_config.h" />
+    <Node Id="@29" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\10\Include\10.0.10150.0\ucrt\corecrt_search.h" Label="corecrt_search.h" />
+    <Node Id="@32" Category="CodeSchema_ProjectItem" FilePath="$(VsInstallDir)\VC\include\ConcurrencySal.h" Label="ConcurrencySal.h" />
+    <Node Id="@34" Category="CodeSchema_ProjectItem" FilePath="$(VsInstallDir)\VC\include\sal.h" Label="sal.h" />
+    <Node Id="@36" Category="CodeSchema_ProjectItem" FilePath="$(VsInstallDir)\VC\include\stdbool.h" Label="stdbool.h" />
+    <Node Id="@38" Category="CodeSchema_ProjectItem" Bounds="9.7233283658124,131.367188010777,80.5146667437457,25.998000077079" FilePath="$(VsSolution)\IFJ2015\token.h" Label="token.h" UseManualLocation="True" />
+    <Node Id="@40" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\10\Include\10.0.10150.0\ucrt\corecrt_wstdio.h" Label="corecrt_wstdio.h" />
+    <Node Id="@42" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\10\Include\10.0.10150.0\ucrt\stdio.h" Label="stdio.h" />
+    <Node Id="@44" Category="CodeSchema_ProjectItem" Bounds="3.19999808423688,72.9692082744487,91.1613334104124,25.998000077079" FilePath="$(VsSolution)\IFJ2015\scanner.h" Label="scanner.h" UseManualLocation="True" />
+    <Node Id="@46" Category="CodeSchema_ProjectItem" Bounds="174.273323215971,76.2834759205786,76.2146667437457,25.998000077079" FilePath="$(VsSolution)\IFJ2015\error.h" Label="error.h" UseManualLocation="True" />
+    <Node Id="@48" Category="CodeSchema_ProjectItem" Bounds="109.919995831415,188.965291134529,63.7213334104124,25.998000077079" FilePath="$(VsSolution)\IFJ2015\str.h" Label="str.h" UseManualLocation="True" />
+    <Node Id="@50" Category="CodeSchema_ProjectItem" FilePath="$(VsInstallDir)\VC\include\vadefs.h" Label="vadefs.h" />
+    <Node Id="@52" Category="CodeSchema_ProjectItem" FilePath="$(VsInstallDir)\VC\include\CodeAnalysis\sourceannotations.h" Label="sourceannotations.h" />
+    <Node Id="@54" Category="CodeSchema_ProjectItem" FilePath="$(VsInstallDir)\VC\include\limits.h" Label="limits.h" />
+    <Node Id="@56" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\10\Include\10.0.10150.0\ucrt\corecrt.h" Label="corecrt.h" />
+    <Node Id="@59" Category="CodeSchema_ProjectItem" FilePath="$(ProgramFiles)\Windows Kits\8.1\Include\shared\winapifamily.h" Label="winapifamily.h" />
+    <Node Id="@6" Category="CodeSchema_ProjectItem" Bounds="93.6233284018088,15.0853033513037,89.9146667437457,25.998000077079" FilePath="$(VsSolution)\IFJ2015\scanner.c" Label="scanner.c" />
+    <Node Id="C/C++ Standard Library Indirectly Included" Category="CodeSchema_PoundIncludeGroup" Group="Collapsed" Label="Indirectly Included" />
+    <Node Id="G2" Category="CodeSchema_PoundIncludeGroup" Group="Collapsed" Label="C/C++ Standard Library" />
+    <Node Id="G4" Category="CodeSchema_PoundIncludeGroup" Group="Collapsed" Label="Windows SDK" />
+    <Node Id="OthersGroup" Category="CodeSchema_PoundIncludeGroup" Group="Collapsed" Label="Others" />
+    <Node Id="PoundIncludeGraphExternalsGroup" Category="Externals" Bounds="190.070333448952,339.990000385395,86.99,25" Group="Collapsed" Label="Externals" />
+  </Nodes>
+  <Links>
+    <Link Source="@13" Target="@56" Category="PoundInclude" />
+    <Link Source="@15" Target="@13" Category="PoundInclude" />
+    <Link Source="@15" Target="@17" Category="PoundInclude" />
+    <Link Source="@15" Target="@29" Category="PoundInclude" />
+    <Link Source="@15" Target="@54" Category="PoundInclude" />
+    <Link Source="@15" Target="@56" Category="PoundInclude" />
+    <Link Source="@17" Target="@56" Category="PoundInclude" />
+    <Link Source="@19" Target="@34" Category="PoundInclude" />
+    <Link Source="@19" Target="@50" Category="PoundInclude" />
+    <Link Source="@2" Target="(@1 @10)" Category="Contains" />
+    <Link Source="@2" Target="(@1 @3)" Category="Contains" />
+    <Link Source="@2" Target="(@1 @30)" Category="Contains" />
+    <Link Source="@2" Target="(@1 @4)" Category="Contains" />
+    <Link Source="@2" Target="(@1 @57)" Category="Contains" />
+    <Link Source="@2" Target="(@1 @7)" Category="Contains" />
+    <Link Source="@2" Target="(@1 @8)" Category="Contains" />
+    <Link Source="@2" Target="(@1 @9)" Category="Contains" />
+    <Link Source="@2" Target="@38" Category="Contains" />
+    <Link Source="@2" Target="@44" Category="Contains" />
+    <Link Source="@2" Target="@46" Category="Contains" />
+    <Link Source="@2" Target="@48" Category="Contains" />
+    <Link Source="@2" Target="@6" Category="Contains" />
+    <Link Source="@21" Target="@56" Category="PoundInclude" />
+    <Link Source="@23" Target="@21" Category="PoundInclude" />
+    <Link Source="@23" Target="@56" Category="PoundInclude" />
+    <Link Source="@25" Target="@56" Category="PoundInclude" />
+    <Link Source="@27" Target="@56" Category="PoundInclude" />
+    <Link Source="@29" Target="@25" Category="PoundInclude" />
+    <Link Source="@29" Target="@56" Category="PoundInclude" />
+    <Link Source="@34" Target="@32" Category="PoundInclude" />
+    <Link Source="@34" Target="@52" Category="PoundInclude" />
+    <Link Source="@38" Target="@36" Category="PoundInclude" />
+    <Link Source="@38" Target="@48" Category="PoundInclude" Bounds="70.6985020782422,157.365188087856,42.7406739656033,26.8167923583461" />
+    <Link Source="@40" Target="@27" Category="PoundInclude" />
+    <Link Source="@40" Target="@56" Category="PoundInclude" />
+    <Link Source="@42" Target="@40" Category="PoundInclude" />
+    <Link Source="@42" Target="@56" Category="PoundInclude" />
+    <Link Source="@44" Target="@15" Category="PoundInclude" />
+    <Link Source="@44" Target="@23" Category="PoundInclude" />
+    <Link Source="@44" Target="@36" Category="PoundInclude" />
+    <Link Source="@44" Target="@38" Category="PoundInclude" Bounds="49.0477760910134,98.9672083515278,0.480875943017857,23.4018791607602" />
+    <Link Source="@44" Target="@42" Category="PoundInclude" />
+    <Link Source="@54" Target="@19" Category="PoundInclude" />
+    <Link Source="@56" Target="@19" Category="PoundInclude" />
+    <Link Source="@56" Target="@59" Category="PoundInclude" />
+    <Link Source="@6" Target="@42" Category="PoundInclude" />
+    <Link Source="@6" Target="@44" Category="PoundInclude" Bounds="76.5117164368246,41.0833034283827,41.9025421577893,27.0098312667568" />
+    <Link Source="@6" Target="@46" Category="PoundInclude" Bounds="154.256393501579,41.0833034283827,35.5206256212269,29.4552510743442" />
+    <Link Source="@6" Target="@48" Category="PoundInclude" Bounds="138.819888907386,41.0833034283827,2.55594301192099,138.883507050359" />
+    <Link Source="C/C++ Standard Library Indirectly Included" Target="@32" Category="Contains" />
+    <Link Source="C/C++ Standard Library Indirectly Included" Target="@34" Category="Contains" />
+    <Link Source="C/C++ Standard Library Indirectly Included" Target="@50" Category="Contains" />
+    <Link Source="C/C++ Standard Library Indirectly Included" Target="@52" Category="Contains" />
+    <Link Source="G2" Target="@19" Category="Contains" />
+    <Link Source="G2" Target="@36" Category="Contains" />
+    <Link Source="G2" Target="@54" Category="Contains" />
+    <Link Source="G2" Target="C/C++ Standard Library Indirectly Included" Category="Contains" />
+    <Link Source="G4" Target="@59" Category="Contains" />
+    <Link Source="OthersGroup" Target="@13" Category="Contains" />
+    <Link Source="OthersGroup" Target="@15" Category="Contains" />
+    <Link Source="OthersGroup" Target="@17" Category="Contains" />
+    <Link Source="OthersGroup" Target="@21" Category="Contains" />
+    <Link Source="OthersGroup" Target="@23" Category="Contains" />
+    <Link Source="OthersGroup" Target="@25" Category="Contains" />
+    <Link Source="OthersGroup" Target="@27" Category="Contains" />
+    <Link Source="OthersGroup" Target="@29" Category="Contains" />
+    <Link Source="OthersGroup" Target="@40" Category="Contains" />
+    <Link Source="OthersGroup" Target="@42" Category="Contains" />
+    <Link Source="OthersGroup" Target="@56" Category="Contains" />
+    <Link Source="PoundIncludeGraphExternalsGroup" Target="G2" Category="Contains" />
+    <Link Source="PoundIncludeGraphExternalsGroup" Target="G4" Category="Contains" />
+    <Link Source="PoundIncludeGraphExternalsGroup" Target="OthersGroup" Category="Contains" />
+  </Links>
+  <Categories>
+    <Category Id="CodeSchema_PoundIncludeFile" Label="C++ Project File" BasedOn="File" CanBeDataDriven="True" IsProviderRoot="False" NavigationActionLabel="C++ Project File" />
+    <Category Id="CodeSchema_PoundIncludeGroup" Label="#include Group" BasedOn="Group" CanBeDataDriven="True" IsProviderRoot="False" NavigationActionLabel="#include Group" />
+    <Category Id="CodeSchema_ProjectItem" Label="Project Item" BasedOn="File" CanBeDataDriven="True" DefaultAction="Node:Both:CodeSchema_Type" Icon="File" NavigationActionLabel="Project Items" />
+    <Category Id="Contains" Label="Contains" Description="Whether the source of the link contains the target object" CanBeDataDriven="False" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Contained By" IsContainment="True" OutgoingActionLabel="Contains" />
+    <Category Id="Externals" Label="Externals" CanBeDataDriven="True" IsProviderRoot="False" NavigationActionLabel="Externals" />
+    <Category Id="File" Label="File" CanBeDataDriven="True" DefaultAction="Microsoft.Contains" Icon="File" NavigationActionLabel="Files" />
+    <Category Id="Group" Label="Group" CanBeDataDriven="True" DefaultAction="Microsoft.Contains" IsProviderRoot="False" NavigationActionLabel="Groups" />
+    <Category Id="PoundInclude" Label="#include" CanBeDataDriven="True" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="#include By" OutgoingActionLabel="#include" />
+  </Categories>
+  <Properties>
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
+    <Property Id="DefaultAction" Label="DefaultAction" Description="DefaultAction" DataType="System.String" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="FilePath" Label="File Path" Description="File Path" DataType="System.String" />
+    <Property Id="Group" Label="Group" Description="Display the node as a group" DataType="Microsoft.VisualStudio.GraphModel.GraphGroupStyle" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="Icon" DataType="System.String" />
+    <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
+    <Property Id="IsContainment" DataType="System.Boolean" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsProviderRoot" Label="IsProviderRoot" Description="IsProviderRoot" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="Language" Label="Language" Description="Language" DataType="System.String" />
+    <Property Id="NavigationActionLabel" Label="NavigationActionLabel" Description="NavigationActionLabel" DataType="System.String" />
+    <Property Id="OutgoingActionLabel" Label="OutgoingActionLabel" Description="OutgoingActionLabel" DataType="System.String" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+  </Properties>
+  <QualifiedNames>
+    <Name Id="Assembly" Label="Assembly" ValueType="Uri" />
+    <Name Id="File" Label="File" ValueType="Uri" />
+  </QualifiedNames>
+  <IdentifierAliases>
+    <Alias n="1" Uri="Assembly=$(VsSolutionUri)/IFJ2015/IFJ2015.vcxproj" />
+    <Alias n="2" Id="(@1)" />
+    <Alias n="3" Uri="File=$(VsSolutionUri)/IFJ2015/IFJ2015.c" />
+    <Alias n="4" Uri="File=$(VsSolutionUri)/IFJ2015/ial.c" />
+    <Alias n="5" Uri="File=$(VsSolutionUri)/IFJ2015/scanner.c" />
+    <Alias n="6" Id="(@1 @5)" />
+    <Alias n="7" Uri="File=$(VsSolutionUri)/IFJ2015/error.c" />
+    <Alias n="8" Uri="File=$(VsSolutionUri)/IFJ2015/str.c" />
+    <Alias n="9" Uri="File=$(VsSolutionUri)/IFJ2015/tests/scanner-tests.c" />
+    <Alias n="10" Uri="File=$(VsSolutionUri)/IFJ2015/tests/test-fw.c" />
+    <Alias n="11" Uri="Assembly=" />
+    <Alias n="12" Uri="File=$(ProgramFilesUri)/Windows Kits/10/Include/10.0.10150.0/ucrt/corecrt_wstdlib.h" />
+    <Alias n="13" Id="(@11 @12)" />
+    <Alias n="14" Uri="File=$(ProgramFilesUri)/Windows Kits/10/Include/10.0.10150.0/ucrt/stdlib.h" />
+    <Alias n="15" Id="(@11 @14)" />
+    <Alias n="16" Uri="File=$(ProgramFilesUri)/Windows Kits/10/Include/10.0.10150.0/ucrt/corecrt_malloc.h" />
+    <Alias n="17" Id="(@11 @16)" />
+    <Alias n="18" Uri="File=$(VsInstallDirUri)/VC/include/vcruntime.h" />
+    <Alias n="19" Id="(@11 @18)" />
+    <Alias n="20" Uri="File=$(ProgramFilesUri)/Windows Kits/10/Include/10.0.10150.0/ucrt/corecrt_wctype.h" />
+    <Alias n="21" Id="(@11 @20)" />
+    <Alias n="22" Uri="File=$(ProgramFilesUri)/Windows Kits/10/Include/10.0.10150.0/ucrt/ctype.h" />
+    <Alias n="23" Id="(@11 @22)" />
+    <Alias n="24" Uri="File=$(ProgramFilesUri)/Windows Kits/10/Include/10.0.10150.0/ucrt/stddef.h" />
+    <Alias n="25" Id="(@11 @24)" />
+    <Alias n="26" Uri="File=$(ProgramFilesUri)/Windows Kits/10/Include/10.0.10150.0/ucrt/corecrt_stdio_config.h" />
+    <Alias n="27" Id="(@11 @26)" />
+    <Alias n="28" Uri="File=$(ProgramFilesUri)/Windows Kits/10/Include/10.0.10150.0/ucrt/corecrt_search.h" />
+    <Alias n="29" Id="(@11 @28)" />
+    <Alias n="30" Uri="File=$(VsSolutionUri)/IFJ2015/ial.h" />
+    <Alias n="31" Uri="File=$(VsInstallDirUri)/VC/include/ConcurrencySal.h" />
+    <Alias n="32" Id="(@11 @31)" />
+    <Alias n="33" Uri="File=$(VsInstallDirUri)/VC/include/sal.h" />
+    <Alias n="34" Id="(@11 @33)" />
+    <Alias n="35" Uri="File=$(VsInstallDirUri)/VC/include/stdbool.h" />
+    <Alias n="36" Id="(@11 @35)" />
+    <Alias n="37" Uri="File=$(VsSolutionUri)/IFJ2015/token.h" />
+    <Alias n="38" Id="(@1 @37)" />
+    <Alias n="39" Uri="File=$(ProgramFilesUri)/Windows Kits/10/Include/10.0.10150.0/ucrt/corecrt_wstdio.h" />
+    <Alias n="40" Id="(@11 @39)" />
+    <Alias n="41" Uri="File=$(ProgramFilesUri)/Windows Kits/10/Include/10.0.10150.0/ucrt/stdio.h" />
+    <Alias n="42" Id="(@11 @41)" />
+    <Alias n="43" Uri="File=$(VsSolutionUri)/IFJ2015/scanner.h" />
+    <Alias n="44" Id="(@1 @43)" />
+    <Alias n="45" Uri="File=$(VsSolutionUri)/IFJ2015/error.h" />
+    <Alias n="46" Id="(@1 @45)" />
+    <Alias n="47" Uri="File=$(VsSolutionUri)/IFJ2015/str.h" />
+    <Alias n="48" Id="(@1 @47)" />
+    <Alias n="49" Uri="File=$(VsInstallDirUri)/VC/include/vadefs.h" />
+    <Alias n="50" Id="(@11 @49)" />
+    <Alias n="51" Uri="File=$(VsInstallDirUri)/VC/include/CodeAnalysis/sourceannotations.h" />
+    <Alias n="52" Id="(@11 @51)" />
+    <Alias n="53" Uri="File=$(VsInstallDirUri)/VC/include/limits.h" />
+    <Alias n="54" Id="(@11 @53)" />
+    <Alias n="55" Uri="File=$(ProgramFilesUri)/Windows Kits/10/Include/10.0.10150.0/ucrt/corecrt.h" />
+    <Alias n="56" Id="(@11 @55)" />
+    <Alias n="57" Uri="File=$(VsSolutionUri)/IFJ2015/tests/test-fw.h" />
+    <Alias n="58" Uri="File=$(ProgramFilesUri)/Windows Kits/8.1/Include/shared/winapifamily.h" />
+    <Alias n="59" Id="(@11 @58)" />
+  </IdentifierAliases>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="C++ Project File" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_PoundIncludeFile')" />
+      <Setter Property="Background" Value="#FFEFEFEF" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Externals" ValueLabel="Has category">
+      <Condition Expression="HasCategory('Externals')" />
+      <Setter Property="Background" Value="#FFA08080" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Source File" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_ProjectItem')" />
+      <Setter Property="Background" Value="#FFC0C0C0" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="#include Group" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_PoundIncludeGroup')" />
+      <Setter Property="Background" Value="#FFEFEFEF" />
+    </Style>
+  </Styles>
+  <Paths>
+    <Path Id="ProgramFiles" Value="C:\Program Files (x86)" />
+    <Path Id="ProgramFilesUri" Value="file:///C:/Program Files (x86)" />
+    <Path Id="VsInstallDir" Value="C:\Program Files (x86)\Microsoft Visual Studio 14.0" />
+    <Path Id="VsInstallDirUri" Value="file:///C:/Program Files (x86)/Microsoft Visual Studio 14.0" />
+    <Path Id="VsSolution" Value="C:\Users\Dominik\Desktop\škola\IFJ" />
+    <Path Id="VsSolutionUri" Value="file:///C:/Users/Dominik/Desktop/škola/IFJ" />
+  </Paths>
+</DirectedGraph>
