@@ -53,7 +53,7 @@ int getToken(tToken *Token, FILE* source) {
 	string s;
 	//strInit vraci 1 při chybe
 	if (strInit(&s)) {
-		//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+		FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 	}
 
 	int state = START;
@@ -83,20 +83,20 @@ int getToken(tToken *Token, FILE* source) {
 			else if (isalpha(c) || c == '_') {
 				state = IDENTIFICATOR;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			//ulozi prvni nulu v cisle
 			else if (c == '0') {
 				state = FLOAT_OR_INT;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else if (c >= '1' && c <= '9') {
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else if (c == ';') {
@@ -127,7 +127,7 @@ int getToken(tToken *Token, FILE* source) {
 			else if (c == '!' || c == '<' || c == '>' || c == '=') {
 				state = TWO_CHAR_OPER;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else if (c == ')') {
@@ -169,25 +169,25 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9') {
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else if (c == 'e' || c == 'E') {
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else if (c == '.') {
 				state = FLOAT_PART;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else {
 				int val = 42;
 				if (!strToInt(&s, &val)) {
-					//FatalError(99, "%s-%d: Chyba pri nacteni celeho cisla.", ERROR_MESSAGES[ERROR_ALLOC], line);
+					FatalError(99, "%s-%d: Chyba pri nacteni celeho cisla.", ERR_MESSAGES[ERR_ALLOC], line);
 					strFree(&s);
 					return 42;
 				}
@@ -206,19 +206,19 @@ int getToken(tToken *Token, FILE* source) {
 			else if (c >= '1' && c<='9') {
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else if (c == '.') {
 				state = FLOAT_PART;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else if (c == 'e' || c == 'E') {
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else {
@@ -239,13 +239,13 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9') {
 				state = FLOAT_PART;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else if (c == 'e' || c == 'E') {
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else {
@@ -266,13 +266,13 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9') {
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else if (c == '+' || c == '-') {
 				state = EXPONENT_PLUS_MINUS_CHECK;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else {
@@ -286,7 +286,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9') {
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else {
@@ -300,7 +300,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9') {
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else {
@@ -342,7 +342,7 @@ int getToken(tToken *Token, FILE* source) {
 				//zahazuji nevyznamne nuly
 				if (!(c == '0' && strGetLength(&s) == 0)) {
 					if (strAddChar(&s, c)) {
-						//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
 				}
 			}
@@ -363,7 +363,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '7') {
 				if (!(c == '0' && strGetLength(&s) == 0)) {
 					if (strAddChar(&s, c)) {
-						//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
 				}
 			}
@@ -384,7 +384,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F') {
 				if (!(c == '0' && strGetLength(&s)==0)) {
 					if (strAddChar(&s, c)) {
-						//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
 				}
 			}
@@ -433,7 +433,7 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			else if (c == '\\') {
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 				state = STRING_ESCAPE;
 			}
@@ -453,7 +453,7 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			else {//uloz si znak
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			break;
@@ -461,7 +461,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (isalnum(c) || c == '_') {
 				state = state;
 				if (strAddChar(&s, c)) {
-					//FatalError(99, ERROR_MESSAGES[ERROR_ALLOC]);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else {
