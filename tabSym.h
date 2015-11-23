@@ -89,6 +89,8 @@ typedef struct {
 	tParamListElemPtr first;
 }*tParamListPtr;
 
+
+
 /**
  * Informace k funkci.
  */
@@ -96,6 +98,7 @@ typedef struct {
 	tParamListPtr* params;		// parametry funkce
 	tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
 	tTabSym* locTab;			// lokalni tabulka symbolu
+	tTabSymList* tabBlockList;	// list tabulek bloku
 	tInsTape* instTape;			// instrukcni paska
 	bool defined;				// byla definovana
 

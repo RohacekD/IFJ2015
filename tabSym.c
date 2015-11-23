@@ -78,58 +78,7 @@ tTabSymElemData* createElemData(tTabSymDataType type, void* info){
 	return elemData;
 }
 
-/**
- * Uvolneni tVariableInfo z pameti.
- * @param var[in]	-	promenna pro uvolneni
- */
-void freeVariableInfo(tVariableInfo *var){
-	free(var);
-}
 
-/**
- * Uvolni tConstantInfo z pameti.
- * @param constant[in]
- */
-void freeConstantInfo(tConstantInfo * constant){
-	if(constant->dataType==TAB_SYM_VAR_STRING){
-		//free stringu
-		strFree(constant->value.stringVal);
-		free(constant->value.stringVal);
-	}
-	//smazeme strukturu ke konstante
-	free(constant);
-}
-
-
-
-/**
- * Uvolni tFuncInfo z pameti.
- * @param func[in]
- */
-void freeFunctionInfo(tFuncInfo * func){
-
-	/**
-	 * Informace k funkci.
-	 */
-	typedef struct {
-		tParamListPtr* params;		// parametry funkce
-		tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
-		tTabSym* locTab;			// lokalni tabulka symbolu //todo: datovy typ
-		//todo: instrukcni paska
-		bool defined;				// byla definovana
-
-	} tFuncInfo;
-
-	//uvolnime list parametru
-	paramListFree(func->params);
-
-	//uvolnime lokalni tabulku symbolu
-	tabSymFree(func->locTab);
-
-	//TODO:paska instrukci
-
-	free(func);
-}
 
 
 
@@ -170,6 +119,59 @@ int tabSymInsertFunc(tTabSym* table, string* key, tFuncInfo* funcInfo){
 }
 
 /**
+ * Uvolneni tVariableInfo z pameti.
+ * @param var[in]	-	promenna pro uvolneni
+ */
+void freeVariableInfo(tVariableInfo *var){
+	free(var);
+}
+
+/**
+ * Uvolni tConstantInfo z pameti.
+ * @param constant[in]
+ */
+void freeConstantInfo(tConstantInfo * constant){
+	if(constant->dataType==TAB_SYM_VAR_STRING){
+		//free stringu
+		strFree(constant->value.stringVal);
+		free(constant->value.stringVal);
+	}
+	//smazeme strukturu ke konstante
+	free(constant);
+}
+
+
+
+/**
+ * Uvolni tFuncInfo z pameti.
+ * @param func[in]
+ */
+void freeFunctionInfo(tFuncInfo * func){
+
+	/**
+	 * Informace k funkci.
+	 */
+	typedef struct {
+		tParamListPtr* params;		// parametry funkce
+		tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
+		tTabSym* locTab;			// lokalni tabulka symbolu
+		tInsTape* instTape;			// instrukcni paska
+		bool defined;				// byla definovana
+
+	} tFuncInfo;
+
+	//uvolnime list parametru
+	paramListFree(func->params);
+
+	//uvolnime lokalni tabulku symbolu
+	tabSymFree(func->locTab);
+
+	//TODO:paska instrukci
+
+	free(func);
+}
+
+/**
  * Uvolni z pameti tTabSymElemData.
  * @param dataForFree[in]	-	ukazatel na uvolneni struktury slouzici pro data elementu
  */
@@ -200,6 +202,7 @@ void freeElemData(tTabSymElemData* dataForFree){
 
 /**
  * Odstrani tabulku. (uvolni z pameti)
+ * 	(V pripade, ze tabulka obsahuje funkce, tak maze i lokalni tabulky dane funkce.)
  * @param table[in]		-	tabulka symbolu
  */
 void tabSymFree(tTabSym* table){
