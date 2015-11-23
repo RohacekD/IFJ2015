@@ -37,6 +37,7 @@ int insertEl(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataTy
     return 1;
 }
 
+
 void postInsert(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataType)
 {
   if(list->act != NULL){ //seznam je aktivni
