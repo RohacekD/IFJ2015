@@ -75,8 +75,9 @@ void BSTSearchTree(tBSTNodePtr rootPtr, string* key, tBSTNodePtr* store);
  * @param rootPtr	-	ukazatel na koren stromu
  * @param key		-	klic vkladaneho/aktualizovaneho uzlu
  * @param data		-	data vkladaneho/aktualizovaneho uzlu
+ * @return	0-chyba, 1-v poradku
  */
-void BSTInsert(tBSTNodePtr* rootPtr, string* key, void* data);
+int BSTInsert(tBSTNodePtr* rootPtr, string* key, void* data);
 
 /**
  * Maze z binarniho vyhledavaciho stromu uzel s danym klicem key.
@@ -84,6 +85,13 @@ void BSTInsert(tBSTNodePtr* rootPtr, string* key, void* data);
  * @param key		-	klic uzlu, ktery ma byt odstranen
  */
 void BSTDelete(tBSTNodePtr* rootPtr, string* key);
+
+/**
+ * Smaze cely strom. Pro mazani dat pouziva funkci dataFree danou ukazatelem.
+ * @param rootPtr	-	ukazatel na koren stromu
+ * @param dataFree	-	ukazatel na funkci, ktera uvolni polozku data z pameti
+ */
+void BSTFree(tBSTNodePtr* rootPtr, void (*dataFree)(void*) );
 
 #endif /* IAL_H_ */
 /*** End of file: ial.h ***/

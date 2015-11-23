@@ -160,19 +160,20 @@ void BSTSearchTree(tBSTNodePtr rootPtr, string* key, tBSTNodePtr* store) {
  * @param node	-	ukazatel pro alokaci uzlu
  * @param key	-	klic noveho uzlo
  * @param data	-	data noveho uzlo
+ * @return	0-chyba, 1-v poradku
  */
-void BSTCreateNode(tBSTNodePtr* node, string* key, void* data) {
+int BSTCreateNode(tBSTNodePtr* node, string* key, void* data) {
 	tBSTNodePtr newNode = malloc(sizeof(struct tBSTNode));
 	string* newString = malloc(sizeof(string));
 	if (newNode == NULL || newString==NULL) {
 		//pokus o alokaci se nazdaril
-		return;
+		return 0;
 	}
 
 	//naplneni stringu
 	if (strInit(newString) || strCopyString(newString, key)) {
 		//pokus o alokaci se nazdaril
-		return;
+		return 0;
 	}
 
 	newNode->key = newString;
@@ -181,28 +182,31 @@ void BSTCreateNode(tBSTNodePtr* node, string* key, void* data) {
 	newNode->r = NULL;
 	*node=newNode;
 }
-void BSTInsert(tBSTNodePtr* rootPtr, string* key, void* data) {
+
+int BSTInsert(tBSTNodePtr* rootPtr, string* key, void* data) {
 	if(rootPtr == NULL){
 		//chyba nelze
-		return;
+		return 0;
 	}
 	if ((*rootPtr) == NULL) {
 		//vytvorime novy uzel
-		BSTCreateNode(rootPtr, key, data);
-		return;
+
+		if(BSTCreateNode(rootPtr, key, data)==0){
+			return 0;
+		}
+		return 1;
 	}
 
 	tBSTNodePtr workWithRootPtr=*rootPtr;//pro zprehledneni kodu
 
 	if (strCmpString(key,workWithRootPtr->key)<0) {
 		//pokracujeme levym podstrom
-		BSTInsert(&(workWithRootPtr->l), key, data);
-		return;
+		return BSTInsert(&(workWithRootPtr->l), key, data);
 	}
 	if (strCmpString(key,workWithRootPtr->key)>0) {
 		//pokracujeme pravym podstrom
 		BSTInsert(&(workWithRootPtr->r), key, data);
-		return;
+		return BSTInsert(&(workWithRootPtr->r), key, data);
 	}
 	//aktualizace
 	workWithRootPtr->data = data;
@@ -290,4 +294,21 @@ void BSTDelete(tBSTNodePtr* rootPtr, string* key) {
 	}
 }
 
+void BSTFree(tBSTNodePtr* rootPtr, void (*dataFree)(void*) ){
+	if(rootPtr==NULL){
+		//hotovo
+		return;
+	}
+
+	//mazeme levou vetev
+	BSTFree((*rootPtr)->l, dataFree);
+	//mazeme pravou vetev
+	BSTFree((*rootPtr)->r, dataFree);
+
+	//smazeme data
+	dataFree((*rootPtr)->data);
+
+	//smazeme uzel
+	BSTFreeNode(*rootPtr);
+}
 /*** End of file: ial.c ***/
