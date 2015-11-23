@@ -16,15 +16,11 @@
 
 #include "str.h"
 
-typedef struct tBSTNode *tBSTNodePtr;
-
-
 typedef struct tBSTNode{
 	string* key;
 	void* data;
 	struct tBSTNode *l;
 	struct tBSTNode *r;
-
 } *tBSTNodePtr;
 
 
