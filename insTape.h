@@ -49,7 +49,9 @@ typedef enum{
 }tInstructTypes;
 
 
-
+/**
+ * Instrukce na instrukcni pasce
+ */
 typedef struct tInsTapeElem {
 	tInstructTypes type;
     void* adr1;
@@ -60,6 +62,9 @@ typedef struct tInsTapeElem {
     struct tInsTapeElem *rptr;
 } *tInsTapeElemPtr;
 
+/**
+ * Struktura instrukcni pasky
+ */
 typedef struct {
 	tInsTapeElemPtr first;
 	tInsTapeElemPtr last;

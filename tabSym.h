@@ -68,7 +68,7 @@ typedef union {
  * Informace ke konstante.
  */
 typedef struct {
-	tTabSymVarDataType dataType;
+	tTabSymVarNoAutoDataType dataType;
 	unionValue value;
 
 } tConstantInfo;
@@ -79,7 +79,7 @@ typedef struct {
 typedef struct tParamListElem {
 	struct tParamListElem *next;
 	string* idName;
-	tTabSymVarDataType dataType;
+	tTabSymVarNoAutoDataType dataType;
 }*tParamListElemPtr;
 
 /**
@@ -93,10 +93,10 @@ typedef struct {
  * Informace k funkci.
  */
 typedef struct {
-	tParamListPtr params;		// parametry funkce
+	tParamListPtr* params;		// parametry funkce
 	tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
-	tBSTNodePtr locTab;			// lokalni tabulka symbolu //todo: datovy typ
-	//todo: instrukcni paska
+	tTabSym* locTab;			// lokalni tabulka symbolu
+	tInsTape* instTape;			// instrukcni paska
 	bool defined;				// byla definovana
 
 } tFuncInfo;
