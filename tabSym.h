@@ -15,7 +15,7 @@
 #define TABSYM_H_
 #include <stdbool.h>
 #include "ial.h"
-
+#include "insTape.h"
 /**
  * Typ polozky v tabulce symbolu
  */
@@ -51,7 +51,6 @@ typedef enum {
  */
 typedef struct {
 	tTabSymVarDataType dataType;
-	bool defined;
 } tVariableInfo;
 
 /**
@@ -89,7 +88,21 @@ typedef struct {
 	tParamListElemPtr first;
 }*tParamListPtr;
 
+/**
+ * Typy tabulky symbolu.
+ */
+typedef enum {
+	TAB_SYM_GLOB,	//!< TAB_SYM_GLOB
+	TAB_SYM_LOC, //!< TAB_SYM_LOC
+} tTabSymTypes;
 
+/**
+ * Tabulka symbolu
+ */
+typedef struct {
+	tTabSymTypes tabType;
+	tBSTNodePtr root;
+} tTabSym;
 
 /**
  * Informace k funkci.
@@ -98,7 +111,7 @@ typedef struct {
 	tParamListPtr* params;		// parametry funkce
 	tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
 	tTabSym* locTab;			// lokalni tabulka symbolu
-	tTabSymList* tabBlockList;	// list tabulek bloku
+	//tTabSymList* tabBlockList;	// list tabulek bloku
 	tInsTape* instTape;			// instrukcni paska
 	bool defined;				// byla definovana
 
@@ -116,21 +129,6 @@ typedef struct {
 	} info;
 } tTabSymElemData;
 
-/**
- * Typy tabulky symbolu.
- */
-typedef enum {
-	TAB_SYM_GLOB,	//!< TAB_SYM_GLOB
-	TAB_SYM_LOC, //!< TAB_SYM_LOC
-} tTabSymTypes;
-
-/**
- * Tabulka symbolu
- */
-typedef struct {
-	tTabSymTypes tabType;
-	tBSTNodePtr root;
-} tTabSym;
 
 /**
  * Vytvori tabulku symbolu.
@@ -179,6 +177,56 @@ int tabSymInsertFunc(tTabSym* table, string* key, tFuncInfo* funcInfo);
  * @param table[in]		-	tabulka symbolu
  */
 void tabSymFree(tTabSym* table);
+
+
+/**
+ * Funkce pro inicializaci seznamu parametru
+ * @param list      seznam parametru
+ */
+void initList(tParamListPtr list);
+
+/**
+ * Funkce odstrani seznam parametru a uvolni pamet
+ * @param list      seznam parametru
+ */
+void disposeList(tParamListPtr list);
+
+/**
+ * Funkce vlozi prvek za aktivni prvek
+ * @param list          seznam parametru
+ * @param idName        jmeno identifikatoru
+ * @param dataType      datovy typ argumentu
+ */
+void postInsert(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataType);
+
+/**
+ * Funkce, ktera vlozi prvek do seznamu na posledni pozici
+ *      z duvodu zachovani poradi parametru
+ * @param list          seznam parametru
+ * @param idName        jmeno identifikatoru
+ * @param dataType      datovy typ argumentu
+ * @return              0 - nastala chyba
+ *                      1 - funkce probehla v poradku
+ */
+int insertEL(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataType);
+
+/**
+ * Funkce nastavi aktivitu na prvni prvek
+ * @param list      seznam parametru
+ */
+void first(tParamListPtr list);
+
+/**
+ * Funkce nastavi aktivitu na nasledujici prvek
+ * @param list      seznam parametru     
+ */
+void succ(tParamListPtr list);
+/**
+ *  Funkce vrati hodnotu aktivniho prvku v seznamu
+ * @param list      seznam parametru
+ * @return          hodnota aktivniho prvku, nebo NULL, kdyz neexistuje aktivni prvek
+ */
+tParamListElemPtr getActElement(tParamListPtr list);
 
 #endif /* TABSYM_H_ */
 
