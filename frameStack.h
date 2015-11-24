@@ -5,48 +5,46 @@
 #include "error.h"
 #include "variable.h"
 
-#define FALSE 0
-#define TRUE 1
 
-typedef struct{
-    bool passable; // zda je ramec pruchozi
-    tBSTNodePtr frame; //ukazatel na první prvek stromu ramce
+typedef struct {
+	//jestli je ramec pruchozi
+	bool passable;
+	//ukazatel na prvni prvek stromu
+	tBSTNodePtr frame;
 } tFrame;
- 
-typedef struct tDLElem {                 /* prvek dvousměrně vázaného seznamu */ 
-        tFrame frame;            /* užitečná data */
-        struct tDLElem *lptr;          /* ukazatel na předchozí prvek seznamu */
-        struct tDLElem *rptr;        /* ukazatel na následující prvek seznamu */
-} *tDLElemPtr;
 
-typedef struct {                                  /* dvousměrně vázaný seznam */
-    tDLElemPtr First;                      /* ukazatel na první prvek seznamu */
-    tDLElemPtr Act;                     /* ukazatel na aktuální prvek seznamu */
-    tDLElemPtr Last;                    /* ukazatel na posledni prvek seznamu */
-} tDLList;
+//prvek dvousmerne vazaneho seznamu
+typedef struct tSElem {
+	//uzitecna data
+	tFrame frame;
+	//ukazatel na predchozi prvek
+	struct tSElem *lptr;
+	//ukazatel na nasledujici prvek
+	struct tSElem *rptr;
+} *tSElemPtr;
 
-                                             /* prototypy jednotlivých funkcí */
-void DLInitList (tDLList *);
-void DLDisposeList (tDLList *);
-void DLPush (tDLList *, tFrame*);
-void DLFirst (tDLList *);
-void DLTop (tDLList *, tFrame*);
-void DLPop (tDLList *);
-void DLCopy (tDLList *, tFrame *);
-//void DLActualize (tDLList *, tFrame);
-void DLSucc (tDLList *);
-void DLPred (tDLList *);
-int DLActive (tDLList *);
+typedef struct {
+	//ukazatel na prvni prvek
+	tSElemPtr First;
+	//ukazatel na posledni prvek
+	tSElemPtr Last;
+} tStack;
 
-int pushNewFrame(tDLList*, bool);
+void SInit(tStack *);
+void SDispose(tStack *);
+void Push(tStack *, tFrame*);
+void Top(tStack *, tFrame*);
+void Pop(tStack *);
+
+int pushNewFrame(tStack*, bool);
 /*
  * Volana pri navratu z fce. Maze vsechny frame i s framem funkce.
  * @param list[in]	- Ukazatel na frameStack
  */
-void deleteFunctionsFrames(tDLList*);
+void deleteFunctionsFrames(tStack*);
 /*
  * Mazana pri ukonceni bloku kodu. Maze jeden vrchni prvek
  * @param list[in]	- Ukazatel na frameStack
  */
-void deleteTopFrame(tDLList*);
+void deleteTopFrame(tStack*);
 
