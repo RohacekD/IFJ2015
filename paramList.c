@@ -90,3 +90,4 @@ void disposeList(tParamListPtr list)
         free(UkPomEl); //uvolnim pamet
     }
 }
+
