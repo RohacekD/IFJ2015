@@ -1,17 +1,18 @@
 /*
- * parser.c
+ * parserExpr.c
  *  Project: IFJ2015
  *  Created on: 15. 11. 2015
  *  Author: xdocek09
  *  Description: 
  */
 /**
- * @file parser.c
+ * @file parserExpr.c
  * @author xdocek09
  * @brief 
  */
 
-#include "parser.h"
+#include "parserExpr.h"
+
 #include "stack.h"
 #include <stdlib.h>
 #include "token.h"
@@ -55,4 +56,4 @@ int parseExpression(){
 }
 
 
-/*** End of file: parser.c ***/
+/*** End of file: parserExpr.c ***/
