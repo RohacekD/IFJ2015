@@ -27,13 +27,49 @@ typedef struct {                                  /* dvousměrně vázaný sezna
                                              /* prototypy jednotlivých funkcí */
 void DLInitList (tDLList *);
 void DLDisposeList (tDLList *);
-void DLPush (tDLList *, int);
+void DLPush (tDLList *, tFrame*);
 void DLFirst (tDLList *);
-void DLTop (tDLList *, int *);
+void DLTop (tDLList *, tFrame*);
 void DLPop (tDLList *);
-void DLCopy (tDLList *, int *);
-void DLActualize (tDLList *, int);
+void DLCopy (tDLList *, tFrame *);
+//void DLActualize (tDLList *, tFrame);
 void DLSucc (tDLList *);
 void DLPred (tDLList *);
 int DLActive (tDLList *);
+
+int createNewFrame(tDLList*, bool);
+/*
+ * Volana pri navratu z fce. Maze vsechny frame i s framem funkce.
+ * @param list[in]	- Ukazatel na frameStack
+ */
+void deleteFunctionsFrames(tDLList*);
+/*
+ * Mazana pri ukonceni bloku kodu. Maze jeden vrchni prvek
+ * @param list[in]	- Ukazatel na frameStack
+ */
+void deleteTopFrame(tDLList*);
+
+typedef enum {
+	VAR_TYPE_INT,
+	VAR_TYPE_BOOL,
+	VAR_TYPE_DOUBLE,
+	VAR_TYPE_STRING
+} tVariableType;
+
+typedef union
+{
+	//nejak implementovany pointer do tabulky symbolu
+	int intVal;
+	double doubleVal;
+	string stringVal;
+	bool boolVal;
+}tVariableData;
+
+typedef struct {
+	tVariableType type;
+	tVariableData data;
+} tVariable;
+
+int variableCreate(tVariable*);
+void variableDelete(tVariable*);
 

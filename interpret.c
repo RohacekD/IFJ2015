@@ -10,5 +10,6 @@ int executeTape(tInsTapeInsPtr ins) {
 		if ((tDLList *)malloc(sizeof(tDLList))) {
 			FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 		}
+		DLInitList(frameStack);
 	}
 }

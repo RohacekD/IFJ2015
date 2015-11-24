@@ -17,7 +17,7 @@ int executeTape(tInsTapeInsPtr);
  */
 int executeIns(tInsTapeInsPtr, tDLList*);
 
-int findVariable(tFrame*, char*);
+int findVariable(tDLList*, string*);
 
 
 #endif //INTERPRET_H_

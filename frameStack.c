@@ -7,7 +7,7 @@ void DLError() {
 ** Tato funkce bude volána z některých dále implementovaných operací.
 **/	
     printf ("*ERROR* The program has performed an illegal operation.\n");
-    errflg = TRUE;             /* globální proměnná -- příznak ošetření chyby */
+    //errflg = TRUE;             /* globální proměnná -- příznak ošetření chyby */
     return;
 }
 
@@ -24,6 +24,9 @@ void DLInitList (tDLList *L) {
  L->Act = NULL; //aktuální prvek zatím neexistuje
 }
 
+/*
+ * @depractated musi pocitat s mazanim stromu
+ */
 void DLDisposeList (tDLList *L) {
 /*
      ** Zruší všechny prvky seznamu L a uvede seznam do stavu, v jakém
@@ -40,7 +43,7 @@ void DLDisposeList (tDLList *L) {
     }
 }
 
-void DLPush (tDLList *L, int val) {
+void DLPush (tDLList *L, tFrame *val) {
 /*
 ** Vloží nový prvek na začátek seznamu L.
 ** V případě, že není dostatek paměti pro nový prvek při operaci malloc,
@@ -54,7 +57,7 @@ tmp = malloc(sizeof(struct tDLElem)); //alokace prostoru pro nový prvek
         return;
     }
 
-tmp->data = val; //naplní novy prvek daty
+tmp->frame = *val; //naplní novy prvek daty
 tmp->lptr = NULL; 
 tmp->rptr = NULL; 
 
@@ -82,7 +85,7 @@ L->Act = L->First;
 }
 
 
-void DLTop (tDLList *L, int *val) {
+void DLTop (tDLList *L, tFrame *val) {
 /*
      ** Prostřednictvím parametru val vrátí hodnotu prvního prvku seznamu L.
      ** Pokud je seznam L prázdný, volá funkci DLError().
@@ -92,10 +95,12 @@ void DLTop (tDLList *L, int *val) {
         DLError();
         return;
     }
-    *val = L->First->data; //na adresu val uloží data prvního prvku
+    *val = L->First->frame; //na adresu val uloží data prvního prvku
 }
 
-
+/*
+* @depractated musi pocitat s mazanim stromu
+*/
 void DLPop (tDLList *L) {
 /*
 ** Zruší první prvek seznamu L. Pokud byl první prvek aktivní, aktivita 
@@ -116,7 +121,7 @@ if(L->First != NULL) L->First->lptr = NULL;
 
 
 
-void DLCopy (tDLList *L, int *val) {
+void DLCopy (tDLList *L, tFrame *val) {
 /*
 ** Prostřednictvím parametru val vrátí hodnotu aktivního prvku seznamu L.
 ** Pokud seznam L není aktivní, volá funkci DLError ().
@@ -126,7 +131,7 @@ void DLCopy (tDLList *L, int *val) {
         return;
     }
     
-    *val = L->Act->data;
+    *val = L->Act->frame;
 }
 
 
@@ -158,4 +163,21 @@ int DLActive (tDLList *L) {
 ** Funkci je vhodné implementovat jedním příkazem return.
 **/
 return L->Act!= NULL;    
+}
+
+
+void deleteTopFrame(tDLList* list) {
+	tFrame frame;
+	DLTop(list, &frame);
+}
+
+int createNewFrame(tDLList* list, bool passable) {
+
+}
+
+void deleteFunctionsFrames(tDLList* list) {
+	while (list->Act->frame.passable) {
+		deleteTopFrame(list);
+	}
+	deleteTopFrame(list);
 }
