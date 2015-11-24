@@ -1,43 +1,45 @@
 /*
- * stack.c
+ * precStack.c
  *  Project: IFJ2015
  *  Created on: 15. 11. 2015
  *  Author: xdocek09
  *  Description: Obsahuje implementaci zasobniku.
  */
 /**
- * @file stack.c
+ * @file precStack
  * @author xdocek09
  * @brief Obsahuje implementaci zasobniku.
  */
-#include "stack.h"
+#include "precStack.h"
 #include <stdlib.h>
 #include <stdarg.h>
 
-void stackInit(tStack * stack){
+void precStackInit(tPrecStack * stack){
 	stack->top=NULL;
 }
 
 /**
  * Vytvori a inicializuje novy prvek
- * @param[out] newElem	-	Zde bude ulozen ukazatel na novy prvek.
- * 							Pri chybe alokace ulozi zde NULL.
  * @param[in] data		-	Data noveho prvku.
  * @param[in] nextPtr	-	Ukazatel na dalsi prvek.
+ * @return	Vraci ukazatel na novy prvek, pri chybe alikace vraci NULL>
  */
-void stackCreateInitNewElem(tStackElemPtr newElem, tStackData data, tStackElemPtr nextPtr){
-	newElem=malloc(sizeof(struct tStackElem));
+tPrecStackElemPtr stackCreateInitNewElem(tPrecStackData data, tPrecStackElemPtr nextPtr){
+	tPrecStackElemPtr newElem=malloc(sizeof(struct tStackElem));
 	if(newElem==NULL){
-		return;
+		return NULL;
 	}
 	newElem->data=data;
 	newElem->next=nextPtr;
+	return newElem;
 }
 
-int stackPush(tStack * stack, tStackData data){
+int precStackPush(tPrecStack * stack, tPrecStackData data){
 	//inicializujeme a vytvorime novy prvek
-	tStackElemPtr newElem;
-	stackCreateInitNewElem(newElem, data, stack->top);
+	tPrecStackElemPtr newElem;
+
+	newElem=stackCreateInitNewElem(data, stack->top);
+
 	if(newElem==NULL){
 		//nepovedla se alokovat
 		return 0;
@@ -48,27 +50,27 @@ int stackPush(tStack * stack, tStackData data){
 	return 1;
 }
 
-int stackPushElementOfKind(tStack * stack, tStackElemType type, int key){
-	tStackData data;
-	data->key=key;
-	data->type=type;
+int precStackPushElementOfKind(tPrecStack * stack, tPrecStackElemType type, int key){
+	tPrecStackData data;
+	data.key=key;
+	data.type=type;
 
-	return stackPush(stack, data);
+	return precStackPush(stack, data);
 }
 
-int stackPushElemBeforeTopTerm(tStack * stack, tStackElemType type, int key){
+int precStackPushElemBeforeTopTerm(tPrecStack * stack, tPrecStackElemType type, int key){
 	//predpripravime data
-	tStackElemPtr newElem;
-	tStackData data;
-	data->key=key;
-	data->type=type;
+	tPrecStackElemPtr newElem;
+	tPrecStackData data;
+	data.key=key;
+	data.type=type;
 
 	//ziskame nejvrchnejsi element
-	tStackElemPtr element=stackTopElement(stack);
+	tPrecStackElemPtr element=precStackTopElement(stack);
 	//ztotoznime jej s elementem predchazejicim
-	tStackElemPtr elemBefore=NULL;
+	tPrecStackElemPtr elemBefore=NULL;
 
-	while(element!=NULL && element->data->type!=TERMINAL){
+	while(element!=NULL && element->data.type!=PREC_STACK_TERMINAL){
 		//preskocime vsechny neterminaly z vrcholu zasobniku
 		elemBefore=element;
 		element=element->next;
@@ -78,7 +80,7 @@ int stackPushElemBeforeTopTerm(tStack * stack, tStackElemType type, int key){
 		return 0;
 	}
 
-	stackCreateInitNewElem(newElem, data, element);
+	newElem=stackCreateInitNewElem(data, element);
 	if(newElem==NULL){
 		//nepovedla se alokovat
 		return 0;
@@ -96,50 +98,55 @@ int stackPushElemBeforeTopTerm(tStack * stack, tStackElemType type, int key){
 	return 1;
 }
 
-void stackPop(tStack * stack){
+void precStackPop(tPrecStack * stack){
 	if(stack->top==NULL){
 		//neni co rusit
 		return;
 	}
 
-	tStackElemPtr nextElem=stack->top->next;
+	tPrecStackElemPtr nextElem=stack->top->next;
 	free(stack->top);
 	stack->top=nextElem;
 }
 
 
-int stackTop(tStack * stack, tStackData* data){
+tPrecStackData* precStackTop(tPrecStack * stack){
 	if(stack->top==NULL){
 		//chyba prazdny zasobnik
-		return 0;
+		return NULL;
 	}
 
-	*data=stack->top->data;
-	return 1;
+	return &stack->top->data;
 }
 
-int stackTopElement(tStack * stack){
+tPrecStackElemPtr precStackTopElement(tPrecStack * stack){
 	return stack->top;
 }
 
-int stackTopTerminal(tStack* stack, int* terminal){
+int precStackTopTerminal(tPrecStack* stack, int* terminal){
 	//ziskame nejvrchnejsi element
-	tStackElemPtr element=stackTopElement(stack);
+	tPrecStackElemPtr element=precStackTopElement(stack);
 
-	while(element!=NULL && element->data->type!=TERMINAL){
+	while(element!=NULL && element->data.type!=PREC_STACK_TERMINAL){
 		//preskocime vsechny neterminaly z vrcholu zasobniku
 		element=element->next;
 	}
 	if(element==NULL){
 		return 0;
 	}
-
-	*terminal=element->data->key;
+	*terminal=element->data.key;
 	return 1;
 
 }
 
-int stackEmpty(tStack * stack){
-	return (stack->top==NULL)? 0:1;
+int precStackEmpty(tPrecStack * stack){
+	return (stack->top==NULL)? 1:0;
 }
-/*** End of file: stack.c ***/
+
+void precStackDispose(tPrecStack * stack){
+	while(!precStackEmpty(stack)){
+		precStackPop(stack);
+	}
+	precStackInit(stack);
+}
+/*** End of file: precStack.c ***/

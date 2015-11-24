@@ -27,6 +27,7 @@ tTabSym* tabSymCreate(tTabSymTypes tabType){
 
 	newTable->tabType=tabType;
 	newTable->root=NULL;
+	newTable->tmpCounter=0;
 
 	return newTable;
 }

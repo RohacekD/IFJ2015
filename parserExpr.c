@@ -13,33 +13,67 @@
 
 #include "parserExpr.h"
 
-#include "stack.h"
+#include "precStack.h"
 #include <stdlib.h>
 #include "token.h"
+
+typedef enum{
+	TERMINAL_ADDITION,					// +
+	TERMINAL_SUBTRACTION,				// -
+	TERMINAL_MULTIPLICATION,			// *
+	TERMINAL_DIVISION,					// /
+	TERMINAL_EQUAL,						// ==
+	TERMINAL_NOT_EQUAL,					// !=
+	TERMINAL_LESS_THAN,					// <
+	TERMINAL_GREATER_THAN,				// >
+	TERMINAL_LESS_THAN_OR_EQUAL,		// <=
+	TERMINAL_GREATER_THAN_OR_EQUAL,	 	// >=
+	TERMINAL_OPEN_BRACKET,				// (
+	TERMINAL_CLOSE_BRACKET,				// )
+	TERMINAL_UNARY_MINUS,				// -
+	TERMINAL_INCREMENT_POSTFIX,			// postfix ++
+	TERMINAL_DECREMENT_POSTFIX,			// postfix --
+	TERMINAL_INCREMENT_PREFIX,			// prefix ++
+	TERMINAL_DECREMENT_PREFIX,			// prefix --
+	TERMINAL_NOT,						// !
+	TERMINAL_AND,						// &&
+	TERMINAL_OR,						// ||
+	TERMINAL_IDENTIFICATOR,				// jmeno promenne nebo konstanta
+	TERMINAL_FUNCTION_IDENTIFICATOR,	// jmeno funkce
+	TERMINAL_COMMA						// ,
+}tParExpTerminals;
+
+/**
+ * Pripravi dalsi token v rade.
+ * @return Vraci kod terminalu pro dany token.
+ */
+tParExpTerminals prepareNextToken(){
+
+}
 
 
 int parseExpression(){
 	//vytvorime zasobnik
-	tStack stack;
-	stackInit(stack);
+	tPrecStack stack;
+	precStackInit(stack);
 
 	//pridame ukoncujici znak
-	stackPushElementOfKind(stack, ENDMARK,0);
+	precStackPushElementOfKind(stack, PREC_STACK_ENDMARK,0);
 
 	int a;
 	int b=getToken();
 	do{
-		a=stackTopTerminal(&stack, &a);
+		a=precStackTopTerminal(&stack, &a);
 		switch (precGetRule(a,b)) {
 			case '=':
-				stackPushElementOfKind(stack, TERMINAL,b);
+				precStackPushElementOfKind(stack, PREC_STACK_TERMINAL,b);
 				b=getToken();
 				break;
 			case '<':
 				//zaměň a za a< na zásobníku
-				stackPushElemBeforeTopTerm(stack,PRECSIGN,'<');
+				precStackPushElemBeforeTopTerm(stack,PREC_STACK_SIGN,'<');
 
-				stackPushElementOfKind(stack, TERMINAL,b);
+				precStackPushElementOfKind(stack, PREC_STACK_TERMINAL,b);
 				b=getToken();
 				break;
 			case '>':

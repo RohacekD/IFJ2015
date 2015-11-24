@@ -103,6 +103,7 @@ typedef enum {
 typedef struct {
 	tTabSymTypes tabType;
 	tBSTNodePtr root;
+	unsigned int tmpCounter;	//pouziva se pro index generovanych docasnych identifikatoru
 } tTabSym;
 
 /**
