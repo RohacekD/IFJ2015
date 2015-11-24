@@ -13,6 +13,7 @@
 
 #include <stdlib.h>
 #include "tabSym.h"
+#include "insTape.h"
 #include "ial.h"
 
 
@@ -65,7 +66,7 @@ tTabSymElemData* createElemData(tTabSymDataType type, void* info){
 			elemData->info.constant=(tConstantInfo*)info;
 			break;
 		case TAB_SYM_FUNCTION:
-			elemData->info.constant=(tFuncInfo*)info;
+			elemData->info.func=(tFuncInfo*)info;
 			break;
 		default:
 			//nedefinovany typ
@@ -166,7 +167,11 @@ void freeFunctionInfo(tFuncInfo * func){
 	//uvolnime lokalni tabulku symbolu
 	tabSymFree(func->locTab);
 
-	//TODO:paska instrukci
+	//TODO: tabulky symbolu
+
+	//uvolnime pasku instrukci
+	insTapeFree(func->instTape);
+
 
 	free(func);
 }
