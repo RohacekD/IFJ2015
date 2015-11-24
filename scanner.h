@@ -11,6 +11,12 @@ extern int line;
 extern int character;
 /* @var int priznak chyby */
 extern int errorFlag;
+/*
+ * Hlavni fce lexykalniho analyzatoru
+ * @param tToken v teto strukutre je vracen nacteny token
+ * @param FILE[in] inject cteneho souboru
+ * @return 1 pokud prosla analyza ok
+ */
 int getToken(tToken*, FILE*);
 /*
  prevede string v tokenu na hodnotu double

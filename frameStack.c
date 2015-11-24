@@ -29,7 +29,8 @@ void Push(tStack *Stack, tFrame *val) {
 
 	if (tmp == NULL) {
 		//alokace failnula
-		DLError();
+		//DLError();
+		//todo
 		return;
 	}
 	//naplni data
@@ -55,7 +56,8 @@ void Top(tStack *Stack, tFrame *val) {
 	//je prazdny?
 	if (Stack->First == NULL) {
 		//vyhodim chybu
-		DLError();
+		//DLError();
+		//todo
 		return;
 	}
 	//ulozi hodnotu
@@ -79,23 +81,43 @@ void Pop(tStack *Stack) {
 }
 
 
-void deleteTopFrame(tDLList* list) {
+void deleteTopFrame(tStack* list) {
 	tFrame frame;
 	DLTop(list, &frame);
 	BSTFree(frame.frame, variableDelete);
 }
 
-int pushNewFrame(tDLList* list, bool passable) {
+int pushNewFrame(tStack* list, bool passable) {
 	tFrame frame;
 	frame.passable;
-	tBSTNodePtr tree;
+	frame.frame = NULL;
 
 	DLPush(list, &frame);
 }
 
-void deleteFunctionsFrames(tDLList* list) {
+void deleteFunctionsFrames(tStack* list) {
 	while (list->First->frame.passable) {
 		deleteTopFrame(list);
 	}
 	deleteTopFrame(list);
+}
+
+
+void insertNewVariable(tFrame* frame, tVariable* var, string* name) {
+	if(frame->frame==NULL){
+		if (!BSTCreateNode(frame->frame, name, var)) {
+			//todo
+			return;
+		}
+	}
+	else {
+		if (!BSTInsert(frame->frame, name, var)) {
+			//todo
+			return;
+		}
+	}
+}
+
+int findVariable(const tFrame* frame, string* s) {
+	
 }

@@ -56,6 +56,7 @@ typedef enum tTokenTypes
 
 	END_OF_FILE
 }TokenTypes;
+
 typedef union utokenValue
 {
 	//nejak implementovany pointer do tabulky symbolu
@@ -64,6 +65,9 @@ typedef union utokenValue
 	string stringVal;
 	bool boolVal;
 }tokenValue;
+
+
+
 typedef struct stToken{
 	TokenTypes typ;
 	tokenValue value;

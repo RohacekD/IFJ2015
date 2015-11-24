@@ -33,6 +33,9 @@ typedef struct {
 void SInit(tStack *);
 void SDispose(tStack *);
 void Push(tStack *, tFrame*);
+/*
+ * Vrati prvek na vrcholu zasobniku
+ */
 void Top(tStack *, tFrame*);
 void Pop(tStack *);
 
@@ -48,3 +51,13 @@ void deleteFunctionsFrames(tStack*);
  */
 void deleteTopFrame(tStack*);
 
+/*
+ * Vlozi promennou do ramce.
+ * Musi se uvolnit string?
+ */
+void insertNewVariable(tFrame*, tVariable*, string*);
+
+/*
+ * Hleda varaible podle stringu skrz passable framy
+ */
+int findVariable(const tFrame*, string s);
