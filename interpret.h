@@ -5,19 +5,17 @@
 #include "error.h"
 /*
  * Dostane instrukci a od te zacne vykonavat program.
- * @param ins[in]	- instrukce od ktere zacit vykonavat
+ * @param ins[in]	-	instrukce od ktere zacit vykonavat
  * @return Vraci 0 pokud nastane chyba, jinak 1;
  */
 int executeTape(tInsTapeInsPtr);
 /*
  * Dostane instrukci a 
- * @param ins[in]	- instrukce ktera se ma provest.
+ * @param ins[in]	-	instrukce ktera se ma provest.
  * 
  * @return Vraci 0 pokud nastane chyba, jinak 1;
  */
 int executeIns(tInsTapeInsPtr, tStack*);
-
-int findVariable(tStack*, string*);
 
 
 #endif //INTERPRET_H_
