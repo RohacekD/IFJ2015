@@ -86,6 +86,7 @@ typedef struct tParamListElem {
  */
 typedef struct {
 	tParamListElemPtr first;
+        tParamListElemPtr act;
 }*tParamListPtr;
 
 /**
