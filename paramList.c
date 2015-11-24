@@ -75,7 +75,7 @@ void succ(tParamListPtr list)
 }
  
 
-void disposeList(tParamListPtr list)
+void paramListFree(tParamListPtr list)
 {
     tParamListElemPtr UkPomEl; //pomocny ukazatel na strukturu element
 

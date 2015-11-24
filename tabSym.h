@@ -190,7 +190,7 @@ void initList(tParamListPtr list);
  * Funkce odstrani seznam parametru a uvolni pamet
  * @param list      seznam parametru
  */
-void disposeList(tParamListPtr list);
+void paramListFree(tParamListPtr list);
 
 /**
  * Funkce vlozi prvek za aktivni prvek
