@@ -3,6 +3,7 @@
 #include<stdbool.h>
 #include "ial.h"
 
+
 #define FALSE 0
 #define TRUE 1
 
@@ -12,7 +13,7 @@ typedef struct{
 } tFrame;
  
 typedef struct tDLElem {                 /* prvek dvousměrně vázaného seznamu */ 
-        struct tFrame frame;            /* užitečná data */
+        tFrame frame;            /* užitečná data */
         struct tDLElem *lptr;          /* ukazatel na předchozí prvek seznamu */
         struct tDLElem *rptr;        /* ukazatel na následující prvek seznamu */
 } *tDLElemPtr;
