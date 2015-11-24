@@ -65,7 +65,7 @@ tTabSymElemData* createElemData(tTabSymDataType type, void* info){
 			elemData->info.constant=(tConstantInfo*)info;
 			break;
 		case TAB_SYM_FUNCTION:
-			elemData->info.constant=(tFuncInfo*)info;
+			elemData->info.func=(tFuncInfo*)info;
 			break;
 		default:
 			//nedefinovany typ
