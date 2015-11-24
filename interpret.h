@@ -15,9 +15,9 @@ int executeTape(tInsTapeInsPtr);
  * 
  * @return Vraci 0 pokud nastane chyba, jinak 1;
  */
-int executeIns(tInsTapeInsPtr, tDLList*);
+int executeIns(tInsTapeInsPtr, tStack*);
 
-int findVariable(tDLList*, string*);
+int findVariable(tStack*, string*);
 
 
 #endif //INTERPRET_H_
