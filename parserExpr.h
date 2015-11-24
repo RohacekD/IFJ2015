@@ -16,13 +16,19 @@
 #define PARSEREXPR_H_
 
 /**
- * Provede syntaktickou analyzu pro vyraz.
- * TODO:	Bere parametr pro ukladani triadresneho kodu.
- * 			SEMANTICKA
- * 			datovy typ vyrazu
+ * Provede precedencni syntaktickou, semantickou analyzu a generovani tri adresneho kodu.
+ * @param table[in]			-	tabulka symbolu
+ * @param tape[in]			-	paska instrukci
+ * 								Vklada instrukce na konec pasky. Pokud je paska aktivni
+ * 								vklada instrukce za aktivni instrukci. V takovemto pripade
+ * 								se posunuje aktivita na kazdou vlozenou instrukci, tedy posledni
+ * 								vlozena instrukce bude aktivni.
+ * @param expDataType[out]	-	Vysledny datovy typ vyrazu.
  * @return kod chyby / uspechu
  */
-int parseExpression();
+int parseExpression(tTabSym* table, tInsTape* tape, tTabSymVarNoAutoDataType expDataType);
+
+
 
 #endif /* PARSEREXPR_H_ */
 
