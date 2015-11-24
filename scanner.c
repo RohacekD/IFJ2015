@@ -28,6 +28,9 @@ enum states {
 	BINARY_NUMBER,
 	OCTAL_NUMBER,
 	HEX_DEC_NUMBER,
+	STRING_BINARY_NUMBER,
+	STRING_OCTAL_NUMBER,
+	STRING_HEX_DEC_NUMBER,
 	INT_PART,
 	FLOAT_OR_INT,
 	FLOAT_PART,
@@ -47,12 +50,16 @@ int getToken(tToken *Token, FILE* source) {
 	int c = -1;
 	/* @var prevRest int poslední načtený znak (Zbytek posledního průchodu) */
 	static int pom = -1;
-
+	/* @var string s Uklada aktualne cteny string pokud je treba, pri kazdem 
+	 * konci teto funkce musi byt volano strFree.
+	 */
 	string s;
 	//strInit vraci 1 při chybe
 	if (strInit(&s)) {
 		FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 	}
+	string escape;
+
 
 	int state = START;
 	while (1) {
@@ -154,6 +161,11 @@ int getToken(tToken *Token, FILE* source) {
 			else if (c == '&') {
 				state = LOGICAL_AND;
 			}
+			else if (c == ',') {
+				Token->typ = COMMA;
+				strFree(&s);
+				return 1;
+			}
 			else if (c==EOF) {
 				Token->typ = END_OF_FILE;
 				strFree(&s);
@@ -163,7 +175,8 @@ int getToken(tToken *Token, FILE* source) {
 				return 1;
 			}
 			else {
-				fprintf(stderr, "Unknown symbol\n");
+				errorFlag = 1;
+				Warning("%sLine - %d:%d\t-  Unknown symbol.\n", ERR_MESSAGES[ERR_LEX], line, character);
 			}
 			break;
 		case INT_PART:
@@ -446,9 +459,10 @@ int getToken(tToken *Token, FILE* source) {
 				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n",ERR_MESSAGES[ERR_LEX], line, character);
 			}
 			else if (c == '\\') {
-				if (strAddChar(&s, c)) {
+				/*if (strAddChar(&s, c)) {
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
-				}
+				}*/
+				
 				state = STRING_ESCAPE;
 			}
 			else if (c == '"') {//konec retezce uloz ho
@@ -469,6 +483,192 @@ int getToken(tToken *Token, FILE* source) {
 				if (strAddChar(&s, c)) {
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
+			}
+			break;
+		case STRING_ESCAPE:
+			switch (c) {
+			case 'b':
+			case 'B':
+				if (strInit(&escape)) {
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+				}
+				state = STRING_BINARY_NUMBER;
+				break;
+			case '0':
+				if (strInit(&escape)) {
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+				}
+				state = STRING_OCTAL_NUMBER;
+				break;
+			case 'x':
+			case 'X':
+				if (strInit(&escape)) {
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+				}
+				state = STRING_HEX_DEC_NUMBER;
+				break;
+			case '\\':
+				if (strAddChar(&s, '\\')) {
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+				}
+				state = STRING;
+				break;
+			case '\n':
+				if (strAddChar(&s, '\n')) {
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+				}
+				state = STRING;
+				break;
+			case '\t':
+				if (strAddChar(&s, '\t')) {
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+				}
+				state = STRING;
+				break;
+			case '\"':
+				if (strAddChar(&s, '\"')) {
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+				}
+				state = STRING;
+				break;
+			default:
+				errorFlag = 1;
+				Warning("%sLine - %d:%d\t-  Ocekavan symbol pro ciselnou soustavu.\n", ERR_MESSAGES[ERR_LEX], line, character);
+				strFree(&s);
+				return 42;
+				break;
+			}
+			break;
+		case STRING_BINARY_NUMBER:
+			if ((c == '0' || c == '1')) {
+				if (strGetLength(&escape) < 8) {
+					if (strAddChar(&escape, c)) {
+						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+					}
+				}
+				else {
+					int val;
+					if (strBinToInt(&escape, &val) && val >= 1 && val <= 255) {
+						if (strAddChar(&s, (char)val)) {
+							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+						}
+					}
+					else {
+						errorFlag = 1;
+						Warning("%sLine - %d:%d\t-  Retezec \"%s\" neni platnou escape sekvenci.\n", ERR_MESSAGES[ERR_LEX], line, character, escape.str);
+					}
+					strFree(&escape);
+					state = STRING;
+				}
+			}
+			else {
+				if (strGetLength(&escape) < 8) {
+					errorFlag = 1;
+					Warning("%sLine - %d:%d\t-  Retezec \"%s\" neni platnou escape sekvenci.\n", ERR_MESSAGES[ERR_LEX], line, character, escape.str);
+				}
+				if (strGetLength(&escape) == 8) {
+					int val;
+					if (strBinToInt(&escape, &val) && val >= 1 && val <= 255) {
+						if (strAddChar(&s, (char)val)) {
+							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+						}
+					}
+					else {
+						errorFlag = 1;
+						Warning("%sLine - %d:%d\t-  Retezec \"%s\" neni platnou escape sekvenci.\n", ERR_MESSAGES[ERR_LEX], line, character, escape.str);
+					}
+				}
+				pom = c;
+				strFree(&escape);
+				state = STRING;
+			}
+			break;
+		case STRING_OCTAL_NUMBER:
+			if ((c >= '0' && c <= '7')) {
+				if (strGetLength(&escape) < 3) {
+					if (strAddChar(&escape, c)) {
+						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+					}
+				}
+				else {
+					int val;
+					if (strOctToInt(&escape, &val) && val >= 1 && val <= 255) {
+						if (strAddChar(&s, (char)val)) {
+							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+						}
+					}
+					else {
+						errorFlag = 1;
+						Warning("%sLine - %d:%d\t-  Retezec \"%s\" neni platnou escape sekvenci.\n", ERR_MESSAGES[ERR_LEX], line, character, escape.str);
+					}
+					strFree(&escape);
+					state = STRING;
+				}
+			}
+			else {
+				if (strGetLength(&escape) < 3) {
+					errorFlag = 1;
+					Warning("%sLine - %d:%d\t-  Retezec \"%s\" neni platnou escape sekvenci.\n", ERR_MESSAGES[ERR_LEX], line, character, escape.str);
+				}
+				if (strGetLength(&escape) == 3) {
+					int val;
+					if (strOctToInt(&escape, &val) && val >= 1 && val <= 255) {
+						if (strAddChar(&s, (char)val)) {
+							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+						}
+					}
+					else {
+						errorFlag = 1;
+						Warning("%sLine - %d:%d\t-  Retezec \"%s\" neni platnou escape sekvenci.\n", ERR_MESSAGES[ERR_LEX], line, character, escape.str);
+					}
+				}
+				pom = c;
+				strFree(&escape);
+				state = STRING;
+			}
+			break;
+		case STRING_HEX_DEC_NUMBER:
+			if ((c >= '0' && c <= '9')||(c >= 'a' && c <= 'f')|| (c >= 'A' && c <= 'F')) {
+				if (strGetLength(&escape) < 2) {
+					if (strAddChar(&escape, c)) {
+						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+					}
+				}
+				else {
+					int val;
+					if (strHexToInt(&escape, &val) && val >= 1 && val <= 255) {
+						if (strAddChar(&s, (char)val)) {
+							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+						}
+					}
+					else {
+						errorFlag = 1;
+						Warning("%sLine - %d:%d\t-  Retezec \"%s\" neni platnou escape sekvenci.\n", ERR_MESSAGES[ERR_LEX], line, character, escape.str);
+					}
+					strFree(&escape);
+					state = STRING;
+				}
+			}
+			else {
+				if (strGetLength(&escape) < 2) {
+					errorFlag = 1;
+					Warning("%sLine - %d:%d\t-  Retezec \"%s\" neni platnou escape sekvenci.\n", ERR_MESSAGES[ERR_LEX], line, character, escape.str);
+				}
+				if (strGetLength(&escape) == 2) {
+					int val;
+					if (strHexToInt(&escape, &val) && val >= 1 && val <= 255) {
+						if (strAddChar(&s, (char)val)) {
+							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+						}
+					}
+					else {
+						errorFlag = 1;
+						Warning("%sLine - %d:%d\t-  Retezec \"%s\" neni platnou escape sekvenci.\n", ERR_MESSAGES[ERR_LEX], line, character, escape.str);
+					}
+				}
+				pom = c;
+				strFree(&escape);
+				state = STRING;
 			}
 			break;
 		case IDENTIFICATOR:
@@ -703,6 +903,27 @@ const char* keyWords[] = {
 	"return",
 	""
 };
+
+/*
+ * @depractated
+ * @bug this whole function is one big bug, do not use
+ */
+int unescapeStr(string* s) {
+	string ret, help;
+	//strInit(&help);
+	strInit(&ret);
+	int i = 0;
+	while (s->str[i++]!='\0') {
+		if (s->str[i] == '\\') {
+			i++;
+		}
+		else {
+			if (strAddChar(&ret, s->str[i])) {
+				FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+			}
+		}
+	}
+}
 
 /*
  * Prohleda tabulku klicovych slov a zjisti zda prijaty string neni mezi nimi 

@@ -25,7 +25,8 @@ int test_1() {
 		if ((ret = getToken(&token, file)) != 1) {
 		}
 		else {
-			//printToken(&token);
+			printToken(&token);
+			printf("%d", line);
 		}
 
 	} while (token.typ!=END_OF_FILE);

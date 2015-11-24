@@ -6,6 +6,4 @@
 void printDescription(const char*);
 void printTestData(const char*);
 void printToken(tToken*);
-
-
 #endif;//TEST_FW_H

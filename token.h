@@ -40,6 +40,7 @@ typedef enum tTokenTypes
 	BRACES_OPENING,
 	BRACES_CLOSING,
 	SEMICOLON,
+	COMMA,
 
 	KEYW_AUTO,
 	KEYW_CIN,
@@ -55,7 +56,7 @@ typedef enum tTokenTypes
 
 	END_OF_FILE
 }TokenTypes;
-typedef union
+typedef union utokenValue
 {
 	//nejak implementovany pointer do tabulky symbolu
 	int intVal;
@@ -63,7 +64,7 @@ typedef union
 	string stringVal;
 	bool boolVal;
 }tokenValue;
-typedef struct {
+typedef struct stToken{
 	TokenTypes typ;
 	tokenValue value;
 } tToken;
