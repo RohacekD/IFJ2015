@@ -118,6 +118,6 @@ void insertNewVariable(tFrame* frame, tVariable* var, string* name) {
 	}
 }
 
-int findVariable(const tFrame* frame, string* s) {
+int findVariable(const tStack* stack, string* s, tVariable* var) {
 	
 }

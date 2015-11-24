@@ -59,5 +59,10 @@ void insertNewVariable(tFrame*, tVariable*, string*);
 
 /*
  * Hleda varaible podle stringu skrz passable framy
+ * @param frame[in] vrchol aktualniho stacku, nebo passnout stack? Asi jo takze plati dalsi radek
+ * @param stack[in] frameStack
+ * @param string[in] jmeno hledane promenne
+ * @param var[out] zde vrati ukazatel na promennou pokud ji najde
+ * @return vyber si co vrati pri succes
  */
-int findVariable(const tFrame*, string s);
+int findVariable(tStack* , string s, tVariable*);
