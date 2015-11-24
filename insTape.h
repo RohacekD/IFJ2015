@@ -38,6 +38,7 @@ typedef enum{
 	I_CFF, //create function frame
 	I_ASSIGN, //prirazeni =
 	I_SP, //set parametr - musis se podivat o jeden niz
+	I_DBF, //delete block frame
 	I_RETURN, //navrat z ramce
 	I_IFZERO,
 	I_SETRESULT, //navratova hodnota z fce

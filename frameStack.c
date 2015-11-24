@@ -169,15 +169,53 @@ return L->Act!= NULL;
 void deleteTopFrame(tDLList* list) {
 	tFrame frame;
 	DLTop(list, &frame);
+	BSTFree(frame.frame, variableDelete);
 }
 
-int createNewFrame(tDLList* list, bool passable) {
+int pushNewFrame(tDLList* list, bool passable) {
+	tFrame frame;
+	frame.passable;
+	tBSTNodePtr tree;
 
+	DLPush(list, &frame);
 }
 
 void deleteFunctionsFrames(tDLList* list) {
-	while (list->Act->frame.passable) {
+	while (list->First->frame.passable) {
 		deleteTopFrame(list);
 	}
 	deleteTopFrame(list);
+}
+
+/*******rVariable - nutno presunout*****/
+
+
+void variableCreate(tVariable* var, tVariableType type, void* data) {
+	var->type = type;
+	switch (type) {
+	case VAR_TYPE_INT:
+		var->data.intVal = *(int*)data;
+		break;
+	case VAR_TYPE_BOOL:
+		var->data.boolVal = *(bool*)data;
+		break;
+	case VAR_TYPE_DOUBLE:
+		var->data.doubleVal = *(double*)data;
+		break;
+	case VAR_TYPE_STRING:
+		if (strInit(&var->data.stringVal)) {
+			FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+		}
+		if (strCopyString(&var->data.stringVal, data)) {
+			//error
+		}
+		break;
+	default:
+		break;
+	}
+}
+void variableDelete(tVariable* var) {
+	if (var->type == VAR_TYPE_STRING) {
+		strFree(&var->data.stringVal);
+	}
 }
