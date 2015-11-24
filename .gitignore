@@ -1,5 +1,6 @@
 nbproject
 
+.dep.inc
 *.vcxproj*
 Debug/
 # Object files
