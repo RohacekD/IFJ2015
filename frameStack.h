@@ -3,84 +3,66 @@
 #include<stdbool.h>
 #include "ial.h"
 #include "error.h"
+#include "variable.h"
 
 
-#define FALSE 0
-#define TRUE 1
-
-typedef struct{
-    bool passable; // zda je ramec pruchozi
-    tBSTNodePtr frame; //ukazatel na první prvek stromu ramce
+typedef struct {
+	//jestli je ramec pruchozi
+	bool passable;
+	//ukazatel na prvni prvek stromu
+	tBSTNodePtr frame;
 } tFrame;
- 
-typedef struct tDLElem {                 /* prvek dvousměrně vázaného seznamu */ 
-        tFrame frame;            /* užitečná data */
-        struct tDLElem *lptr;          /* ukazatel na předchozí prvek seznamu */
-        struct tDLElem *rptr;        /* ukazatel na následující prvek seznamu */
-} *tDLElemPtr;
 
-typedef struct {                                  /* dvousměrně vázaný seznam */
-    tDLElemPtr First;                      /* ukazatel na první prvek seznamu */
-    tDLElemPtr Act;                     /* ukazatel na aktuální prvek seznamu */
-    tDLElemPtr Last;                    /* ukazatel na posledni prvek seznamu */
-} tDLList;
+//prvek dvousmerne vazaneho seznamu
+typedef struct tSElem {
+	//uzitecna data
+	tFrame frame;
+	//ukazatel na predchozi prvek
+	struct tSElem *lptr;
+	//ukazatel na nasledujici prvek
+	struct tSElem *rptr;
+} *tSElemPtr;
 
-                                             /* prototypy jednotlivých funkcí */
-void DLInitList (tDLList *);
-void DLDisposeList (tDLList *);
-void DLPush (tDLList *, tFrame*);
-void DLFirst (tDLList *);
-void DLTop (tDLList *, tFrame*);
-void DLPop (tDLList *);
-void DLCopy (tDLList *, tFrame *);
-//void DLActualize (tDLList *, tFrame);
-void DLSucc (tDLList *);
-void DLPred (tDLList *);
-int DLActive (tDLList *);
+typedef struct {
+	//ukazatel na prvni prvek
+	tSElemPtr First;
+	//ukazatel na posledni prvek
+	tSElemPtr Last;
+} tStack;
 
-int pushNewFrame(tDLList*, bool);
+void SInit(tStack *);
+void SDispose(tStack *);
+void Push(tStack *, tFrame*);
+/*
+ * Vrati prvek na vrcholu zasobniku
+ */
+void Top(tStack *, tFrame*);
+void Pop(tStack *);
+
+int pushNewFrame(tStack*, bool);
 /*
  * Volana pri navratu z fce. Maze vsechny frame i s framem funkce.
  * @param list[in]	- Ukazatel na frameStack
  */
-void deleteFunctionsFrames(tDLList*);
+void deleteFunctionsFrames(tStack*);
 /*
  * Mazana pri ukonceni bloku kodu. Maze jeden vrchni prvek
  * @param list[in]	- Ukazatel na frameStack
  */
-void deleteTopFrame(tDLList*);
-
-typedef enum {
-	VAR_TYPE_INT,
-	VAR_TYPE_BOOL,
-	VAR_TYPE_DOUBLE,
-	VAR_TYPE_STRING
-} tVariableType;
-
-typedef union
-{
-	//nejak implementovany pointer do tabulky symbolu
-	int intVal;
-	double doubleVal;
-	string stringVal;
-	bool boolVal;
-}tVariableData;
-
-typedef struct {
-	tVariableType type;
-	tVariableData data;
-} tVariable;
+void deleteTopFrame(tStack*);
 
 /*
- * Utvori strukturu promenne, inicializuje string.
- * @param tVariable* struktura promenne
- * @param tVariableType urcuje typ
- * @void* (int*|bool*|double*|string*)
+ * Vlozi promennou do ramce.
+ * Musi se uvolnit string?
  */
-void variableCreate(tVariable*, tVariableType, void*);
-/*
- * Spravne smaze promennou. Preda se ukazatelem pri mazani stromu
- * @param tVariable* struktura promenne
- */
-void variableDelete(tVariable*);
+void insertNewVariable(tFrame*, tVariable*, string*);
 
+/*
+ * Hleda varaible podle stringu skrz passable framy
+ * @param frame[in] vrchol aktualniho stacku, nebo passnout stack? Asi jo takze plati dalsi radek
+ * @param stack[in] frameStack
+ * @param string[in] jmeno hledane promenne
+ * @param var[out] zde vrati ukazatel na promennou pokud ji najde
+ * @return vyber si co vrati pri succes
+ */
+int findVariable(tStack* , string s, tVariable*);

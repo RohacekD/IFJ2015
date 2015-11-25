@@ -1,47 +1,47 @@
 /*
- * stack.h
+ * precStack.h
  *  Project: IFJ2015
  *  Created on: 15. 11. 2015
  *  Author: xdocek09
- *  Description: Hlavickovy soubor (pro stack.c).
+ *  Description: Hlavickovy soubor (pro precStack.c).
  */
 /**
- * @file stack.h
+ * @file precStack.h
  * @author xdocek09
  * @brief Hlavickovy soubor (pro stack.c).
  */
-#ifndef STACK_H_
-#define STACK_H_
+#ifndef PRECSTACK_H_
+#define PRECSTACK_H_
 
 typedef enum
 {
-	TERMINAL,
-	NONTERMINAL,
-	PRECSIGN,
-	ENDMARK
-}tStackElemType;
+	PREC_STACK_TERMINAL,
+	PREC_STACK_NONTERMINAL,
+	PREC_STACK_SIGN,		//'<'
+	PREC_STACK_ENDMARK
+}tPrecStackElemType;
 
 typedef struct{
-	tStackElemType type;
+	tPrecStackElemType type;
 	int key;				// klic, daneho neterminalu, terminalu
 
-} tStackData;
+} tPrecStackData;
 
 typedef struct tStackElem {
-	tStackData data;
+	tPrecStackData data;
     struct tStackElem *next;
-} *tStackElemPtr;
+} *tPrecStackElemPtr;
 
 typedef struct {
-	tStackElemPtr top;
-} tStack;
+	tPrecStackElemPtr top;
+} tPrecStack;
 
 
 /**
  * Inicializace zasobniku.
  * @param[in] stack	-	zasobnik pro inicializovani
  */
-void stackInit(tStack * stack);
+void precStackInit(tPrecStack * stack);
 
 /**
  * Vlozi data na vrchol zasobniku stack,
@@ -49,7 +49,7 @@ void stackInit(tStack * stack);
  * @param[in] data		-	Data, ktera vklada.
  * @return 0 pri chybe, jinak 1.
  */
-int stackPush(tStack * stack, tStackData data);
+int precStackPush(tPrecStack * stack, tPrecStackData data);
 
 /**
  * Vlozi element typu type s klicem key na vrchol zasobniku stack,
@@ -58,7 +58,7 @@ int stackPush(tStack * stack, tStackData data);
  * @param[in] key		-	Klic elementu.
  * @return 0 pri chybe, jinak 1.
  */
-int stackPushElementOfKind(tStack * stack, tStackElemType type, int key);
+int precStackPushElementOfKind(tPrecStack * stack, tPrecStackElemType type, int key);
 
 /**
  * Vlozi element typu type s klicem key pred nejvrchnejsi terminal zasobniku stack,
@@ -67,21 +67,20 @@ int stackPushElementOfKind(tStack * stack, tStackElemType type, int key);
  * @param[in] key		-	Klic elementu.
  * @return 0 pri chybe, jinak 1.
  */
-int stackPushElemBeforeTopTerm(tStack * stack, tStackElemType type, int key);
+int precStackPushElemBeforeTopTerm(tPrecStack * stack, tPrecStackElemType type, int key);
 
 /**
  * Rusi prvek na vrcholu zasobniku stack.
  * @param[in] stack	-	Zasobnik u ktereho rusi vrchni prvek.
  */
-void stackPop(tStack * stack);
+void precStackPop(tPrecStack * stack);
 
 /**
- * Nacte vrchol zasobniku stack do data,
+ * Ziska data z vrcholu zasobniku,
  * @param[in] stack		-	Zasobnik, ze ktereho cte.
- * @param[out] data		-	Do tohoto nacte data z vrcholu zasobniku.
- * @return	Pokud je chyba (prazdny zasobnik) vraci 0, jinak 1.
+ * @return	Vraci odkaz na data nebo NULL pri chybe (prazdny zasobnik).
  */
-int stackTop(tStack * stack, tStackData* data);
+tPrecStackData* precStackTop(tPrecStack * stack);
 
 /**
  * Vraci prvek z vrcholu zasobniku.
@@ -89,7 +88,7 @@ int stackTop(tStack * stack, tStackData* data);
  * @return	Pokud je chyba (prazdny zasobnik) vraci NULL,
  * 			jinak pointer na prvek z vrcholu zasobniku.
  */
-tStackElemPtr stackTopElement(tStack * stack);
+tPrecStackElemPtr precStackTopElement(tPrecStack * stack);
 
 /**
  * Vraci nejvrchnejsi terminal ze zasobniku.
@@ -97,13 +96,20 @@ tStackElemPtr stackTopElement(tStack * stack);
  * @param[out] terminal		-	Do tohoto nacte nejvrchnejsi terminal.
  * @return	Pokud je chyba (terminal nenalezen) vraci 0, jinak 1.
  */
-int stackTopTerminal(tStack* stack, int* terminal);
+int precStackTopTerminal(tPrecStack* stack, int* terminal);
 
 /**
  * Kontroluje prazdnost zasobniku.
  * @param[in] stack	-	Zasobnik, ktery kontroluje.
  * @return	1 pokud je prazdny, jinak 0.
  */
-int stackEmpty(tStack * stack);
-#endif /* STACK_H_ */
-/*** End of file: stack.h ***/
+int precStackEmpty(tPrecStack * stack);
+
+/**
+ * Vyprazdni zasobnik a uvede jej do stavu po inicializaci.
+ * @param stack[in]	-	Zasobnik, ktery vyprazdnuje.
+ */
+void precStackDispose(tPrecStack * stack);
+
+#endif /* PRECSTACK_H_ */
+/*** End of file: precStack.h ***/

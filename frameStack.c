@@ -1,221 +1,123 @@
 #include "frameStack.h"
 
 
-void DLError() {
-/*
-** Vytiskne upozornění na to, že došlo k chybě.
-** Tato funkce bude volána z některých dále implementovaných operací.
-**/	
-    printf ("*ERROR* The program has performed an illegal operation.\n");
-    //errflg = TRUE;             /* globální proměnná -- příznak ošetření chyby */
-    return;
-}
-
-void DLInitList (tDLList *L) {
-/*
-** Provede inicializaci seznamu L před jeho prvním použitím (tzn. žádná
-** z následujících funkcí nebude volána nad neinicializovaným seznamem).
-** Tato inicializace se nikdy nebude provádět nad již inicializovaným
-** seznamem, a proto tuto možnost neošetřujte. Vždy předpokládejte,
-** že neinicializované proměnné mají nedefinovanou hodnotu.
-**/
- L->First = NULL; //první prvek zatím neexistuje
- L->Last = NULL; //poslední prvek zatím neexistuje
- L->Act = NULL; //aktuální prvek zatím neexistuje
-}
-
-/*
- * @depractated musi pocitat s mazanim stromu
- */
-void DLDisposeList (tDLList *L) {
-/*
-     ** Zruší všechny prvky seznamu L a uvede seznam do stavu, v jakém
-     ** se nacházel po inicializaci. Rušené prvky seznamu budou korektně
-     ** uvolněny voláním operace free. 
-     **/
-    L->Act=NULL; //zruší aktivitu seznamu
-    L->Last=NULL; //ukazatel na poslední již není potřeba
-    tDLElemPtr tmp = NULL; 
-    while (L->First!=NULL) {  //dokud existují prvky jsou postupně mazány
-       tmp = L->First->rptr;
-       free(L->First);
-       L->First = tmp;       
-    }
-}
-
-void DLPush (tDLList *L, tFrame *val) {
-/*
-** Vloží nový prvek na začátek seznamu L.
-** V případě, že není dostatek paměti pro nový prvek při operaci malloc,
-** volá funkci DLError().
-**/
-tDLElemPtr tmp =NULL;    
-tmp = malloc(sizeof(struct tDLElem)); //alokace prostoru pro nový prvek
-
-    if (tmp==NULL) { //nezdarilá alokace
-        DLError();
-        return;
-    }
-
-tmp->frame = *val; //naplní novy prvek daty
-tmp->lptr = NULL; 
-tmp->rptr = NULL; 
-
-    if ((L->First ==NULL) && (L->Last == NULL)) { //pokud je prvek jediný
-        L->First = tmp; //stavá se jak prvním
-        L->Last = tmp; //tak i posledním prvkem
-    }
-    else{
-        tmp->rptr = L->First;  //v opačném připadě je prvek navázán na nasledující
-        L->First->lptr = tmp; 
-        L->First = tmp;
-        
-    }
-}
-
-
-
-void DLFirst (tDLList *L) {
-/*
-** Nastaví aktivitu na první prvek seznamu L.
-** Funkci implementujte jako jediný příkaz (nepočítáme-li return),
-** aniž byste testovali, zda je seznam L prázdný.
-**/
-L->Act = L->First;	
-}
-
-
-void DLTop (tDLList *L, tFrame *val) {
-/*
-     ** Prostřednictvím parametru val vrátí hodnotu prvního prvku seznamu L.
-     ** Pokud je seznam L prázdný, volá funkci DLError().
-     **/
-
-    if (L->First == NULL) { //pokud je seznam prádný
-        DLError();
-        return;
-    }
-    *val = L->First->frame; //na adresu val uloží data prvního prvku
+void SInit(tStack *Stack) {
+	//prvni ani posledni neexistuji
+	Stack->First = NULL;
+	Stack->Last = NULL;
 }
 
 /*
 * @depractated musi pocitat s mazanim stromu
 */
-void DLPop (tDLList *L) {
+void SDispose(tStack *Stack) {
+	//ukazatel na posledni neni dale potreba
+	Stack->Last = NULL;
+	tSElemPtr tmp = NULL;
+	while (Stack->First != NULL) {
+		//postupny mazani, dokud existuji nejake prvky
+		tmp = Stack->First->rptr;
+		free(Stack->First);
+		Stack->First = tmp;
+	}
+}
+
+void Push(tStack *Stack, tFrame *val) {
+	tSElemPtr tmp = NULL;
+	//naalokuju pamet pro novy prvek
+	tmp = malloc(sizeof(struct tSElem));
+
+	if (tmp == NULL) {
+		//alokace failnula
+		//DLError();
+		//todo
+		return;
+	}
+	//naplni data
+	tmp->frame = *val;
+	tmp->lptr = NULL;
+	tmp->rptr = NULL;
+	//zjistim jestli je prvek jediny
+	if ((Stack->First == NULL) && (Stack->Last == NULL)) {
+		//pokud ano tak bude jak prvni tak i posledni
+		Stack->First = tmp;
+		Stack->Last = tmp;
+	}
+	else {
+		//pokud ne tak navazuju
+		tmp->rptr = Stack->First;
+		Stack->First->lptr = tmp;
+		Stack->First = tmp;
+
+	}
+}
+
+void Top(tStack *Stack, tFrame *val) {
+	//je prazdny?
+	if (Stack->First == NULL) {
+		//vyhodim chybu
+		//DLError();
+		//todo
+		return;
+	}
+	//ulozi hodnotu
+	*val = Stack->First->frame;
+}
+
 /*
-** Zruší první prvek seznamu L. Pokud byl první prvek aktivní, aktivita 
-** se ztrácí. Pokud byl seznam L prázdný, nic se neděje.
-**/
-tDLElemPtr tmp = NULL;
-    if (L->First == NULL) return; //seznam je prázdný 
-    if (L->Act == L->First) L->Act = NULL;
-    if (L->First == L->Last)L->Last = NULL; 
-
-
-tmp = L->First->rptr; //zálohuje ukazatel na pravý prvek
-free(L->First); //uvolní prostor
-L->First = tmp; //aktalizuje ukazatel na první prvek
-if(L->First != NULL) L->First->lptr = NULL; 
-
-}	
-
-
-
-void DLCopy (tDLList *L, tFrame *val) {
-/*
-** Prostřednictvím parametru val vrátí hodnotu aktivního prvku seznamu L.
-** Pokud seznam L není aktivní, volá funkci DLError ().
-**/
-    if(L->Act ==NULL){
-        DLError();
-        return;
-    }
-    
-    *val = L->Act->frame;
+* @depractated musi pocitat s mazanim stromu
+*/
+void Pop(tStack *Stack) {
+	tSElemPtr tmp = NULL;
+	if (Stack->First == NULL) return;
+	if (Stack->First == Stack->Last)Stack->Last = NULL;
+	//to tmp pravy prvek
+	tmp = Stack->First->rptr;
+	//odalokuju
+	free(Stack->First);
+	//prenastavim prvni prvek
+	Stack->First = tmp;
+	if (Stack->First != NULL) Stack->First->lptr = NULL;
 }
 
 
-void DLSucc (tDLList *L) {
-/*
-** Posune aktivitu na následující prvek seznamu L.
-** Není-li seznam aktivní, nedělá nic.
-** Všimněte si, že při aktivitě na posledním prvku se seznam stane neaktivním.
-**/
-if(L->Act == NULL) return;
-L->Act = L->Act->rptr;
-
-}
-
-
-void DLPred (tDLList *L) {
-/*
-** Posune aktivitu na předchozí prvek seznamu L.
-** Není-li seznam aktivní, nedělá nic.
-** Všimněte si, že při aktivitě na prvním prvku se seznam stane neaktivním.
-**/
-if(L->Act == NULL) return;
-L->Act = L->Act->lptr;	
-}
-
-int DLActive (tDLList *L) {
-/*
-** Je-li seznam L aktivní, vrací nenulovou hodnotu, jinak vrací 0.
-** Funkci je vhodné implementovat jedním příkazem return.
-**/
-return L->Act!= NULL;    
-}
-
-
-void deleteTopFrame(tDLList* list) {
+void deleteTopFrame(tStack* list) {
 	tFrame frame;
 	DLTop(list, &frame);
 	BSTFree(frame.frame, variableDelete);
 }
 
-int pushNewFrame(tDLList* list, bool passable) {
+int pushNewFrame(tStack* list, bool passable) {
 	tFrame frame;
 	frame.passable;
-	tBSTNodePtr tree;
+	frame.frame = NULL;
 
 	DLPush(list, &frame);
 }
 
-void deleteFunctionsFrames(tDLList* list) {
+void deleteFunctionsFrames(tStack* list) {
 	while (list->First->frame.passable) {
 		deleteTopFrame(list);
 	}
 	deleteTopFrame(list);
 }
 
-/*******rVariable - nutno presunout*****/
 
-
-void variableCreate(tVariable* var, tVariableType type, void* data) {
-	var->type = type;
-	switch (type) {
-	case VAR_TYPE_INT:
-		var->data.intVal = *(int*)data;
-		break;
-	case VAR_TYPE_BOOL:
-		var->data.boolVal = *(bool*)data;
-		break;
-	case VAR_TYPE_DOUBLE:
-		var->data.doubleVal = *(double*)data;
-		break;
-	case VAR_TYPE_STRING:
-		if (strInit(&var->data.stringVal)) {
-			FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+void insertNewVariable(tFrame* frame, tVariable* var, string* name) {
+	if(frame->frame==NULL){
+		if (!BSTCreateNode(frame->frame, name, var)) {
+			//todo
+			return;
 		}
-		if (strCopyString(&var->data.stringVal, data)) {
-			//error
+	}
+	else {
+		if (!BSTInsert(frame->frame, name, var)) {
+			//todo
+			return;
 		}
-		break;
-	default:
-		break;
 	}
 }
-void variableDelete(tVariable* var) {
-	if (var->type == VAR_TYPE_STRING) {
-		strFree(&var->data.stringVal);
-	}
+
+int findVariable(const tStack* stack, string* s, tVariable* var) {
+	
 }
