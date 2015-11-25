@@ -295,7 +295,12 @@ void BSTDelete(tBSTNodePtr* rootPtr, string* key) {
 }
 
 void BSTFree(tBSTNodePtr* rootPtr, void (*dataFree)(void*) ){
+
 	if(rootPtr==NULL){
+		//chybny ukazatel
+		return;
+	}
+	if(*rootPtr==NULL){
 		//hotovo
 		return;
 	}
@@ -310,5 +315,6 @@ void BSTFree(tBSTNodePtr* rootPtr, void (*dataFree)(void*) ){
 
 	//smazeme uzel
 	BSTFreeNode(*rootPtr);
+	*rootPtr=NULL;
 }
 /*** End of file: ial.c ***/
