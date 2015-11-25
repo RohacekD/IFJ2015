@@ -16,11 +16,11 @@
 
 #include "str.h"
 
-typedef struct tBSTNode{
-	string* key;
-	void* data;
-	struct tBSTNode *l;
-	struct tBSTNode *r;
+typedef struct tBSTNode {
+    string* key;
+    void* data;
+    struct tBSTNode *l;
+    struct tBSTNode *r;
 } *tBSTNodePtr;
 
 
@@ -87,14 +87,14 @@ void BSTDelete(tBSTNodePtr* rootPtr, string* key);
  * @param rootPtr	-	ukazatel na koren stromu
  * @param dataFree	-	ukazatel na funkci, ktera uvolni polozku data z pameti
  */
-void BSTFree(tBSTNodePtr* rootPtr, void (*dataFree)(void*) );
+void BSTFree(tBSTNodePtr* rootPtr, void (*dataFree)(void*));
 /**
-* Vytvari uzel.
-* @param node	-	ukazatel pro alokaci uzlu
-* @param key	-	klic noveho uzlo
-* @param data	-	data noveho uzlo
-* @return	0-chyba, 1-v poradku
-*/
-int BSTCreateNode(tBSTNodePtr* , string* , void* );
+ * Vytvari uzel.
+ * @param node	-	ukazatel pro alokaci uzlu
+ * @param key	-	klic noveho uzlo
+ * @param data	-	data noveho uzlo
+ * @return	0-chyba, 1-v poradku
+ */
+int BSTCreateNode(tBSTNodePtr*, string*, void*);
 #endif /* IAL_H_ */
 /*** End of file: ial.h ***/
