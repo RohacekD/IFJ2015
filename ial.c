@@ -301,9 +301,9 @@ void BSTFree(tBSTNodePtr* rootPtr, void (*dataFree)(void*) ){
 	}
 
 	//mazeme levou vetev
-	BSTFree((*rootPtr)->l, dataFree);
+	BSTFree(&((*rootPtr)->l), dataFree);
 	//mazeme pravou vetev
-	BSTFree((*rootPtr)->r, dataFree);
+	BSTFree(&((*rootPtr)->r), dataFree);
 
 	//smazeme data
 	dataFree((*rootPtr)->data);
