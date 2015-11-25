@@ -25,7 +25,7 @@ typedef struct tSElem {
 
 typedef struct {
 	//ukazatel na prvni prvek
-	tSElemPtr First;
+	tSElemPtr Top;
 	//ukazatel na posledni prvek
 	tSElemPtr Last;
 } tStack;
@@ -59,10 +59,8 @@ void insertNewVariable(tFrame*, tVariable*, string*);
 
 /*
  * Hleda varaible podle stringu skrz passable framy
- * @param frame[in] vrchol aktualniho stacku, nebo passnout stack? Asi jo takze plati dalsi radek
  * @param stack[in] frameStack
- * @param string[in] jmeno hledane promenne
- * @param var[out] zde vrati ukazatel na promennou pokud ji najde
- * @return vyber si co vrati pri succes
+ * @param s[in] jmeno hledane promenne
+ * @param var[out] zde vrati ukazatel na promennou pokud ji najde jinak NULL
  */
-int findVariable(tStack* , string s, tVariable*);
+void findVariable(tStack* , string s, tVariable*);
