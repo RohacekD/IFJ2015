@@ -12,6 +12,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "tabSym.h"
 #include "insTape.h"
 #include "ial.h"
@@ -27,21 +28,23 @@ tTabSym* tabSymCreate(tTabSymTypes tabType){
 
 	newTable->tabType=tabType;
 	newTable->root=NULL;
-	newTable->tmpCounter=0;
 
 	return newTable;
 }
 
 tTabSymElemData* tabSymSearch(tTabSym* table, string* key){
 	tBSTNodePtr* storeElement;
-
+        
 	BSTSearchTree(table->root, key, storeElement);
 	if(storeElement==NULL){
 		//nenasel
 		return NULL;
 	}
-
-	return (tTabSymElemData*)storeElement->data;
+        
+        if(*storeElement == NULL)
+            return NULL;
+        
+	return (tTabSymElemData*)(*storeElement)->data; //UPRAVENO
 }
 
 /**
@@ -89,11 +92,12 @@ int tabSymInsertVar(tTabSym* table, string* key, tVariableInfo* varInfo){
 	tTabSymElemData* elemData=createElemData(TAB_SYM_VARIABLE, varInfo);
 	if(elemData==NULL){
 		//chyba
+            printf("Nepovedlo se vytvorit element\n");
 		return 0;
 	}
 
 	//vlozime do stromu
-	return BSTInsert(table->root,key, elemData);
+	return BSTInsert(&(table->root),key, elemData);
 }
 
 int tabSymInsertConst(tTabSym* table, string* key, tConstantInfo* constInfo){
@@ -105,7 +109,7 @@ int tabSymInsertConst(tTabSym* table, string* key, tConstantInfo* constInfo){
 	}
 
 	//vlozime do stromu
-	return BSTInsert(table->root,key, elemData);
+	return BSTInsert(&(table->root),key, elemData);
 }
 
 int tabSymInsertFunc(tTabSym* table, string* key, tFuncInfo* funcInfo){
@@ -117,7 +121,7 @@ int tabSymInsertFunc(tTabSym* table, string* key, tFuncInfo* funcInfo){
 	}
 
 	//vlozime do stromu
-	return BSTInsert(table->root,key, elemData);
+	return BSTInsert(&(table->root),key, elemData);
 }
 
 /**
@@ -133,7 +137,7 @@ void freeVariableInfo(tVariableInfo *var){
  * @param constant[in]
  */
 void freeConstantInfo(tConstantInfo * constant){
-	if(constant->dataType==TAB_SYM_VAR_STRING){
+	if(constant->dataType==TAB_SYM_VAR_NO_AUTO_STRING){
 		//free stringu
 		strFree(constant->value.stringVal);
 		free(constant->value.stringVal);
@@ -153,17 +157,17 @@ void freeFunctionInfo(tFuncInfo * func){
 	/**
 	 * Informace k funkci.
 	 */
-	typedef struct {
+	/*typedef struct {
 		tParamListPtr* params;		// parametry funkce
 		tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
 		tTabSym* locTab;			// lokalni tabulka symbolu
 		tInsTape* instTape;			// instrukcni paska
 		bool defined;				// byla definovana
 
-	} tFuncInfo;
+	} tFuncInfo;*/
 
 	//uvolnime list parametru
-	paramListFree(func->params);
+	paramListFree((*func->params)); //UPRAVENO
 
 	//uvolnime lokalni tabulku symbolu
 	tabSymFree(func->locTab);
