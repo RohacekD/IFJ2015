@@ -123,4 +123,4 @@ int findVariable(const tStack* stack, string* s, tVariable* var) {
         }
     } else BSTSearchTree(elem->frame.frame, s, node);
     var = (*tVariable)node->data;
-}
+} 

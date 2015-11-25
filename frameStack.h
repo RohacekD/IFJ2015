@@ -63,4 +63,4 @@ void insertNewVariable(tFrame*, tVariable*, string*);
  * @param s[in] jmeno hledane promenne
  * @param var[out] zde vrati ukazatel na promennou pokud ji najde jinak NULL
  */
-void findVariable(tStack* , string s, tVariable*);
+void findVariable(tStack* , string s, tVariable*); 
