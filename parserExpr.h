@@ -24,9 +24,10 @@
  * 								se posunuje aktivita na kazdou vlozenou instrukci, tedy posledni
  * 								vlozena instrukce bude aktivni.
  * @param expDataType[out]	-	Vysledny datovy typ vyrazu.
+ * @param scanFile[in]		-	Soubor pro scanner.
  * @return kod chyby / uspechu
  */
-int parseExpression(tTabSym* table, tInsTape* tape, tTabSymVarNoAutoDataType expDataType);
+int parseExpression(tTabSym* table, tInsTape* tape, tTabSymVarNoAutoDataType expDataType, FILE* scanFile);
 
 
 

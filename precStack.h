@@ -12,6 +12,7 @@
  */
 #ifndef PRECSTACK_H_
 #define PRECSTACK_H_
+#include <stdbool.h>
 
 typedef enum
 {
@@ -21,10 +22,17 @@ typedef enum
 	PREC_STACK_ENDMARK
 }tPrecStackElemType;
 
+typedef union{
+	int intVal;
+	double doubleVal;
+	string stringVal;
+	bool boolVal;
+}tPrecStacValue;
+
 typedef struct{
 	tPrecStackElemType type;
 	int key;				// klic, daneho neterminalu, terminalu
-
+	string* id;				// identifikator pro tabulku symbolu
 } tPrecStackData;
 
 typedef struct tStackElem {
@@ -58,7 +66,7 @@ int precStackPush(tPrecStack * stack, tPrecStackData data);
  * @param[in] key		-	Klic elementu.
  * @return 0 pri chybe, jinak 1.
  */
-int precStackPushElementOfKind(tPrecStack * stack, tPrecStackElemType type, int key);
+int precStackPushElementOfKind(tPrecStack * stack, tPrecStackElemType type, int key, string* id);
 
 /**
  * Vlozi element typu type s klicem key pred nejvrchnejsi terminal zasobniku stack,
@@ -67,7 +75,7 @@ int precStackPushElementOfKind(tPrecStack * stack, tPrecStackElemType type, int 
  * @param[in] key		-	Klic elementu.
  * @return 0 pri chybe, jinak 1.
  */
-int precStackPushElemBeforeTopTerm(tPrecStack * stack, tPrecStackElemType type, int key);
+int precStackPushElemBeforeTopTerm(tPrecStack * stack, tPrecStackElemType type, int key, string* id);
 
 /**
  * Rusi prvek na vrcholu zasobniku stack.

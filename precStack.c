@@ -50,20 +50,21 @@ int precStackPush(tPrecStack * stack, tPrecStackData data){
 	return 1;
 }
 
-int precStackPushElementOfKind(tPrecStack * stack, tPrecStackElemType type, int key){
+int precStackPushElementOfKind(tPrecStack * stack, tPrecStackElemType type, int key, string* id){
 	tPrecStackData data;
 	data.key=key;
 	data.type=type;
-
+	data.id=id;
 	return precStackPush(stack, data);
 }
 
-int precStackPushElemBeforeTopTerm(tPrecStack * stack, tPrecStackElemType type, int key){
+int precStackPushElemBeforeTopTerm(tPrecStack * stack, tPrecStackElemType type, int key, string* id){
 	//predpripravime data
 	tPrecStackElemPtr newElem;
 	tPrecStackData data;
 	data.key=key;
 	data.type=type;
+	data.id=id;
 
 	//ziskame nejvrchnejsi element
 	tPrecStackElemPtr element=precStackTopElement(stack);
