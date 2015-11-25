@@ -927,9 +927,13 @@ int isKeyWord(string* s) {
 	return KEYW_AUTO + i;
 }
 
-void freeTokenMem(tToken*) {
-
+void freeTokenMem(tToken* t) {
+	if (t->typ == TYPE_STRING || t->typ == TYPE_IDENTIFICATOR) {
+		strFree(&t->value.stringVal);
+	}
 }
+
+//void ungetToken(tToken*);
 
 /*
  * @depractated
