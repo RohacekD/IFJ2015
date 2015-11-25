@@ -39,6 +39,12 @@ void Push(tStack *, tFrame*);
 void Top(tStack *, tFrame*);
 void Pop(tStack *);
 
+
+/*
+ * Vytvori novy ramec na zasobniku
+ * @param stack[in] zasonik na ktery se prida novy frame
+ * @param passable[in] urci jestli vytvoreny ramec bude pruchozi
+ */
 int pushNewFrame(tStack*, bool);
 /*
  * Volana pri navratu z fce. Maze vsechny frame i s framem funkce.

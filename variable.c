@@ -1,5 +1,16 @@
 #include "variable.h"
 
+
+#define detVarType(var)					\
+(var->type == VAR_TYPE_INT) ?			\
+(var->data->intVal):					\
+	(var->type == VAR_TYPE_BOOL)?		\
+	(var->data->boolVal):				\
+		(var->type == VAR_TYPE_DOUBLE)?	\
+		(var->data->doubleVal):			\
+	(var->data->stringVal)				\
+
+
 void variableCreate(tVariable* var, tVariableType type, void* data) {
 	var->type = type;
 	switch (type) {

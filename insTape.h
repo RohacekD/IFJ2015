@@ -13,35 +13,36 @@
 #ifndef INSTAPE_H_
 #define INSTAPE_H_
 
+//todo: vsechny instrukce musi mit variantu 
+//pokud jde o operaci vyuzivajici 3 adresy tak oper1,oper2,vysledek
 typedef enum{
-	I_CIN,
-	I_COUT,
-	I_PLUS,
-	I_MINUS,
-	I_MUL,
-	I_DIV,
-	I_EQUAL,
-	I_NOTEQUAL,
-	I_GREATER,
-	I_LESSER,
-	I_GEQUAL,
-	I_LEQUAL,
-	I_UMINUS,
+	I_CIN,//adr3 = kam to mam ulozit
+	I_COUT,//adr1 = co mam vypsat
+	I_PLUS,//bezna konvence
+	I_MINUS,//bezna konvence
+	I_MUL,//bezna konvence
+	I_DIV,//bezna konvence
+	I_EQUAL,//bezna konvence - 3. operand je bool
+	I_NOTEQUAL,//bezna konvence - 3. operand je bool
+	I_GREATER,//bezna konvence - 3. operand je bool
+	I_LESSER,//bezna konvence - 3. operand je bool
+	I_GEQUAL,//bezna konvence - 3. operand je bool
+	I_LEQUAL,//bezna konvence - 3. operand je bool
+	I_UMINUS,//
 	I_POST_INC,//postfix 
 	I_POST_DEC,
 	I_PRE_INC,
 	I_PRE_DEC,
-	I_NOT,
+	I_NOT,//bezna konvence - 3. operand je bool
 	I_AND,
 	I_OR,
 	I_CBF, //create block frame
-	I_CFF, //create function frame
+	I_CF, //call function adr1 - locTab adr2 - ins
 	I_ASSIGN, //prirazeni =
 	I_SP, //set parametr - musis se podivat o jeden niz
 	I_DBF, //delete block frame
-	I_RETURN, //navrat z ramce
-	I_IFZERO,
-	I_SETRESULT, //navratova hodnota z fce
+	I_RETURN, //adr1=>promenna vracena(source), ,adr3=>promenna pro vraceni(dest)
+	I_IFZERO,//jmp if adr1 == 0 to adr2 (ins)
 	I_SORT,
 	I_FIND,
 	I_CONCAT,
