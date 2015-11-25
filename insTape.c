@@ -281,7 +281,7 @@ void insTapeActualize(tInsTape* tape, tInstructTypes type, void* adr1,
 
 	if(tape->act==NULL) return;
 
-	tape->act->type=tape;
+	tape->act->type=type;
 	tape->act->adr1=adr1;
 	tape->act->adr2=adr2;
 	tape->act->adr3=adr3;
