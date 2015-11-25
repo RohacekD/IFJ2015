@@ -45,4 +45,16 @@ int strHexToInt(string* forConversion, int* val);
 int strOctToInt(string* forConversion, int* val);
 int unescapeStr(string*);
 int isKeyWord(string*);
+
+/*
+ * Uvolni misto po stringu v tokenu
+ * @param token[in] token pro vycisteni
+ */
+void freeTokenMem(tToken*);
+
+/*
+ * Vrátí token do vstupní fronty a uvolní paměť ve vraceném tokenu. Uvolni misto po stringu v tokenu.
+ * @param token[in] vraceny token
+ */
+void ungetToken(tToken*);
 #endif

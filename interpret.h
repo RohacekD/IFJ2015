@@ -3,6 +3,7 @@
 #include "insTape.h"
 #include "frameStack.h"
 #include "error.h"
+#include "tabSym.h"
 /*
  * Dostane instrukci a od te zacne vykonavat program.
  * @param ins[in]	-	instrukce od ktere zacit vykonavat
