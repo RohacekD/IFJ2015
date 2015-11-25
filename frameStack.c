@@ -81,7 +81,7 @@ void SPop(tStack *Stack) {
 void deleteTopFrame(tStack* list) {
     tFrame frame;
     STop(list, &frame);
-    BSTFree(frame.frame, variableDelete);
+    BSTFree(&(frame.frame), variableDelete);
 }
 
 int pushNewFrame(tStack* list, bool passable) {
@@ -101,26 +101,26 @@ void deleteFunctionsFrames(tStack* list) {
 
 void insertNewVariable(tFrame* frame, tVariable* var, string* name) {
     if (frame->frame == NULL) {
-        if (!BSTCreateNode(frame->frame, name, var)) {
+        if (!BSTCreateNode(&(frame->frame), name, var)) {
             //todo
             return;
         }
     } else {
-        if (!BSTInsert(frame->frame, name, var)) {
+        if (!BSTInsert(&(frame->frame), name, var)) {
             //todo
             return;
         }
     }
 }
 
-int findVariable(const tStack* stack, string* s, tVariable* var) {
+void findVariable(const tStack* stack, string* s, tVariable* var) {
     tBSTNodePtr node = NULL;
     tSElemPtr elem = stack->Top;
     if (elem->frame.passable) {
         while (elem->frame.passable && node == NULL) {
-            BSTSearchTree(elem->frame.frame, s, node);
+            BSTSearchTree(&(elem->frame.frame), s, node);
             elem = elem->rptr;
         }
-    } else BSTSearchTree(elem->frame.frame, s, node);
-    var = (*tVariable)node->data;
+    } else BSTSearchTree(&(elem->frame.frame), s, node);
+    var = node->data;
 } 
