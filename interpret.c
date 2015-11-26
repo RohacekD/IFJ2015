@@ -12,15 +12,15 @@ int executeTape(tInsTapeInsPtr ins) {
 		if ((tStack *)malloc(sizeof(tStack))) {
 			FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 		}
-		DLInitList(frameStack);
+		SInit(frameStack);
 	}
 }
 
 
 int executeIns(tInsTapeInsPtr ins, tStack* stack) {
-	tVariable oper1;
-	tVariable oper2;
-	tVariable dest;
+	tVariablePtr oper1;
+	tVariablePtr oper2;
+	tVariablePtr dest;
 
 	switch (ins->type)
 	{
@@ -28,11 +28,7 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
-		((oper1.type == VAR_TYPE_INT) ?
-			(oper1.data.intVal) :
-			(oper1.type == VAR_TYPE_BOOL) ?
-			(oper1.data.boolVal) :
-			(oper1.data.doubleVal)) = 1;
+		((oper1->type == VAR_TYPE_INT) ? (oper1->data.intVal) : (oper1->type == VAR_TYPE_BOOL) ? (oper1->data.boolVal) :(oper1->data.doubleVal)) = 1;
 		break;
 	case I_CBF:
 		pushNewFrame(stack, true);
