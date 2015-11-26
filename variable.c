@@ -1,42 +1,23 @@
 #include "variable.h"
+#include "error.h"
+#include <stdlib.h>
+#include <stdio.h>
 
-
-#define detVarType(var)					\
-(var->type == VAR_TYPE_INT) ?			\
-(var->data->intVal):					\
-	(var->type == VAR_TYPE_BOOL)?		\
-	(var->data->boolVal):				\
-		(var->type == VAR_TYPE_DOUBLE)?	\
-		(var->data->doubleVal):			\
-	(var->data->stringVal)				\
-
-
-void variableCreate(tVariable* var, tVariableType type, void* data) {
-	var->type = type;
-	switch (type) {
-	case VAR_TYPE_INT:
-		var->data.intVal = *(int*)data;
-		break;
-	case VAR_TYPE_BOOL:
-		var->data.boolVal = *(bool*)data;
-		break;
-	case VAR_TYPE_DOUBLE:
-		var->data.doubleVal = *(double*)data;
-		break;
-	case VAR_TYPE_STRING:
-		if (strInit(&var->data.stringVal)) {
-			FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
-		}
-		if (strCopyString(&var->data.stringVal, data)) {
-			//error
-		}
-		break;
-	default:
-		break;
-	}
+void variableCreate(tVariablePtr* var, tVariableType type) {
+    tVariablePtr v = (tVariablePtr) malloc(sizeof(tVariablePtr));
+    if(!v){
+        FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+    }
+    v->type = type;
+    if(type==VAR_TYPE_STRING) {
+        if(strInit(&v->data.stringVal)) //str init vraci 0 pri uspechu protoze str.c psal idiot
+            FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+    }
+    *var = v;
 }
-void variableDelete(tVariable* var) {
-	if (var->type == VAR_TYPE_STRING) {
-		strFree(&var->data.stringVal);
+void variableDelete(void* var) {
+	if (((tVariablePtr)var)->type == VAR_TYPE_STRING) {
+		strFree(&((tVariablePtr)var)->data.stringVal);
 	}
+       // printf("Mazu promennou %d\n",((tVariablePtr)var)->data.intVal);
 }

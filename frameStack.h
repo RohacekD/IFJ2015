@@ -11,12 +11,12 @@ typedef struct {
 	bool passable;
 	//ukazatel na prvni prvek stromu
 	tBSTNodePtr frame;
-} tFrame;
+} tFrameContainer;
 
 //prvek dvousmerne vazaneho seznamu
 typedef struct tSElem {
 	//uzitecna data
-	tFrame frame;
+	tFrameContainer frameContainer;
 	//ukazatel na predchozi prvek
 	struct tSElem *lptr;
 	//ukazatel na nasledujici prvek
@@ -32,19 +32,13 @@ typedef struct {
 
 void SInit(tStack *);
 void SDispose(tStack *);
-void Push(tStack *, tFrame*);
+void Push(tStack *, tFrameContainer*);
 /*
  * Vrati prvek na vrcholu zasobniku
  */
-void Top(tStack *, tFrame*);
+void Top(tStack *, tFrameContainer*);
 void Pop(tStack *);
 
-
-/*
- * Vytvori novy ramec na zasobniku
- * @param stack[in] zasonik na ktery se prida novy frame
- * @param passable[in] urci jestli vytvoreny ramec bude pruchozi
- */
 int pushNewFrame(tStack*, bool);
 /*
  * Volana pri navratu z fce. Maze vsechny frame i s framem funkce.
@@ -61,7 +55,7 @@ void deleteTopFrame(tStack*);
  * Vlozi promennou do ramce.
  * Musi se uvolnit string?
  */
-void insertNewVariable(tFrame*, tVariable*, string*);
+void insertNewVariable(tFrameContainer*, tVariablePtr, string*);
 
 /*
  * Hleda varaible podle stringu skrz passable framy
@@ -69,4 +63,4 @@ void insertNewVariable(tFrame*, tVariable*, string*);
  * @param s[in] jmeno hledane promenne
  * @param var[out] zde vrati ukazatel na promennou pokud ji najde jinak NULL
  */
-void findVariable(const tStack* , string *, tVariable*); 
+int findVariable(const tStack* , string *, tVariablePtr*); 

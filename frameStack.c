@@ -21,7 +21,7 @@ void SDispose(tStack *Stack) {
     }
 }
 
-void SPush(tStack *Stack, tFrame *val) {
+void SPush(tStack *Stack, tFrameContainer *val) {
     tSElemPtr tmp = NULL;
     //naalokuju pamet pro novy prvek
     tmp = malloc(sizeof (struct tSElem));
@@ -33,7 +33,7 @@ void SPush(tStack *Stack, tFrame *val) {
         return;
     }
     //naplni data
-    tmp->frame = *val;
+    tmp->frameContainer = *val;
     tmp->lptr = NULL;
     tmp->rptr = NULL;
     //zjistim jestli je prvek jediny
@@ -50,7 +50,7 @@ void SPush(tStack *Stack, tFrame *val) {
     }
 }
 
-void STop(tStack *Stack, tFrame *val) {
+void STop(tStack *Stack, tFrameContainer *val) {
     //je prazdny?
     if (Stack->Top == NULL) {
         //vyhodim chybu
@@ -59,7 +59,7 @@ void STop(tStack *Stack, tFrame *val) {
         return;
     }
     //ulozi hodnotu
-    *val = Stack->Top->frame;
+    *val = Stack->Top->frameContainer;
 }
 
 /*
@@ -79,48 +79,68 @@ void SPop(tStack *Stack) {
 }
 
 void deleteTopFrame(tStack* list) {
-    tFrame frame;
+    tFrameContainer frame;
     STop(list, &frame);
     BSTFree(&(frame.frame), variableDelete);
 }
 
 int pushNewFrame(tStack* list, bool passable) {
-    tFrame frame;
-    frame.passable;
+    tFrameContainer frame;
+    frame.passable = passable;
     frame.frame = NULL;
 
     SPush(list, &frame);
 }
 
 void deleteFunctionsFrames(tStack* list) {
-    while (list->Top->frame.passable) {
+    while (list->Top->frameContainer.passable) {
         deleteTopFrame(list);
     }
     deleteTopFrame(list);
 }
 
-void insertNewVariable(tFrame* frame, tVariable* var, string* name) {
-    if (frame->frame == NULL) {
-        if (!BSTCreateNode(&(frame->frame), name, var)) {
+void insertNewVariable(tFrameContainer* frameContainer, tVariablePtr var, string* name) {
+    
+    if (frameContainer->frame == NULL) {
+        if (!BSTCreateNode(&(frameContainer->frame), name, (void*)var)) {
             //todo
             return;
         }
     } else {
-        if (!BSTInsert(&(frame->frame), name, var)) {
+        if (!BSTInsert(&(frameContainer->frame), name, (void*)var)) {
             //todo
             return;
         }
     }
 }
 
-void findVariable(const tStack* stack, string* s, tVariable* var) {
+int findVariable(const tStack* stack, string* s, tVariablePtr* var) {
     tBSTNodePtr node = NULL;
+    *var = NULL;
+    if (stack == NULL || s == NULL) {
+        return 0;
+    }
+
     tSElemPtr elem = stack->Top;
-    if (elem->frame.passable) {
-        while (elem->frame.passable && node == NULL) {
-            BSTSearchTree(&(elem->frame.frame), s, node);
-            elem = elem->rptr;
+
+    if (!elem->frameContainer.passable) {
+        BSTSearchTree((elem->frameContainer.frame), s, &node);
+    } 
+    else{
+        while (elem->frameContainer.passable) {
+                BSTSearchTree((elem->frameContainer.frame), s, &node);
+                if (node != NULL){
+                    *var=(tVariablePtr)(node->data);
+                    return 1;//jiz jsme nasli promennou
+                }
+                if (!elem->rptr) return 0;//dosli jsme na konec stacku
+                elem = elem->rptr;//iterace stackem
         }
-    } else BSTSearchTree(&(elem->frame.frame), s, node);
-    var = node->data;
+        BSTSearchTree((elem->frameContainer.frame), s, &node);       
+    }
+    if (node != NULL){
+        *var=(tVariablePtr)(node->data);
+        return 1; //jiz jsme nasli promennou
+    }
+    else return 0;
 } 

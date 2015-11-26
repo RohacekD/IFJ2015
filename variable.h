@@ -13,7 +13,6 @@ typedef enum {
 
 typedef union
 {
-	//nejak implementovany pointer do tabulky symbolu
 	int intVal;
 	double doubleVal;
 	string stringVal;
@@ -23,20 +22,19 @@ typedef union
 typedef struct {
 	tVariableType type;
 	tVariableData data;
-} tVariable;
+} *tVariablePtr;
 
 /*
 * Utvori strukturu promenne, inicializuje string.
 * @param tVariable* struktura promenne
 * @param tVariableType urcuje typ
-* @void* (int*|bool*|double*|string*)
 */
-void variableCreate(tVariable*, tVariableType, void*);
+void variableCreate(tVariablePtr*, tVariableType);
 /*
 * Spravne smaze promennou. Preda se ukazatelem pri mazani stromu
 * @param tVariable* struktura promenne
 */
-void variableDelete(tVariable*);
+void variableDelete(void*);
 
 
 #endif //VARIABLE_H_

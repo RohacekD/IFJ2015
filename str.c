@@ -102,3 +102,20 @@ int strGetLength(string *s)
 {
 	return s->length;
 }
+/**
+ * Prijma incializovany string a vlozi do nej obsah druheho parametru
+ * @param s[out]
+ * @param c[in]
+ * @return 1 pokud konverze probehne v poradku jinak 0
+ */
+int strCharToString(string* s, char* c)
+{
+    if(s==NULL || c==NULL) return 0;
+    strInit(s);
+    int i = 0;
+    
+    while(c[i]!='\0'){
+        strAddChar(s,c[i]);
+        i++;
+    }
+}

@@ -21,4 +21,5 @@ int strCmpConstStr(string *s1, char *s2);
 
 char *strGetStr(string *s);
 int strGetLength(string *s);
+int strCharToString(string* s, char* c);
 #endif /* STR_H_ */
