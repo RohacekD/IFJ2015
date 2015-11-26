@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "token.h"
 #include <stdbool.h>
+#include <string.h>
 
 // vytvorim strukturu pro globalni tabulku symbolu
     tTabSym *globalTable;
@@ -80,6 +81,7 @@ int parseFunction() {
     int tokenVal, result;
     tToken *token;
     tTabSymVarNoAutoDataType dataType;
+    tTabSymElemData *wasDeclared;
     
     string idName;
     //pro kazdou funkci tvorim novy seznam parametru
@@ -96,8 +98,10 @@ int parseFunction() {
         case KEYW_DOUBLE:
         case KEYW_STRING:
         case KEYW_BOOL:
-        
+            
+            //prevedu typ tokenu na typ promenne
             dataType = tokenTypeToVarType(token->typ);
+            
             tokenVal = getToken(token, f);
             
             //nasledujici token je identifikator
@@ -107,6 +111,20 @@ int parseFunction() {
                     //musim znat vice informaci
                 //chci ulozit identifikator do globalni tabulky identifikatoru
                 idName = token->value.stringVal;
+                
+                //funkce jeste nebyla deklarovana
+                if((wasDeclared = tabSymSearch(globalTable, &idName)) == NULL) {
+                    //zkontroluji, zda je ID pouzitelne
+                    if((strcmp(idName->str, "length") == 0) || (strcmp(idName->str, "substr") == 0) ||
+                            (strcmp(idName->str, "concat") == 0) || (strcmp(idName->str, "find") == 0) ||
+                            (strcmp(idName->str, "sort") == 0)) {
+                        FatalError(3, "Pokus o redefinici funkce\n");
+                    }
+                }
+                //funkce uz byla deklarovana
+                else {
+                    
+                }
                 
                 //dalsi token by mel byt '('
                 tokenVal = getToken(token, f);
@@ -119,7 +137,8 @@ int parseFunction() {
                         return SYNTAX_FAILED;
                     
                     //pokracovani pravidla...
-                    
+                    //<function> -> <Kdata_types> fID(<arguments>)<body>
+                    //jsme u <body> -> bud ';'(deklarace), nebo '{' (definice)
                 }
                 else {
                     //musim uvolnit token
