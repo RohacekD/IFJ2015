@@ -17,34 +17,63 @@
 #include "insTape.h"
 #include "ial.h"
 
+tTabSym* tabSymCreate(tTabSymTypes tabType) {
+	tTabSym* newTable = malloc(sizeof(tTabSym));
 
-tTabSym* tabSymCreate(tTabSymTypes tabType){
-	tTabSym* newTable=malloc(sizeof(tTabSym));
-
-	if(newTable==NULL){
+	if (newTable == NULL) {
 		// chyba alokace
 		return NULL;
 	}
 
-	newTable->tabType=tabType;
-	newTable->root=NULL;
+	newTable->tabType = tabType;
+	newTable->root = NULL;
 
 	return newTable;
 }
 
-tTabSymElemData* tabSymSearch(tTabSym* table, string* key){
-	tBSTNodePtr* storeElement;
-        
-	BSTSearchTree(table->root, key, storeElement);
-	if(storeElement==NULL){
+tTabSymElemData* tabSymSearch(tTabSym* table, string* key) {
+	tBSTNodePtr storeElement;
+
+	BSTSearchTree(table->root, key, &storeElement);
+	if (storeElement == NULL) {
 		//nenasel
 		return NULL;
 	}
-        
-        if(*storeElement == NULL)
-            return NULL;
-        
-	return (tTabSymElemData*)(*storeElement)->data; //UPRAVENO
+
+	return storeElement->data;
+}
+
+tVariableInfo* tabSymCreateVariableInfo(tTabSymVarDataType dataType) {
+	tVariableInfo* varData = malloc(sizeof(tVariableInfo));
+	if (varData != NULL) {
+		varData->dataType = dataType;
+	}
+	return varData;
+}
+
+tConstantInfo* tabSymCreateConstantInfo(tTabSymVarNoAutoDataType dataType,
+		unionValue value) {
+	tConstantInfo* constData = malloc(sizeof(tConstantInfo));
+	if (constData != NULL) {
+		constData->dataType = dataType;
+		constData->value = value;
+	}
+	return constData;
+}
+
+tFuncInfo* tabSymCreateFuncInfo(tParamListPtr* params,
+		tTabSymVarNoAutoDataType retType, tTabSym* locTab,
+		tTabSymList* tabBlockList, tInsTape* instTape, bool defined) {
+	tFuncInfo* funcData = malloc(sizeof(tFuncInfo));
+	if (funcData != NULL) {
+		funcData->params = params;
+		funcData->retType = retType;
+		funcData->locTab = locTab;
+		funcData->tabBlockList = tabBlockList;
+		funcData->instTape = instTape;
+		funcData->defined = defined;
+	}
+	return funcData;
 }
 
 /**
@@ -53,82 +82,78 @@ tTabSymElemData* tabSymSearch(tTabSym* table, string* key){
  * @param info[in]	-	structura obsahujici informace o elementu
  * @return	Odkaz na strukturu pro data elementu, pokud chyba tak NULL.
  */
-tTabSymElemData* createElemData(tTabSymDataType type, void* info){
+tTabSymElemData* createElemData(tTabSymDataType type, void* info) {
 	//alokujeme pamet
-	tTabSymElemData* elemData= malloc(sizeof(tTabSymElemData));
-	if(elemData==NULL){
+	tTabSymElemData* elemData = malloc(sizeof(tTabSymElemData));
+	if (elemData == NULL) {
 		//chyba
 		return NULL;
 	}
 
 	//vlozime data
 	switch (type) {
-		case TAB_SYM_VARIABLE:
-			elemData->info.var=(tVariableInfo*)info;
-			break;
-		case TAB_SYM_CONSTANT:
-			elemData->info.constant=(tConstantInfo*)info;
-			break;
-		case TAB_SYM_FUNCTION:
-			elemData->info.func=(tFuncInfo*)info;
-			break;
-		default:
-			//nedefinovany typ
-			free(elemData);
-			return NULL;
-			break;
+	case TAB_SYM_VARIABLE:
+		elemData->info.var = (tVariableInfo*) info;
+		break;
+	case TAB_SYM_CONSTANT:
+		elemData->info.constant = (tConstantInfo*) info;
+		break;
+	case TAB_SYM_FUNCTION:
+		elemData->info.func = (tFuncInfo*) info;
+		break;
+	default:
+		//nedefinovany typ
+		free(elemData);
+		return NULL;
+		break;
 	}
 
-	elemData->type=type;
+	elemData->type = type;
 	return elemData;
 }
 
-
-
-
-
-int tabSymInsertVar(tTabSym* table, string* key, tVariableInfo* varInfo){
+int tabSymInsertVar(tTabSym* table, string* key, tVariableInfo* varInfo) {
 	//nejprve vytvorime strukturu pro data elementu
-	tTabSymElemData* elemData=createElemData(TAB_SYM_VARIABLE, varInfo);
-	if(elemData==NULL){
+	tTabSymElemData* elemData = createElemData(TAB_SYM_VARIABLE, varInfo);
+	if (elemData == NULL) {
 		//chyba
-            printf("Nepovedlo se vytvorit element\n");
+		printf("Nepovedlo se vytvorit element\n");
 		return 0;
 	}
 
 	//vlozime do stromu
-	return BSTInsert(&(table->root),key, elemData);
+	return BSTInsert(&(table->root), key, elemData);
 }
 
-int tabSymInsertConst(tTabSym* table, string* key, tConstantInfo* constInfo){
+int tabSymInsertConst(tTabSym* table, string* key, tConstantInfo* constInfo) {
 	//nejprve vytvorime strukturu pro data elementu
-	tTabSymElemData* elemData=createElemData(TAB_SYM_CONSTANT, constInfo);
-	if(elemData==NULL){
+	tTabSymElemData* elemData = createElemData(TAB_SYM_CONSTANT, constInfo);
+	if (elemData == NULL) {
 		//chyba
 		return 0;
 	}
 
 	//vlozime do stromu
-	return BSTInsert(&(table->root),key, elemData);
+	return BSTInsert(&(table->root), key, elemData);
 }
 
-int tabSymInsertFunc(tTabSym* table, string* key, tFuncInfo* funcInfo){
+int tabSymInsertFunc(tTabSym* table, string* key, tFuncInfo* funcInfo) {
 	//nejprve vytvorime strukturu pro data elementu
-	tTabSymElemData* elemData=createElemData(TAB_SYM_FUNCTION, funcInfo);
-	if(elemData==NULL){
+	tTabSymElemData* elemData = createElemData(TAB_SYM_FUNCTION, funcInfo);
+	if (elemData == NULL) {
 		//chyba
 		return 0;
 	}
 
 	//vlozime do stromu
-	return BSTInsert(&(table->root),key, elemData);
+	return BSTInsert(&(table->root), key, elemData);
 }
 
 /**
  * Uvolneni tVariableInfo z pameti.
  * @param var[in]	-	promenna pro uvolneni
  */
-void freeVariableInfo(tVariableInfo *var){
+void freeVariableInfo(tVariableInfo *var) {
 	free(var);
 }
 
@@ -136,8 +161,8 @@ void freeVariableInfo(tVariableInfo *var){
  * Uvolni tConstantInfo z pameti.
  * @param constant[in]
  */
-void freeConstantInfo(tConstantInfo * constant){
-	if(constant->dataType==TAB_SYM_VAR_NO_AUTO_STRING){
+void freeConstantInfo(tConstantInfo * constant) {
+	if (constant->dataType == TAB_SYM_VAR_NO_AUTO_STRING) {
 		//free stringu
 		strFree(constant->value.stringVal);
 		free(constant->value.stringVal);
@@ -146,25 +171,23 @@ void freeConstantInfo(tConstantInfo * constant){
 	free(constant);
 }
 
-
-
 /**
  * Uvolni tFuncInfo z pameti.
  * @param func[in]
  */
-void freeFunctionInfo(tFuncInfo * func){
+void freeFunctionInfo(tFuncInfo * func) {
 
 	/**
 	 * Informace k funkci.
 	 */
 	/*typedef struct {
-		tParamListPtr* params;		// parametry funkce
-		tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
-		tTabSym* locTab;			// lokalni tabulka symbolu
-		tInsTape* instTape;			// instrukcni paska
-		bool defined;				// byla definovana
+	 tParamListPtr* params;		// parametry funkce
+	 tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
+	 tTabSym* locTab;			// lokalni tabulka symbolu
+	 tInsTape* instTape;			// instrukcni paska
+	 bool defined;				// byla definovana
 
-	} tFuncInfo;*/
+	 } tFuncInfo;*/
 
 	//uvolnime list parametru
 	paramListFree((*func->params)); //UPRAVENO
@@ -177,7 +200,6 @@ void freeFunctionInfo(tFuncInfo * func){
 	//uvolnime pasku instrukci
 	insTapeFree(func->instTape);
 
-
 	free(func);
 }
 
@@ -185,26 +207,30 @@ void freeFunctionInfo(tFuncInfo * func){
  * Uvolni z pameti tTabSymElemData.
  * @param dataForFree[in]	-	ukazatel na uvolneni struktury slouzici pro data elementu
  */
-void freeElemData(tTabSymElemData* dataForFree){
-	if(dataForFree==NULL){
+void freeElemData(void* dataForFreePar) {
+	tTabSymElemData* dataForFree = (tTabSymElemData*) dataForFreePar;
+	if (dataForFree == NULL) {
 		//nelze => konec
 		return;
 	}
 
 	// na zaklade typu uvolnime pamet pridelenou vnitrnim prvkum
 	switch (dataForFree->type) {
-		case TAB_SYM_VARIABLE:
-			// uvolnovani promenne
-			freeVariableInfo(dataForFree->info.var);
-			break;
-		case TAB_SYM_CONSTANT:
-			// uvolnovani konstanty
-			freeConstantInfo(dataForFree->info.constant);
-			break;
-		case TAB_SYM_FUNCTION:
-			// uvolnovani funkce
-			freeFunctionInfo(dataForFree->info.func);
-			break;
+	case TAB_SYM_VARIABLE:
+		// uvolnovani promenne
+		freeVariableInfo(dataForFree->info.var);
+		dataForFree->info.var = NULL;
+		break;
+	case TAB_SYM_CONSTANT:
+		// uvolnovani konstanty
+		freeConstantInfo(dataForFree->info.constant);
+		dataForFree->info.constant = NULL;
+		break;
+	case TAB_SYM_FUNCTION:
+		// uvolnovani funkce
+		freeFunctionInfo(dataForFree->info.func);
+		dataForFree->info.func = NULL;
+		break;
 	}
 
 	free(dataForFree);
@@ -215,8 +241,9 @@ void freeElemData(tTabSymElemData* dataForFree){
  * 	(V pripade, ze tabulka obsahuje funkce, tak maze i lokalni tabulky dane funkce.)
  * @param table[in]		-	tabulka symbolu
  */
-void tabSymFree(tTabSym* table){
-	if(table==NULL)	return;
+void tabSymFree(tTabSym* table) {
+	if (table == NULL)
+		return;
 	//uvolnime strom
 	BSTFree(&(table->root), freeElemData);
 

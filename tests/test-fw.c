@@ -46,6 +46,7 @@ void printToken(tToken *token) {
 		"Datovy typ string",
 		"Datovy typ bool",
 		"Identifikator",
+		"funkce Identifikator",
 		"Deleni",
 		"Nasobeni",
 		"Scitani",

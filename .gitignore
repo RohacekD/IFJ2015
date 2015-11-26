@@ -1,4 +1,5 @@
 nbproject
+makefile
 
 .dep.inc
 *.vcxproj*
@@ -35,3 +36,4 @@ Debug/
 
 # Debug files
 *.dSYM/
+/main.c

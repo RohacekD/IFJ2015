@@ -113,7 +113,7 @@ typedef struct {
 	tParamListPtr* params;		// parametry funkce
 	tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
 	tTabSym* locTab;			// lokalni tabulka symbolu
-	//tTabSymList* tabBlockList;	// list tabulek bloku
+	tTabSymList* tabBlockList;	// list tabulek bloku
 	tInsTape* instTape;			// instrukcni paska
 	bool defined;				// byla definovana
 
@@ -132,6 +132,40 @@ typedef struct {
 } tTabSymElemData;
 
 
+
+/**
+ * Vytvari nove tVariableInfo.
+ * @param dataType[in]	-	Datovy typ promenne.
+ * @return	Vraci ukazatel na tVariableInfo. Pokud chyba vraci NULL.
+ */
+tVariableInfo* tabSymCreateVariableInfo(tTabSymVarDataType dataType);
+
+
+/**
+ * Vytvari nove tConstantInfo.
+ * @param dataType[in]	-	Datovy typ konstanty.
+ * @param value[in]		-	Hodnota konstanty.
+ * @return Vraci ukazatel na tConstantInfo. Pokud chyba vraci NULL.
+ */
+tConstantInfo* tabSymCreateConstantInfo(tTabSymVarNoAutoDataType dataType, unionValue value);
+
+/**
+ * Vytvari nove tConstantInfo a prekopiruje do nej data z info.
+ * @param info[in]	-	Info, ktere se pouzije pro nove info.
+ * @return	Vraci ukazatel na tConstantInfo. Pokud chyba vraci NULL.
+ */
+/**
+ * Vytvari nove tFuncInfo.
+ * @param params[in]		-	parametry funkce
+ * @param retType[in]		-	navratovy typ funkce
+ * @param locTab[in]		-	lokalni tabulka symbolu
+ * @param tabBlockList[in]	-	list tabulek bloku
+ * @param instTape[in]		-	instrukcni paska
+ * @param defined[in]		-	byla definovana
+ * @return Vraci ukazatel na tFuncInfo. Pokud chyba vraci NULL.
+ */
+tFuncInfo* tabSymCreateFuncInfo(tParamListPtr* params, tTabSymVarNoAutoDataType retType, tTabSym* locTab,
+		tTabSymList* tabBlockList, tInsTape* instTape, bool defined);
 /**
  * Vytvori tabulku symbolu.
  * @param tabType[in]	-	typ tabulky symbolu

@@ -900,9 +900,40 @@ const char* keyWords[] = {
 	"else",
 	"for",
 	"while",
+	"bool"
 	"return",
 	""
 };
+
+/*
+* Prohleda tabulku klicovych slov a zjisti zda prijaty string neni mezi nimi
+*
+* @uses keyWords
+* @param string* s zkoumany string
+* @return TokenTypes Type of token (TYPE_IDENTIFICATOR|[KEYW_AUTO-KEYW_RETURN])
+*
+*/
+int isKeyWord(string* s) {
+	int ret = 0;
+	int i = 0;
+	for (i = 0; i < 13; i++) {
+		if (strCmpConstStr(s, keyWords[i]) == 0) {
+			break;
+		}
+	}
+	if (i == 13) {
+		return TYPE_IDENTIFICATOR;
+	}
+	return KEYW_AUTO + i;
+}
+
+void freeTokenMem(tToken* t) {
+	if (t->typ == TYPE_STRING || t->typ == TYPE_IDENTIFICATOR) {
+		strFree(&t->value.stringVal);
+	}
+}
+
+//void ungetToken(tToken*);
 
 /*
  * @depractated
@@ -925,27 +956,6 @@ int unescapeStr(string* s) {
 	}
 }
 
-/*
- * Prohleda tabulku klicovych slov a zjisti zda prijaty string neni mezi nimi 
- *
- * @uses keyWords
- * @param string* s zkoumany string
- * @return TokenTypes Type of token (TYPE_IDENTIFICATOR|[KEYW_AUTO-KEYW_RETURN])
- *
- */
-int isKeyWord(string* s) {
-	int ret = 0;
-	int i = 0;
-	for (i = 0; i < 12; i++) {
-		if (strCmpConstStr(s, keyWords[i])==0) {
-			break;
-		}
-	}
-	if (i == 12) {
-		return TYPE_IDENTIFICATOR;
-	}
-	return KEYW_AUTO + i;
-}
 /*
 int strToBool(string* forConversion, bool* val){
 	const char trueString="true";
