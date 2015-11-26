@@ -106,6 +106,11 @@ void precStackPop(tPrecStack * stack){
 	}
 
 	tPrecStackElemPtr nextElem=stack->top->next;
+	if(stack->top.data.id!=NULL){
+		//mazeme id
+		strFree(stack->top.data.id);
+		free(stack->top.data.id);
+	}
 	free(stack->top);
 	stack->top=nextElem;
 }
@@ -124,11 +129,12 @@ tPrecStackElemPtr precStackTopElement(tPrecStack * stack){
 	return stack->top;
 }
 
-int precStackTopTerminal(tPrecStack* stack, int* terminal){
+int precStackTopTerminal(tPrecStack* stack, tParExpTerminals* terminal){
 	//ziskame nejvrchnejsi element
 	tPrecStackElemPtr element=precStackTopElement(stack);
 
-	while(element!=NULL && element->data.type!=PREC_STACK_TERMINAL){
+	while(element!=NULL &&
+			(element->data.type!=PREC_STACK_TERMINAL || element->data.type!=PREC_STACK_ENDMARK)){
 		//preskocime vsechny neterminaly z vrcholu zasobniku
 		element=element->next;
 	}

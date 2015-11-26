@@ -16,6 +16,7 @@
 #include "tabSym.h"
 #include "insTape.h"
 #include "ial.h"
+#define BUFFER_SIZE 100
 
 tTabSym* tabSymCreate(tTabSymTypes tabType) {
 	tTabSym* newTable = malloc(sizeof(tTabSym));
@@ -27,6 +28,7 @@ tTabSym* tabSymCreate(tTabSymTypes tabType) {
 
 	newTable->tabType = tabType;
 	newTable->root = NULL;
+	newTable->tmpCounter=0;
 
 	return newTable;
 }
@@ -249,5 +251,27 @@ void tabSymFree(tTabSym* table) {
 
 	free(table);
 }
+
+string* tabSymCreateTmpSymbol(tTabSym* table) {
+	char buffer[BUFFER_SIZE];
+	int flag;
+	//Notice that only when this returned value is non-negative and less than n, the string has been completely written.
+	flag = snprintf(buffer, BUFFER_SIZE, "$tmp%d", table->tmpCounter++);//vytvoreni nazvu docasne promenne
+	if (flag < 0 || flag >= BUFFER_SIZE) {
+		//chyba pri vytvareni nazvu
+		return NULL;
+	}
+	string* newString = malloc(sizeof(string));
+	if (newString == NULL) {
+		//chyba pri alokaci
+		return NULL;
+	}
+	if(strInit(newString)){
+		return NULL;
+	}
+	strCmpConstStr(newString, buffer);
+	return newString;
+}
+
 
 /*** End of file: tabSym.c ***/

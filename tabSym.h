@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include "ial.h"
 #include "insTape.h"
+#include "tabSymList.h"
 /**
  * Typ polozky v tabulce symbolu
  */
@@ -106,6 +107,8 @@ typedef struct {
 	unsigned int tmpCounter;	//pouziva se pro index generovanych docasnych identifikatoru
 } tTabSym;
 
+
+
 /**
  * Informace k funkci.
  */
@@ -155,7 +158,7 @@ tConstantInfo* tabSymCreateConstantInfo(tTabSymVarNoAutoDataType dataType, union
  * @return	Vraci ukazatel na tConstantInfo. Pokud chyba vraci NULL.
  */
 /**
- * Vytvari nove tFuncInfo.
+ * Vytvari nove tFuncInfo.1
  * @param params[in]		-	parametry funkce
  * @param retType[in]		-	navratovy typ funkce
  * @param locTab[in]		-	lokalni tabulka symbolu
@@ -214,6 +217,13 @@ int tabSymInsertFunc(tTabSym* table, string* key, tFuncInfo* funcInfo);
  */
 void tabSymFree(tTabSym* table);
 
+/**
+ * Vytvori nazev docasne promenne. ($tmpI)
+ * @param table[in]	-	ukzatel na tabulku symbolu,
+ * 				kde	bude pouzit vygenerovany symbol
+ * @return	Ukazatel na vygenerovany symbol. Pokud chyba NULL.
+ */
+string* tabSymCreateTmpSymbol(tTabSym* table);
 
 /**
  * Funkce pro inicializaci seznamu parametru

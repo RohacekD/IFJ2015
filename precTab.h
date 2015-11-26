@@ -14,8 +14,32 @@
 #ifndef PRECTAB_H_
 #define PRECTAB_H_
 
-#include "token.h"
-
+typedef enum{
+	TERMINAL_ADDITION,					// +
+	TERMINAL_SUBTRACTION,				// -
+	TERMINAL_MULTIPLICATION,			// *
+	TERMINAL_DIVISION,					// /
+	TERMINAL_EQUAL,						// ==
+	TERMINAL_NOT_EQUAL,					// !=
+	TERMINAL_LESS_THAN,					// <
+	TERMINAL_GREATER_THAN,				// >
+	TERMINAL_LESS_THAN_OR_EQUAL,		// <=
+	TERMINAL_GREATER_THAN_OR_EQUAL,	 	// >=
+	TERMINAL_OPEN_BRACKET,				// (
+	TERMINAL_CLOSE_BRACKET,				// )
+	TERMINAL_UNARY_MINUS,				// -
+	TERMINAL_INCREMENT_POSTFIX,			// postfix ++
+	TERMINAL_DECREMENT_POSTFIX,			// postfix --
+	TERMINAL_INCREMENT_PREFIX,			// prefix ++
+	TERMINAL_DECREMENT_PREFIX,			// prefix --
+	TERMINAL_NOT,						// !
+	TERMINAL_AND,						// &&
+	TERMINAL_OR,						// ||
+	TERMINAL_IDENTIFICATOR,				// jmeno promenne nebo konstanta
+	TERMINAL_FUNCTION_IDENTIFICATOR,	// jmeno funkce
+	TERMINAL_COMMA,						// ,
+	TERMINAL_ENDMARK					// ukoncovaci
+}tParExpTerminals;
 
 /**
  * Vraci pravidlo pro dany terminal a token.
@@ -27,7 +51,7 @@
  * 	'>'
  * 	'='
  */
-int precGetRule(int terminal, unsigned int token);
+int precGetRule(int terminal, int token);
 
 #endif /* PRECTAB_H_ */
 /*** End of file: precTab.h ***/

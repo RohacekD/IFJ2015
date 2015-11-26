@@ -104,7 +104,7 @@ tPrecStackElemPtr precStackTopElement(tPrecStack * stack);
  * @param[out] terminal		-	Do tohoto nacte nejvrchnejsi terminal.
  * @return	Pokud je chyba (terminal nenalezen) vraci 0, jinak 1.
  */
-int precStackTopTerminal(tPrecStack* stack, int* terminal);
+int precStackTopTerminal(tPrecStack* stack, tParExpTerminals* terminal);
 
 /**
  * Kontroluje prazdnost zasobniku.
