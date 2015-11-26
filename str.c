@@ -67,6 +67,18 @@ int strCopyString(string *s1, string *s2)
 	return STR_SUCCESS;
 }
 
+int strConConstString(string *s1, char *s2){
+//provede konkatenaci s1s2 a ulozi ji v s1
+	int i=0;
+	while(s2[i]!=0){
+		if(strAddChar(s1,s2[i])==STR_ERROR){
+			return STR_ERROR;
+		}
+		i++;
+	}
+	return STR_SUCCESS;
+}
+
 int strCmpString(string *s1, string *s2)
 // porovna oba retezce a vrati vysledek
 {
