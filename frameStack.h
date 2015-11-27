@@ -5,7 +5,6 @@
 #include "error.h"
 #include "variable.h"
 
-
 typedef struct {
 	//jestli je ramec pruchozi
 	bool passable;

@@ -55,6 +55,8 @@ typedef enum tTokenTypes
 	KEYW_WHILE,
 	KEYW_BOOL,
 	KEYW_RETURN,
+	KEYW_TRUE,//toto by scanner nemel vratit nikdy
+	KEYW_FALSE,//toto by scanner nemel vratit nikdy
 
 	END_OF_FILE
 }TokenTypes;
@@ -73,5 +75,5 @@ typedef union utokenValue
 typedef struct stToken{
 	TokenTypes typ;
 	tokenValue value;
-} tToken;
+} *tToken;
 #endif
