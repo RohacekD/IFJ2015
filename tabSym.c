@@ -34,7 +34,7 @@ tTabSym* tabSymCreate(tTabSymTypes tabType) {
 }
 
 tTabSymElemData* tabSymSearch(tTabSym* table, string* key) {
-	tBSTNodePtr storeElement;
+	tBSTNodePtr storeElement=NULL;
 
 	BSTSearchTree(table->root, key, &storeElement);
 	if (storeElement == NULL) {

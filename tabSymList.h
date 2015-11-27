@@ -44,6 +44,18 @@ tTabSymList* tabSymListCreate();
 tTabSymListElemPtr* tabSymListInsertTable(tTabSymList* tabList, tTabSym* table, tTabSymListElemPtr parentElement);
 
 /**
+ * Vyhledava symbol key rekurzivne u rodicu daneho startTabSymListElem.
+ * Pokud nenajde prohledava nakonec table. Vraci prvni nalezeny.
+ * @param startTabSymListElem[in]	-	startovaci prvek
+ * @param locTable[in]				-	Tabulka, kterou prohleda jako posledni,
+ * 										tato tabulka je mimo hierarchii rodicu.
+ * 										Napriklad lokalni tabulka funkce.
+ * @param key[in]					-	Klic, ktery chceme vyhledat
+ * @return	Vraci ukazatel na tTabSymElemData. Nebo NULL, pokud nenajde.
+ */
+tTabSymElemData* tabSymListSearch(tTabSymListElemPtr startTabSymListElem, tTabSym* locTable, string* key);
+
+/**
  * Uvolni list z pameti.
  * @param tabList[in]	-	List pro uvolneni.
  */
