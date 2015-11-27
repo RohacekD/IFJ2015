@@ -256,7 +256,7 @@ string* tabSymCreateTmpSymbol(tTabSym* table) {
 	char buffer[BUFFER_SIZE];
 	int flag;
 	//Notice that only when this returned value is non-negative and less than n, the string has been completely written.
-	flag = snprintf(buffer, BUFFER_SIZE, "$tmp%d", table->tmpCounter++);//vytvoreni nazvu docasne promenne
+	flag = snprintf(buffer, BUFFER_SIZE, "$tmp%u", table->tmpCounter++);//vytvoreni nazvu docasne promenne
 	if (flag < 0 || flag >= BUFFER_SIZE) {
 		//chyba pri vytvareni nazvu
 		return NULL;

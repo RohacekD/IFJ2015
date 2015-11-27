@@ -56,6 +56,21 @@ tTabSymListElemPtr* tabSymListInsertTable(tTabSymList* tabList, tTabSym* table, 
 tTabSymElemData* tabSymListSearch(tTabSymListElemPtr startTabSymListElem, tTabSym* locTable, string* key);
 
 /**
+ * Vytvori nazev docasne promenne. ($tmpI) Zohlednuje $tmp vsech rodicu.
+ * Zvysuje counter tabulky symbolu v generateFor.
+ * @param generateFor[in]	-	ukazatel na element listu tabulek symbolu
+ * @return	Ukazatel na vygenerovany symbol. Pokud chyba NULL.
+ */
+string* tabSymListCreateTmpSymbol(tTabSymListElemPtr generateFor);
+
+/**
+ * Vrati nazev naposledy vytvoreneho $tmp v generateFor. (jedna se pouze o vygenerovany nazev)
+ * @param generateFor[in]	-	ukazatel na element listu tabulek symbolu
+ * @return	Ukazatel na nazev posledne vygenerovaneho symbolu. Pokud chyba NULL.
+ */
+string* tabSymListLastCreateTmpSymbol(tTabSymListElemPtr generateFor);
+
+/**
  * Uvolni list z pameti.
  * @param tabList[in]	-	List pro uvolneni.
  */
