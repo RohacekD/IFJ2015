@@ -16,7 +16,7 @@
 #include <stdbool.h>
 #include "ial.h"
 #include "insTape.h"
-#include "tabSymList.h"
+
 /**
  * Typ polozky v tabulce symbolu
  */
@@ -108,6 +108,18 @@ typedef struct {
 } tTabSym;
 
 
+struct tTabSymList;
+
+typedef struct tTabSymListElem{
+	tTabSym* table;
+	struct tTabSymListElemPtr* next;
+	struct tTabSymList* childList;
+	struct tTabSymListElem* parentElement;
+}*tTabSymListElemPtr;
+
+typedef struct tTabSymListSt{
+	tTabSymListElemPtr first;
+}tTabSymList;
 
 /**
  * Informace k funkci.
@@ -273,6 +285,59 @@ void succ(tParamListPtr list);
  * @return          hodnota aktivniho prvku, nebo NULL, kdyz neexistuje aktivni prvek
  */
 tParamListElemPtr getActElement(tParamListPtr list);
+
+
+/**
+ * Alokuje pamet pro tTabSymList.
+ * @return Ukazatel na nove alokovanou strukturu. Pokud chyba NULL.
+ */
+tTabSymList* tabSymListCreate();
+
+/**
+ * Vlozi do listu tabulek novou tabulku.
+ * @param tabList[in]		-	List, do ktereho bude vlozena tabulka.
+ * @param table[in]			-	Ukazatel na tabulku, kterou vlozi.
+ * @param parentElement[in]	-	Ukazatel na rodicovsky prvek.
+ * @return	Vraci ukazatel na nove vnoreny prvek. Pokud chyba NULL.
+ */
+tTabSymListElemPtr* tabSymListInsertTable(tTabSymList* tabList, tTabSym* table, tTabSymListElemPtr parentElement);
+
+/**
+ * Vyhledava symbol key rekurzivne u rodicu daneho startTabSymListElem.
+ * Pokud nenajde prohledava nakonec loctable. Vraci prvni nalezeny.
+ * @param startTabSymListElem[in]	-	startovaci prvek
+ * @param locTable[in]				-	Tabulka, kterou prohleda jako posledni,
+ * 										tato tabulka je mimo hierarchii rodicu.
+ * 										Napriklad lokalni tabulka funkce.
+ * @param key[in]					-	Klic, ktery chceme vyhledat
+ * @return	Vraci ukazatel na tTabSymElemData. Nebo NULL, pokud nenajde.
+ */
+tTabSymElemData* tabSymListSearch(tTabSymListElemPtr startTabSymListElem, tTabSym* locTable, string* key);
+
+/**
+ * Vytvori nazev docasne promenne. ($tmpI) Zohlednuje $tmp vsech rodicu i loctable.
+ * Zvysuje counter tabulky symbolu v generateFor.
+ * @param generateFor[in]	-	ukazatel na element listu tabulek symbolu
+ * @param locTable[in]		-	lokalni tabulka symbolu
+ * @return	Ukazatel na vygenerovany symbol. Pokud chyba NULL.
+ */
+
+string* tabSymListCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* locTable);
+
+/**
+ * Vrati nazev naposledy vytvoreneho $tmp v generateFor. (jedna se pouze o vygenerovany nazev)
+ * @param generateFor[in]	-	ukazatel na element listu tabulek symbolu
+ * @param locTable[in]		-	lokalni tabulka symbolu
+ * @return	Ukazatel na nazev posledne vygenerovaneho symbolu. Pokud chyba NULL.
+ */
+string* tabSymListLastCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* locTable);
+
+/**
+ * Uvolni list z pameti.
+ * @param tabList[in]	-	List pro uvolneni.
+ */
+void tabSymListFree(tTabSymList* tabList);
+
 
 #endif /* TABSYM_H_ */
 
