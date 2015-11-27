@@ -47,14 +47,46 @@ int unescapeStr(string*);
 int isKeyWord(string*);
 
 /*
- * Uvolni misto po stringu v tokenu
+ * uvolni misto po tokenu
  * @param token[in] token pro vycisteni
  */
 void freeTokenMem(tToken*);
 
+typedef struct tTQelem{
+	tToken token;
+	struct tTQelem* lptr;
+	struct tTQelem* rptr;
+} *tTokenQueueElem;
+
+typedef struct {
+	tTokenQueueElem First;//prvni prvek (ten co jde ven)
+	tTokenQueueElem Last;//posledni prvek (ten co prisel posledni
+} tTokenQueue;
+extern tTokenQueue *TQueue;
 /*
- * Vrátí token do vstupní fronty a uvolní paměť ve vraceném tokenu. Uvolni misto po stringu v tokenu.
+ * Inicializuje frontu v glob promenne 
+ *
+ */
+void TQInit();
+//void TQEnqueue(tToken*);toto je nas unget
+/*
+ * Tuto fci volat jen z scanneru. 
+ * @param token[out] vrati token pokud nejaky ve fronte je jiank NULL
+ */
+void TQDequeue(tToken*);//toto volat jen ze scanneru
+/**
+* Uvolni pamet po fronte tokenu
+*/
+void freeTokenQueue();
+
+/*
+ * Zkopíruje token na frontu a vycisti ho
  * @param token[in] vraceny token
  */
 void ungetToken(tToken*);
+
+/**
+ * Uvolni pamet po fronte tokenu
+ */
+void freeTokenQueue();
 #endif

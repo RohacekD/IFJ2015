@@ -3,6 +3,8 @@
 #include "str.h"
 #include <stdio.h>
 
+tTokenQueue *TQueue = NULL;
+
 /*
  * Výčet možných stavů FSM.
  */
@@ -46,6 +48,13 @@ int character = 0;
 int errorFlag = 0;
 
 int getToken(tToken *Token, FILE* source) {
+	//prvne zkontroluji frontu tokenu
+	TQDequeue(Token);
+	if(Token!=NULL){//token byl ve fronte
+		return 1;
+	}
+
+	(*Token) = malloc(sizeof(tToken));
 	/* @var c int actual character*/
 	int c = -1;
 	/* @var prevRest int poslední načtený znak (Zbytek posledního průchodu) */
@@ -105,7 +114,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else if (c == ';') {
-				Token->typ = SEMICOLON;
+				(*Token)->typ = SEMICOLON;
 				strFree(&s);
 				return 1;
 			}
@@ -125,7 +134,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = INCREMENT_OPERATOR;
 			}
 			else if (c == '*') {
-				Token->typ = MULTIPLY;
+				(*Token)->typ = MULTIPLY;
 				strFree(&s);
 				return 1;
 			}
@@ -136,22 +145,22 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else if (c == ')') {
-				Token->typ = PARENTHESIS_CLOSING;
+				(*Token)->typ = PARENTHESIS_CLOSING;
 				strFree(&s);
 				return 1;
 			}
 			else if (c == '(') {
-				Token->typ = PARENTHESIS_OPENING;
+				(*Token)->typ = PARENTHESIS_OPENING;
 				strFree(&s);
 				return 1;
 			}
 			else if (c == '}') {
-				Token->typ = BRACES_CLOSING;
+				(*Token)->typ = BRACES_CLOSING;
 				strFree(&s);
 				return 1;
 			}
 			else if (c == '{') {
-				Token->typ = BRACES_OPENING;
+				(*Token)->typ = BRACES_OPENING;
 				strFree(&s);
 				return 1;
 			}
@@ -162,12 +171,12 @@ int getToken(tToken *Token, FILE* source) {
 				state = LOGICAL_AND;
 			}
 			else if (c == ',') {
-				Token->typ = COMMA;
+				(*Token)->typ = COMMA;
 				strFree(&s);
 				return 1;
 			}
 			else if (c==EOF) {
-				Token->typ = END_OF_FILE;
+				(*Token)->typ = END_OF_FILE;
 				strFree(&s);
 				if (errorFlag) {
 					FatalError(errorFlag, ERR_MESSAGES[ERR_LEX]);
@@ -177,6 +186,9 @@ int getToken(tToken *Token, FILE* source) {
 			else {
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Unknown symbol.\n", ERR_MESSAGES[ERR_LEX], line, character);
+				strFree(&s);
+				freeTokenMem(Token);
+				return 42;
 			}
 			break;
 		case INT_PART:
@@ -206,8 +218,8 @@ int getToken(tToken *Token, FILE* source) {
 					return 42;
 				}
 				pom = c;
-				Token->typ = TYPE_INTEGER;
-				Token->value.intVal = val;
+				(*Token)->typ = TYPE_INTEGER;
+				(*Token)->value.intVal = val;
 				strFree(&s);
 				return 1;
 			}
@@ -241,10 +253,11 @@ int getToken(tToken *Token, FILE* source) {
 					errorFlag = 1;
 					Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n",ERR_MESSAGES[ERR_LEX], line, character);
 					strFree(&s);
+					freeTokenMem(Token);
 					return 42;
 				}
-				Token->typ = TYPE_INTEGER;
-				Token->value.intVal = val;
+				(*Token)->typ = TYPE_INTEGER;
+				(*Token)->value.intVal = val;
 				strFree(&s);
 				pom = c;
 				return 1;
@@ -269,10 +282,11 @@ int getToken(tToken *Token, FILE* source) {
 					errorFlag = 1;
 					Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n",ERR_MESSAGES[ERR_LEX], line, character);
 					strFree(&s);
+					freeTokenMem(Token);
 					return 42;
 				}
-				Token->typ = TYPE_DOUBLE;
-				Token->value.doubleVal = val;
+				(*Token)->typ = TYPE_DOUBLE;
+				(*Token)->value.doubleVal = val;
 				strFree(&s);
 				pom = c;
 				return 1;
@@ -295,6 +309,7 @@ int getToken(tToken *Token, FILE* source) {
 			else{
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Exponent musi obsahovat validni cislici.\n",ERR_MESSAGES[ERR_LEX], line, character);
+				freeTokenMem(Token);
 				pom = c;
 				strFree(&s);
 				return 42;
@@ -311,6 +326,7 @@ int getToken(tToken *Token, FILE* source) {
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Exponent musi obsahovat validni cislici.\n",ERR_MESSAGES[ERR_LEX], line, character);
 				pom = c;
+				freeTokenMem(Token);
 				strFree(&s);
 				return 42;
 			}
@@ -328,10 +344,11 @@ int getToken(tToken *Token, FILE* source) {
 					errorFlag = 1;
 					Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n",ERR_MESSAGES[ERR_LEX], line, character);
 					strFree(&s);
+					freeTokenMem(Token);
 					return 42;
 				}
-				Token->typ = TYPE_DOUBLE;
-				Token->value.doubleVal = val;
+				(*Token)->typ = TYPE_DOUBLE;
+				(*Token)->value.doubleVal = val;
 				pom = c;
 				strFree(&s);
 				return 1;
@@ -354,6 +371,7 @@ int getToken(tToken *Token, FILE* source) {
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Ocekavan symbol pro ciselnou soustavu.\n",ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
+				freeTokenMem(Token);
 				return 42;
 				break;
 			}
@@ -374,8 +392,8 @@ int getToken(tToken *Token, FILE* source) {
 					strFree(&s);
 					return 42;
 				}
-				Token->typ = TYPE_INTEGER;
-				Token->value.intVal = val;
+				(*Token)->typ = TYPE_INTEGER;
+				(*Token)->value.intVal = val;
 				strFree(&s);
 				return 1;
 			}
@@ -396,8 +414,8 @@ int getToken(tToken *Token, FILE* source) {
 					strFree(&s);
 					return 42;
 				}
-				Token->typ = TYPE_INTEGER;
-				Token->value.intVal = val;
+				(*Token)->typ = TYPE_INTEGER;
+				(*Token)->value.intVal = val;
 				strFree(&s);
 				return 1;
 			}
@@ -418,15 +436,15 @@ int getToken(tToken *Token, FILE* source) {
 					strFree(&s);
 					return 42;
 				}
-				Token->typ = TYPE_INTEGER;
-				Token->value.intVal = val;
+				(*Token)->typ = TYPE_INTEGER;
+				(*Token)->value.intVal = val;
 				strFree(&s);
 				return 1;
 			}
 			break;
 		case LOGICAL_AND:
 			if (c == '&') {
-				Token->typ = LOG_AND_OPER;
+				(*Token)->typ = LOG_AND_OPER;
 				strFree(&s);
 				return 1;
 			}
@@ -435,12 +453,13 @@ int getToken(tToken *Token, FILE* source) {
 				strFree(&s);
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Binarni and neni podporovan v IFJ2015.\n",ERR_MESSAGES[ERR_LEX], line, character-1);
+				freeTokenMem(Token);
 				return 42;
 			}
 			break;
 		case LOGICAL_OR:
 			if (c == '|') {
-				Token->typ = LOG_OR_OPER;
+				(*Token)->typ = LOG_OR_OPER;
 				strFree(&s);
 				return 1;
 			}
@@ -448,6 +467,7 @@ int getToken(tToken *Token, FILE* source) {
 				/*Abych se zotavil po teto chybe a docetl soubor*/
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Binarni or neni podporovan v IFJ2015.\n",ERR_MESSAGES[ERR_LEX], line, character - 1);
+				freeTokenMem(Token);
 				pom = c;
 				strFree(&s);
 				return 42;
@@ -457,6 +477,9 @@ int getToken(tToken *Token, FILE* source) {
 			if (c == EOF) {
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n",ERR_MESSAGES[ERR_LEX], line, character);
+				freeTokenMem(Token);
+				strFree(&s);
+				return 42;
 			}
 			else if (c == '\\') {
 				/*if (strAddChar(&s, c)) {
@@ -466,11 +489,11 @@ int getToken(tToken *Token, FILE* source) {
 				state = STRING_ESCAPE;
 			}
 			else if (c == '"') {//konec retezce uloz ho
-				Token->typ = TYPE_STRING;
-				if (strInit(&Token->value.stringVal)) {
+				(*Token)->typ = TYPE_STRING;
+				if (strInit(&(*Token)->value.stringVal)) {
 					//return stringval
 				}
-				if (strCopyString(&Token->value.stringVal, &s)) {
+				if (strCopyString(&(*Token)->value.stringVal, &s)) {
 					//return error;
 				}
 				strFree(&s);
@@ -535,6 +558,7 @@ int getToken(tToken *Token, FILE* source) {
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Ocekavan symbol pro ciselnou soustavu.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
+				freeTokenMem(Token);
 				return 42;
 				break;
 			}
@@ -683,15 +707,23 @@ int getToken(tToken *Token, FILE* source) {
 			else {
 				pom = c;
 				int isIdent = isKeyWord(&s);
-				Token->typ = isIdent;
+				(*Token)->typ = isIdent;
 				if (isIdent == TYPE_IDENTIFICATOR) {
-					if (strInit(&(Token->value.stringVal))) {
+					if (strInit(&((*Token)->value.stringVal))) {
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
-					if (strCopyString(&(Token->value.stringVal), &s)) {
+					if (strCopyString(&((*Token)->value.stringVal), &s)) {
 						strFree(&s);
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
+				}
+				if (isIdent == KEYW_FALSE) {
+					(*Token)->typ = TYPE_BOOL;
+					(*Token)->value.boolVal = false;
+				}
+				if (isIdent == KEYW_TRUE) {
+					(*Token)->typ = TYPE_BOOL;
+					(*Token)->value.boolVal = true;
 				}
 				strFree(&s);
 				return 1;//todo
@@ -705,7 +737,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = LINE_COMMENT;
 			}
 			else {//jednoznakovy operator deleni
-				Token->typ = DIVISION;
+				(*Token)->typ = DIVISION;
 				pom = c;
 				strFree(&s);
 				return 1;//todo return success
@@ -727,6 +759,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (c == EOF) {
 				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
+				freeTokenMem(Token);
 				return 42;
 			}
 			else if (c=='/') {
@@ -743,6 +776,7 @@ int getToken(tToken *Token, FILE* source) {
 			else if (c == EOF) {
 				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
+				freeTokenMem(Token);
 				return 42;
 			}
 			else if (c == '/') {//konec blokového komentáře jdeme hledat další lexém
@@ -760,6 +794,7 @@ int getToken(tToken *Token, FILE* source) {
 			else if (c == EOF) {
 				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
+				freeTokenMem(Token);
 				return 42;
 			}
 			else {
@@ -770,16 +805,16 @@ int getToken(tToken *Token, FILE* source) {
 			if (c == '=') {
 				switch (s.str[0]) {
 				case '!':
-					Token->typ = NOT_EQUAL_OPER;
+					(*Token)->typ = NOT_EQUAL_OPER;
 					break;
 				case '<':
-					Token->typ = LESS_EQUAL;
+					(*Token)->typ = LESS_EQUAL;
 					break;
 				case '>':
-					Token->typ = GREATER_EQUAL;
+					(*Token)->typ = GREATER_EQUAL;
 					break;
 				case '=':
-					Token->typ = EQUAL;
+					(*Token)->typ = EQUAL;
 					break;
 				default:
 					break;
@@ -789,16 +824,16 @@ int getToken(tToken *Token, FILE* source) {
 				pom = c;
 				switch (s.str[0]) {
 				case '!':
-					Token->typ = LOG_NOT_OPER;
+					(*Token)->typ = LOG_NOT_OPER;
 						break;
 				case '<':
-					Token->typ = LESS;
+					(*Token)->typ = LESS;
 						break;
 				case '>':
-					Token->typ = GREATER;
+					(*Token)->typ = GREATER;
 						break;
 				case '=':
-					Token->typ = SET_OPER;
+					(*Token)->typ = SET_OPER;
 						break;
 				default:
 					break;
@@ -809,26 +844,26 @@ int getToken(tToken *Token, FILE* source) {
 			break;
 		case DECREMENT_OPERATOR:
 			if (c == '-') {
-				Token->typ = DECREMENTATION;
+				(*Token)->typ = DECREMENTATION;
 				strFree(&s);
 				return 1;
 			}
 			else {
 				pom = c;
-				Token->typ = MINUS;
+				(*Token)->typ = MINUS;
 				strFree(&s);
 				return 1;
 			}
 			break;
 		case INCREMENT_OPERATOR:
 			if (c == '+') {
-				Token->typ = INCREMENTATION;
+				(*Token)->typ = INCREMENTATION;
 				strFree(&s);
 				return 1;
 			}
 			else {
 				pom = c;
-				Token->typ = PLUS;
+				(*Token)->typ = PLUS;
 				strFree(&s);
 				return 1;
 			}
@@ -900,8 +935,10 @@ const char* keyWords[] = {
 	"else",
 	"for",
 	"while",
-	"bool"
+	"bool",
 	"return",
+	"true",
+	"false",
 	""
 };
 
@@ -916,21 +953,22 @@ const char* keyWords[] = {
 int isKeyWord(string* s) {
 	int ret = 0;
 	int i = 0;
-	for (i = 0; i < 13; i++) {
+	for (i = 0; i < 15; i++) {
 		if (strCmpConstStr(s, keyWords[i]) == 0) {
 			break;
 		}
 	}
-	if (i == 13) {
+	if (i == 15) {
 		return TYPE_IDENTIFICATOR;
 	}
 	return KEYW_AUTO + i;
 }
 
 void freeTokenMem(tToken* t) {
-	if (t->typ == TYPE_STRING || t->typ == TYPE_IDENTIFICATOR) {
-		strFree(&t->value.stringVal);
+	if ((*t)->typ == TYPE_STRING || (*t)->typ == TYPE_IDENTIFICATOR) {
+		strFree(&(*t)->value.stringVal);
 	}
+	free(&t);
 }
 
 //void ungetToken(tToken*);
@@ -954,6 +992,87 @@ int unescapeStr(string* s) {
 			}
 		}
 	}
+}
+
+void TQInit() {
+	TQueue = malloc(sizeof(tTokenQueue));
+	TQueue->First = NULL;
+	TQueue->Last = NULL;
+}
+
+void TQDequeue(tToken* token) {
+	if (token == NULL) {
+		return;
+	}
+	if (!TQueue || !TQueue->First) {//neexistuje fronta nebo je prazdna
+		token = NULL;
+		return;
+	}
+	(*token) = malloc(sizeof(tToken));
+	(*token)->typ = TQueue->Last->token->typ;
+	if ((*token)->typ == TYPE_IDENTIFICATOR || (*token)->typ == TYPE_STRING) {
+		strInit(&(*token)->value.stringVal);
+		strCopyString(&(*token)->value.stringVal, &TQueue->Last->token->value.stringVal);
+	}
+	else {
+		(*token)->value = TQueue->Last->token->value;
+	}
+	//navazu odkazy
+	tTokenQueueElem elm = TQueue->Last;
+	if (TQueue->First == TQueue->Last) {//toto byl posledni prvek fronty
+		freeTokenQueue();
+	}
+	else {
+		TQueue->Last = elm->lptr;
+		TQueue->Last->rptr = NULL;
+	}
+	//uvolnime po sobe pamet
+	freeTokenMem(&elm->token);
+	free(elm);
+}
+
+void ungetToken(tToken* token) {
+	if (token == NULL) {
+		return;
+	}
+	if (!TQueue) {
+		TQInit();
+	}
+	tToken newTok = malloc(sizeof(tToken));
+	tTokenQueueElem elm = malloc(sizeof(struct tTQelem));
+	if (!newTok || !elm) {
+		FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+	}
+	newTok->typ = (*token)->typ;
+	if ((*token)->typ == TYPE_IDENTIFICATOR || (*token)->typ == TYPE_STRING) {
+		strInit(&newTok->value.stringVal);
+		strCopyString(&newTok->value.stringVal, &(*token)->value.stringVal);
+	}
+	else {
+		newTok->value = (*token)->value;
+	}
+	freeTokenMem(&token);
+	elm->token = newTok;
+	elm->rptr = elm->lptr= NULL;
+	if (!TQueue->First) {//ve fronte nikdo neni
+		TQueue->First = TQueue->Last = elm;
+	}
+	else {//nekdo ceka
+		TQueue->Last->rptr = elm;
+		elm->lptr = TQueue->Last;
+		TQueue->Last = elm;
+	}
+
+}
+
+void freeTokenQueue() {
+	if (TQueue == NULL) return;
+	tTokenQueueElem elem = TQueue->First;
+	while (elem!=NULL) {
+		freeTokenMem(&elem->token);
+		free(elem);
+	}
+	free(TQueue);
 }
 
 /*

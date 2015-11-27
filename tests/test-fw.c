@@ -82,6 +82,8 @@ void printToken(tToken *token) {
 		"keyword for",
 		"keyword while",
 		"keyword return",
+		"keyword true",
+		"keyword false",
 		"konec souboru"
 	};
 	printf("***Token => ");
