@@ -32,7 +32,7 @@ void computeJumps(char* string, int charJump[]) {
 	}
 
 	for (int k = 0; k < lengthString; k++) {
-		charJump[string[k]] = lengthString - k - 1;
+		charJump[(unsigned)string[k]] = lengthString - k - 1;
 	}
 }
 
@@ -49,7 +49,7 @@ int BMA(char* string, char* searchString, int charJump[]) {
 			j--;
 			k--;
 		} else {
-			j = j + charJump[string[j]];
+			j = j + charJump[(unsigned)string[j]];
 			k = searchStringLength - 1;
 		}
 	}
@@ -181,6 +181,7 @@ int BSTCreateNode(tBSTNodePtr* node, string* key, void* data) {
 	newNode->l = NULL;
 	newNode->r = NULL;
 	*node=newNode;
+	return 1;
 }
 
 int BSTInsert(tBSTNodePtr* rootPtr, string* key, void* data) {
@@ -210,6 +211,7 @@ int BSTInsert(tBSTNodePtr* rootPtr, string* key, void* data) {
 	}
 	//aktualizace
 	workWithRootPtr->data = data;
+	return 1;
 }
 
 /**
