@@ -8,8 +8,10 @@
 #ifndef PARSER_H
 #define	PARSER_H
 
+/*
 #define SYNTAX_OK 1
 #define SYNTAX_FAILED 0
+*/
 
 /**
  * do globalni promenne ulozim odkaz na soubor
