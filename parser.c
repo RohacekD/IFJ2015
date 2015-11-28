@@ -15,7 +15,7 @@
 #define SYNTAX_ERR 2
 #define SEMANTIC_ERROR 3
 #define MEM_ALLOC_ERROR 99
-
+#define INTERNAL_ERROR 42
 
 // vytvorim strukturu pro globalni tabulku symbolu
 tTabSym *globalTable;
@@ -64,7 +64,7 @@ void parse() {
         FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
     }
     
-    
+    //TODO - osetreni chyb a uvolneni pameti
     result = parseFunction();
     
     
@@ -76,10 +76,11 @@ void parse() {
  * @return 
  */
 int parseFunction() {
-    int tokenVal, result;
+    int result;
     tToken *token;
     tTabSymVarNoAutoDataType returnType;
-    tTabSymElemData *wasDeclared;
+    //promenna, ktera slouzi pro kontrolu, zda uz je dana funkce deklarovana
+    tTabSymElemData *funcID_info;
     //uchovavam nazev identifikatoru
     string idName;
     //pro kazdou funkci tvorim novy seznam parametru
@@ -96,8 +97,7 @@ int parseFunction() {
         freeTokenMem(token);
         return 1;
     }
-    
-    
+       
     //volani funkce pro zpracovani <Kdata_types>
     if ((result = kDataTypes(&returnType, token->typ)) != 1) {
         //uvolnim token
@@ -107,7 +107,7 @@ int parseFunction() {
     //uvolnim token
     freeTokenMem(token);
     
-    if((tokenVal = getToken(token, f)) != 1)
+    if((result = getToken(token, f)) != 1)
         return LEXICAL_ERR;
     
     //dalsi token je ID - <function> -> <Kdata_types> fID
@@ -117,7 +117,7 @@ int parseFunction() {
         idName = token->value.stringVal;
 
         //funkce jeste nebyla deklarovana
-        if((wasDeclared = tabSymSearch(globalTable, &idName)) == NULL) {
+        if((funcID_info = tabSymSearch(globalTable, &idName)) == NULL) {
             //zkontroluji, zda je ID pouzitelne
             if((strcmp(idName->str, "length") == 0) || (strcmp(idName->str, "substr") == 0) ||
                     (strcmp(idName->str, "concat") == 0) || (strcmp(idName->str, "find") == 0) ||
@@ -129,43 +129,64 @@ int parseFunction() {
         //funkce uz byla deklarovana
         else {
             //zkontroluji, zda je dany identifikator identifikatorem funkce
-            if (wasDeclared->type != TAB_SYM_FUNCTION) {
+            if (funcID_info->type != TAB_SYM_FUNCTION) {
                //TODO - jaka je to chyba?
                 freeTokenMem(token);
-                return 42;
+                return INTERNAL_ERROR;
             }
             //v tuto chvili uz muzu zkontrolovat, zda sedi navratovy typ funkce
-            if(wasDeclared->info.func->retType != returnType) {
+            if(funcID_info->info.func->retType != returnType) {
                 freeTokenMem(token);
                 return SEMANTIC_ERROR; //nesouhlasi navratovy typ
-                //TODO: jak dam vedet funkci parseParam, jestli ma kontrolovat, ci vkladat?
             }
         }
         //uvolneni tokenu
         freeTokenMem(token);
         
         //dalsi token by mel byt '('
-        tokenVal = getToken(token, f);
+        if ((result = getToken(token, f) != 1)) {
+            return LEXICAL_ERR;
+        }
         //token byl '('
         if(token->typ == PARENTHESIS_OPENING) {
+            
             //vytvorim si lokalni tabulku symbolu
             tTabSym *localTabSym = tabSymCreate(TAB_SYM_LOC);
             
             //volani funkce pro zpracovani <arguments>
-            result = parseArguments(paramList, wasDeclared);
-            //behem funkce arguments nastala chyba
+            result = parseArguments(paramList, funcID_info, localTabSym);
+            //behem funkce parseArguments nastala chyba
             if(result != 1)
                 return result;
 
-            //TODO - pokracovani pravidla...
             //<function> -> <Kdata_types> fID(<arguments>)<body>
             //jsme u <body> -> bud ';'(deklarace), nebo '{' (definice)
-            tokenVal = getToken(token, f);
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //jde pouze o deklaraci funkce
             if(token->typ == SEMICOLON) {
+                //zpracovavame nasledujici funkci
                 return parseFunction();
+            }
+            
+            //jedna se o definici funkce
+            if(token->typ == BRACES_OPENING) {
+                //zkontroluji, zda se uz dana funkce nebyla definovana
+                if (funcID_info->info.func->defined == true) {
+                    freeTokenMem(token);
+                    return SEMANTIC_ERROR;
+                }
+                //funkce jeste nebyla definovana
+                //<function> -> <Kdata_types> fID (<arguments>)<body>
+                //TODO - doplnit funkci zpracovavajici <statementList>
+                
+                
             }
 
         }
+        //token neni oteviraci zavorka
         else {
             freeTokenMem(token);
             return SYNTAX_ERR;
@@ -213,9 +234,10 @@ int kDataTypes(tTabSymVarNoAutoDataType *variableType, TokenTypes tokenType) {
  * @param paramList[out]     -   seznam argumentu k naplneni
  * @param data[in]           -   NULL, jestli se identifikator funkce v globalni tabulce nenachazi
  *                               jinak odkaz na dany prvek
+ * @param localTabel[out]    -  odkaz na lokalni tabulku, do ktere ukladame parametry
  * @return 
  */
-int parseArguments(tParamListPtr paramList, tTabSymElemData *data) {
+int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localTable) {
     int result;
     tToken *token;
     //typ parametru
@@ -240,17 +262,17 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data) {
         return 1;
     }
     
-    //pravidlo 9
+    //upravene pravidlo 9: <arguments> -> <argument>
     if ((result = kDataTypes(&paramType, token->typ)) != 1) {
         //uvolnim token
         freeTokenMem(token);
         return result;
     }
-    //seznam parametru neni prazdny
+    //seznam parametru neni prazdny, nastavime aktivitu prvni prvek seynamu parametru
     first(data->info.func->params);
     
     //volam funkci pro zpracovani argumentu
-    return parseArgument(paramList, data, paramType);
+    return parseArgument(paramList, data, paramType, localTable);
 }
 
 /**
@@ -259,9 +281,11 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data) {
  * @param data[in]              -   NULL, jestli se identifikator funkce v globalni tabulce nenachazi 
  *                                  jinak odkaz na dany prvek
  * @param paramType[in]         -   datovy typ promenne
+ * @param localTabel[out]       -  odkaz na lokalni tabulku, do ktere ukladame parametry
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarNoAutoDataType paramType) {
+int parseArgument(tParamListPtr paramList, tTabSymElemData *data,
+                    tTabSymVarNoAutoDataType paramType, tTabSym *localTable) {
     tToken *token;
     int result;
     //uchovavam nazev identifikatoru
@@ -280,10 +304,28 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarNoAu
     //ulozim si nazev identifikatoru
     idName = token->value.stringVal;
     
-    //vkladam prvek do seznamu parametru
+    //vkladam prvek do seznamu parametru a lokalni tabulky symbolu
     if(data == NULL) {
+        //vkladam do seznamu
         if (insertEl(paramList, &idName, paramType) == 0) {
             return MEM_ALLOC_ERROR;
+        }
+        //kontroluji, zda uz neni promenna definovana a vkladam do lokalni tabulky symbolu
+        tTabSymElemData *localTableInfo = tabSymSearch(localTable, &idName);
+        //promenna uz byla definovana
+        if(localTableInfo != NULL) {
+            return SEMANTIC_ERROR;
+        }
+        else {
+            //vytvorim informace o promenne - nejsem si jisty, jestli musim/muzu pretypovavat
+            tVariableInfo* varInfo = tabSymCreateVariableInfo((tTabSymVarDataType)paramType);
+            if (varInfo == NULL) {
+                return INTERNAL_ERROR;
+            }
+            //vlozim promennou do lokalni tabulky symbolu
+            if (tabSymInsertVar(localTable, &idName, varInfo) == 0) {
+                return INTERNAL_ERROR;
+            }
         }
     }
     //porovnavam parametry
