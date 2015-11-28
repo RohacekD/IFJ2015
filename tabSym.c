@@ -17,6 +17,7 @@
 #include "tabSym.h"
 #include "insTape.h"
 #include "ial.h"
+#include "paramList.c"
 #define BUFFER_SIZE 100
 
 tTabSym* tabSymCreate(tTabSymTypes tabType) {
@@ -290,15 +291,9 @@ tTabSymList* tabSymListCreate(){
  * @param parentElement[in]	-	Ukazatel na rodicovsky prvek.
  * @return	Vraci ukazatel na nove vnoreny prvek. Pokud chyba NULL.
  */
-tTabSymListElemPtr* tabSymListInsertTable(tTabSymList* tabList, tTabSym* table, tTabSymListElemPtr parentElement){
-	typedef struct tTabSymListElem{
-		tTabSym* table;
-		struct tTabSymListElemPtr* next;
-		tTabSymList* childList;
-		struct tTabSymListElem* parentElement;
-	}*tTabSymListElemPtr;
+tTabSymListElemPtr tabSymListInsertTable(tTabSymList* tabList, tTabSym* table, tTabSymListElemPtr parentElement){
 
-	tTabSymListElemPtr* newElement=malloc(sizeof(struct tTabSymListElem));
+	tTabSymListElemPtr newElement=malloc(sizeof(struct tTabSymListElem));
 	if(newElement==NULL){
 		//chyba
 		return NULL;
@@ -384,7 +379,10 @@ int sumCounters(tTabSymListElemPtr forStartElement, unsigned int* sum, tTabSym* 
 	if(forStartElement==NULL) return 0; //konecny
 
 	unsigned int counterSum=0;
-	counterSum=sumCounters(forStartElement->parentElement);
+	if(sumCounters(forStartElement->parentElement, &counterSum, locTable)==0){
+		//chyba
+		return 0;
+	}
 	//zkontrolujeme overflow
 	if (forStartElement->table->tmpCounter > UINT_MAX - counterSum){
 		//chyba overflow
@@ -440,6 +438,6 @@ string* tabSymListLastCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* l
 	}
 	//snizime counter a vygenerujeme $tmp nazev
 	generateFor->table->tmpCounter--;
-	return tabSymListCreateTmpSymbol(generateFor);
+	return tabSymListCreateTmpSymbol(generateFor, locTable);
 }
 /*** End of file: tabSym.c ***/

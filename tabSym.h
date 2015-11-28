@@ -16,7 +16,6 @@
 #include <stdbool.h>
 #include "ial.h"
 #include "insTape.h"
-
 /**
  * Typ polozky v tabulce symbolu
  */
@@ -117,7 +116,7 @@ typedef struct tTabSymListElem{
 	struct tTabSymListElem* parentElement;
 }*tTabSymListElemPtr;
 
-typedef struct tTabSymListSt{
+typedef struct tTabSymList{
 	tTabSymListElemPtr first;
 }tTabSymList;
 
@@ -300,7 +299,7 @@ tTabSymList* tabSymListCreate();
  * @param parentElement[in]	-	Ukazatel na rodicovsky prvek.
  * @return	Vraci ukazatel na nove vnoreny prvek. Pokud chyba NULL.
  */
-tTabSymListElemPtr* tabSymListInsertTable(tTabSymList* tabList, tTabSym* table, tTabSymListElemPtr parentElement);
+tTabSymListElemPtr tabSymListInsertTable(tTabSymList* tabList, tTabSym* table, tTabSymListElemPtr parentElement);
 
 /**
  * Vyhledava symbol key rekurzivne u rodicu daneho startTabSymListElem.
