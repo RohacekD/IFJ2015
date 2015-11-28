@@ -112,7 +112,7 @@ struct tTabSymList;
 
 typedef struct tTabSymListElem{
 	tTabSym* table;
-	struct tTabSymListElemPtr* next;
+	struct tTabSymListElem* next;
 	struct tTabSymList* childList;
 	struct tTabSymListElem* parentElement;
 }*tTabSymListElemPtr;
