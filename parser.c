@@ -181,7 +181,7 @@ int parseFunction() {
                 //funkce jeste nebyla definovana
                 //<function> -> <Kdata_types> fID (<arguments>)<body>
                 //TODO - doplnit funkci zpracovavajici <statementList>
-                
+                result = parseStatementList(localTabSym);
                 
             }
 
@@ -390,5 +390,55 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data) {
     else {
         freeTokenMem(token);
         return SYNTAX_ERR;
+    }
+}
+
+
+int parseStatementList(tTabSym *localTable) {
+    tToken *token;
+    int result;
+    
+    //pozadam o token
+    if((result = getToken(token, f)) != 1) {
+        return LEXICAL_ERR;
+    }
+    
+    switch(token) {
+        case KEYW_INT:
+        case KEYW_DOUBLE:
+        case KEYW_STRING:
+        case KEYW_BOOL:
+        
+            break;
+        case KEYW_AUTO:
+       
+            break;
+        case BRACES_CLOSING:
+            
+            break;
+            
+        case BRACES_OPENING:
+            
+            break;
+        case KEYW_IF:
+            
+            break;
+        case KEYW_FOR:
+            
+            break;
+        case KEYW_WHILE:
+            
+            break;
+        case KEYW_RETURN:
+            
+            break;
+        case KEYW_CIN:
+            
+            break;
+        case KEYW_COUT:
+            
+            break;
+        default:
+            return SYNTAX_ERR;
     }
 }
