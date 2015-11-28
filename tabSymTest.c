@@ -500,7 +500,7 @@ int main()
             unionValue val;
             val.intVal = 5;
             tConstantInfo *konstantaInfo = tabSymCreateConstantInfo(TAB_SYM_VAR_INTEGER, val);
-            
+             
             int retValue1, retValue2, retValue3, retValue4, retValue5;
             
             printf("----------------------------------\n");
