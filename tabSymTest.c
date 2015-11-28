@@ -415,7 +415,7 @@ int main()
         //informace o dane promenne
         //tTabSymVarDataType variableP = TAB_SYM_VAR_INTEGER;
         //bool pIsDefined = false;
-        tVariableInfo pInfo = {TAB_SYM_VAR_INTEGER};
+        tVariableInfo *pInfo = tabSymCreateVariableInfo(TAB_SYM_VAR_INTEGER);
 
         //do string p ulozim hodnotu 'pom'
         string p;
@@ -425,7 +425,7 @@ int main()
         strAddChar(&p, 'm');
 
         //vlozeni promenne do tabulky symbolu
-        int returnValue = tabSymInsertVar(symbolTable, &p, &pInfo);
+        int returnValue = tabSymInsertVar(symbolTable, &p, pInfo);
 
         //nastala chyba pri vkladani zaznamu o promenne
         if(returnValue == 0)
@@ -493,21 +493,23 @@ int main()
             
             
             //vlozim promenne
-            tVariableInfo doubleVInfo = {TAB_SYM_VAR_DOUBLE};
-            tVariableInfo stringVInfo = {TAB_SYM_VAR_STRING};
-            tVariableInfo boolVInfo = {TAB_SYM_VAR_STRING};
-            tVariableInfo autoVInfo = {TAB_SYM_VAR_AUTO};
-            tConstantInfo konstantaInfo = {TAB_SYM_VAR_INTEGER, {3}};
+            tVariableInfo *doubleVInfo = tabSymCreateVariableInfo(TAB_SYM_VAR_DOUBLE);
+            tVariableInfo *stringVInfo = tabSymCreateVariableInfo(TAB_SYM_VAR_STRING);
+            tVariableInfo *boolVInfo = tabSymCreateVariableInfo(TAB_SYM_VAR_STRING);
+            tVariableInfo *autoVInfo = tabSymCreateVariableInfo(TAB_SYM_VAR_AUTO);
+            unionValue val;
+            val.intVal = 5;
+            tConstantInfo *konstantaInfo = tabSymCreateConstantInfo(TAB_SYM_VAR_INTEGER, val);
             
             int retValue1, retValue2, retValue3, retValue4, retValue5;
             
             printf("----------------------------------\n");
             printf("Vlozeni novych prvku\n");
-            if(((retValue1 = tabSymInsertVar(symbolTable, &doubleV, &doubleVInfo)) == 0) ||
-              ((retValue2 = tabSymInsertVar(symbolTable, &stringV, &stringVInfo)) == 0) ||
-              ((retValue3 = tabSymInsertVar(symbolTable, &boolV, &boolVInfo)) == 0) ||
-              ((retValue5 = tabSymInsertConst(symbolTable, &konstanta, &konstantaInfo)) == 0) ||
-              ((retValue4 =tabSymInsertVar(symbolTable, &autoV, &autoVInfo)) == 0)) {
+            if(((retValue1 = tabSymInsertVar(symbolTable, &doubleV, doubleVInfo)) == 0) ||
+              ((retValue2 = tabSymInsertVar(symbolTable, &stringV, stringVInfo)) == 0) ||
+              ((retValue3 = tabSymInsertVar(symbolTable, &boolV, boolVInfo)) == 0) ||
+              ((retValue5 = tabSymInsertConst(symbolTable, &konstanta, konstantaInfo)) == 0) ||
+              ((retValue4 =tabSymInsertVar(symbolTable, &autoV, autoVInfo)) == 0)) {
                   printf("Vlozeni promennych se nepovedlo\n");
               }
             else {
@@ -576,7 +578,7 @@ int main()
                 errCount++;
             }
             else {
-                printf("Ocekavany vystup: %d, %d, %d\n", TAB_SYM_CONSTANT, TAB_SYM_VAR_INTEGER, 3);
+                printf("Ocekavany vystup: %d, %d, %d\n", TAB_SYM_CONSTANT, TAB_SYM_VAR_INTEGER, 5);
                 printf("Skutecny vystup: %d, %d, %d\n", foundData->type, foundData->info.constant->dataType, foundData->info.constant->value.intVal);
             }
             
