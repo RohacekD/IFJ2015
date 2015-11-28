@@ -28,15 +28,23 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
-		((oper1->type == VAR_TYPE_INT) ? (oper1->data.intVal) : (oper1->type == VAR_TYPE_BOOL) ? (oper1->data.boolVal) :(oper1->data.doubleVal)) = 1;
+		if (dest->type == VAR_TYPE_INT) {
+			dest->data.intVal = getVarVal(oper1) + getVarVal(oper2);
+		}
+		else if (dest->type == VAR_TYPE_DOUBLE) {
+			dest->data.doubleVal = getVarVal(oper1) + getVarVal(oper2);
+		}
+		else if (dest->type == VAR_TYPE_BOOL) {
+			dest->data.boolVal = getVarVal(oper1) + getVarVal(oper2);
+		}
 		break;
 	case I_CBF:
 		pushNewFrame(stack, true);
 		break;
 		//volani fce
 	case I_CF:
-		pushNewFrame(stack, false);
-		tTabSym* tab = (tTabSym*)ins->adr1;
+		/*pushNewFrame(stack, false);
+		tTabSym* tab = (tTabSym*)ins->adr1;*/
 		break;
 	case I_DBF:
 		deleteTopFrame(stack);

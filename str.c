@@ -115,7 +115,10 @@ int strCharToString(string* s, char* c)
     int i = 0;
     
     while(c[i]!='\0'){
-        strAddChar(s,c[i]);
+		if (strAddChar(s, c[i])) {
+			return 0;
+		}
         i++;
     }
+	return 1;
 }

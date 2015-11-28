@@ -4,6 +4,10 @@
 #include "error.h"
 #include <stdbool.h>
 
+#define getVarVal(var)\
+((var->type == VAR_TYPE_INT) ? (var->data.intVal) : (var->type == VAR_TYPE_BOOL) ? (var->data.boolVal) : (var->data.doubleVal))
+
+
 typedef enum {
 	VAR_TYPE_INT,
 	VAR_TYPE_BOOL,
