@@ -15,11 +15,10 @@
 #define SYNTAX_ERR 2
 #define SEMANTIC_ERROR 3
 
+
 // vytvorim strukturu pro globalni tabulku symbolu
 tTabSym *globalTable;
 FILE *f;
-//pomocna promenna, slouzi k rozpoznani, zda mam v parametrech carku za identifikatorem
-bool isComma;
 
 void setSourceFile(FILE *file)
 {
@@ -80,11 +79,6 @@ int parseFunction() {
     tToken *token;
     tTabSymVarNoAutoDataType returnType;
     tTabSymElemData *wasDeclared;
-    //pomoci teto promenne, predam funkci pro zpracovani
-        // parametru informaci, zda ma provadet kontrolu, nebo
-        //plnit seznam parametru
-        //0 - vkladat, 1 - provadet kontrolu
-    bool compareOrAdd = 0;
     //uchovavam nazev identifikatoru
     string idName;
     //pro kazdou funkci tvorim novy seznam parametru
@@ -92,10 +86,19 @@ int parseFunction() {
     initList(paramList);
     
     
+    //nactu prvni token, prisel chybny token
+    if((result = getToken(token, f)) != 1) {
+        return LEXICAL_ERR;
+    }
+    //program muze byt i prazdny
+    if (token->typ == EOF) {
+        freeTokenMem(token);
+        return 1;
+    }
     
     
     //volani funkce pro zpracovani <Kdata_types>
-    if ((result = kDataTypes(&returnType)) != 1) {
+    if ((result = kDataTypes(&returnType, token->typ)) != 1) {
         //uvolnim token
         freeTokenMem(token);
         return result;
@@ -136,7 +139,6 @@ int parseFunction() {
                 return SEMANTIC_ERROR; //nesouhlasi navratovy typ
                 //TODO: jak dam vedet funkci parseParam, jestli ma kontrolovat, ci vkladat?
             }
-            compareOrAdd = 1;
         }
         //uvolneni tokenu
         freeTokenMem(token);
@@ -145,13 +147,16 @@ int parseFunction() {
         tokenVal = getToken(token, f);
         //token byl '('
         if(token->typ == PARENTHESIS_OPENING) {
+            //vytvorim si lokalni tabulku symbolu
+            tTabSym *localTabSym = tabSymCreate(TAB_SYM_LOC);
+            
             //volani funkce pro zpracovani <arguments>
-            result = parseArguments();
+            result = parseArguments(paramList, wasDeclared);
             //behem funkce arguments nastala chyba
             if(result != 1)
                 return result;
 
-            //pokracovani pravidla...
+            //TODO - pokracovani pravidla...
             //<function> -> <Kdata_types> fID(<arguments>)<body>
             //jsme u <body> -> bud ';'(deklarace), nebo '{' (definice)
             tokenVal = getToken(token, f);
@@ -173,91 +178,56 @@ int parseFunction() {
 }
 
 /**
- * pro pravidla 8 a 9:
- *          <arguments> -> epsilon
- *          <arguments> - > argument
- * @return SYNTAX_OK(1) - pokud je vse v poradku
- *         SYNTAX_FAILED(0) - pokud nastala chyba
+ * zpracovava pravidla:
+ * 8. <arguments> -> epsilon
+ * 9. <arguments> -> <argument>
+ *
+ * @param paramList[out]        -   list parametru k naplneni   
+ * @return 
  */
-int parseArguments() {
-    int tokenVal, result;
-    tToken *token;
-    string idName;
-    
-    tokenVal = getToken(token, f);
-    
-    //mel bych plnit seznam parametru
-    switch(token->typ) {
-        case KEYW_INT:
-        case KEYW_DOUBLE:
-        case KEYW_STRING:
-        case KEYW_BOOL:
-            
-            isComma = false;
-            tokenVal = getToken(token, f);
-            
-            // <Kdata_types>ID
-            if(token->typ == TYPE_IDENTIFICATOR) {
-                //ulozeni identifikatoru, ktery musim jeste ulozit do seznamu parametru
-                idName = token->value.stringVal;
-                
-                //pozadam si o dalsi token, ktery muze byt carka, nebo uzaviraci zavorka
-                tokenVal = getToken(token, f);
-                //<Kdata_types>ID,
-                if(token->typ == COMMA) {
-                    //poznamenam si, ze  mi prisla carka
-                    //z duvodu, ze po carce nemuze prijit ')'
-                    isComma = true;
-                    return parseArguments();
-                }
-                //<Kdata_types>ID)
-                else if(token->typ == PARENTHESIS_CLOSING) {
-                    return SYNTAX_OK;
-                }
-            }
-            else {
-                return SYNTAX_FAILED;
-            }
-        break;
-        
-        case PARENTHESIS_CLOSING:
-            if (isComma = false) {
-                return SYNTAX_OK;
-            }
-            else {
-                return SYNTAX_FAILED;
-            }
-            break;
-        
-        default:
-            return SYNTAX_FAILED;
-    }
-}
-
-/**
- * 4. <Kdata_types> -> keyw_bool
- * 5. <Kdata_types> -> keyw_int
- * 6. <Kdata_types> -> keyw_string
- * 7. <Kdata_types> -> keyw_double
- * @return          vraci 1
- */
-int kDataTypes(tTabSymVarNoAutoDataType *variableType) {
-    tToken *token;
+int parseArguments(tParamListPtr paramList, tTabSymElemData *data) {
     int result;
-    //prisel chybny token
+    tToken *token;
+    
+    //nacteme token
     if((result = getToken(token, f)) != 1) {
         return LEXICAL_ERR;
     }
     
+    //zadne argumenty:
+    if(token->typ == PARENTHESIS_CLOSING) {
+        //pokud provadime semantickou kontrolu hlavicky
+        if(data != NULL) {
+            //list argumentu neni prazdny
+            if(data->info.func->params->first != NULL) {
+                freeTokenMem(token);
+                return SEMANTIC_ERROR;
+            }
+        }
+    }
+}
+
+/**
+ * zpracovava nasledujici pravidla:
+ * 4. <Kdata_types> -> keyw_bool
+ * 5. <Kdata_types> -> keyw_int
+ * 6. <Kdata_types> -> keyw_string
+ * 7. <Kdata_types> -> keyw_double
+ * @param variableType[out]     -   datovy typ tokenu
+ * @param tokenType[in]         -   typ prijimaneho tokenu
+ * @return      funkce vraci 1, pokud je vse v poradku
+ */
+int kDataTypes(tTabSymVarNoAutoDataType *variableType, TokenTypes tokenType) {
+    
     //ocekavana klicova slova
-    switch(token->typ) {
+    switch(tokenType) {
         case KEYW_INT:
         case KEYW_DOUBLE:
         case KEYW_STRING:
         case KEYW_BOOL:
             
             //prevedu typ tokenu na typ promenne
-            *variableType = tokenTypeToVarType(token->typ);
+            *variableType = tokenTypeToVarType(tokenType);
             return 1;
         //jina hodnota - chyba
         default:

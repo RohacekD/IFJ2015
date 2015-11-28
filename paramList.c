@@ -30,7 +30,9 @@ int insertEl(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataTy
     }
     else {
         //vlozeni prvku za aktivni prvek
-        postInsert(list, idName, dataType);
+        if ((postInsert(list, idName, dataType)) == 0) {
+            return 0;
+        }
         //posunuti aktivity na posledni prvek
         succ(list);
     }
@@ -38,12 +40,12 @@ int insertEl(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataTy
 }
 
 
-void postInsert(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataType)
+int postInsert(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataType)
 {
   if(list->act != NULL){ //seznam je aktivni
     tParamListElemPtr UkPomEl;
     if((UkPomEl = (struct tParamListElem *) malloc(sizeof(struct tParamListElem))) == NULL) //alokace se nezdarila
-      return;
+      return 0;
         //Todo volani chyby
     else{  //alokace se zdarila
       UkPomEl->dataType = dataType;
@@ -52,6 +54,7 @@ void postInsert(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dat
       list->act->next = UkPomEl;
     }
   }
+  return 1;
 }
  
 
