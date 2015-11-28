@@ -231,7 +231,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data) {
         //pokud je dany ID v globalni tabulce, provadime semantickou kontrolu hlavicky
         if(data != NULL) {
             //list argumentu neni prazdny, chyba
-            if((*data)->info.func->params->first != NULL) {
+            if(data->info.func->params->first != NULL) {
                 freeTokenMem(token);
                 return SEMANTIC_ERROR;
             }
@@ -247,7 +247,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data) {
         return result;
     }
     //seznam parametru neni prazdny
-    first((*data)->info.func->params);
+    first(data->info.func->params);
     
     //volam funkci pro zpracovani argumentu
     return parseArgument(paramList, data, paramType);
@@ -288,8 +288,8 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarNoAu
     }
     //porovnavam parametry
     else {
-        if ((paramType != (*data)->info.func->params->act->dataType) ||
-                (strcmp(idName->str, (*data)->info.func->params->act->idName->str) != 0)) {
+        if ((paramType != data->info.func->params->act->dataType) ||
+                (strcmp(idName->str, data->info.func->params->act->idName->str) != 0)) {
             return SEMANTIC_ERROR;
         }
     }
@@ -319,6 +319,10 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data) {
     //token je ')'
     if (token->typ == PARENTHESIS_CLOSING) {
         freeTokenMem(token);
+        //zkontroluji, zda neni dana funkce uz deklarovana s vice parametry
+        if (data->info.func->params->act->next != NULL) {
+            return SEMANTIC_ERROR;
+        }
         return 1;
     }
     //token je ,
@@ -337,7 +341,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data) {
              return result;
         }
         //posunu se v seznamu argumentu na dalsi prvek
-        succ((*data)->info.func->params);
+        succ(data->info.func->params);
         return parseArgument(paramList, data, paramType);
     }
     //neocekavany token
