@@ -20,7 +20,7 @@ typedef struct Tree Tree;
 
 struct Tree {
 	Tree * left, *right;
-	int element;
+	char *element;
 };
 
 //printing tree in ascii
@@ -73,14 +73,14 @@ Tree *find_max(Tree *t) {
 	}
 }
 
-Tree *find(int elem, Tree *t) {
+Tree *find(char* elem, Tree *t) {
 	if (t == NULL) {
 		return NULL;
 	}
 
-	if (elem < t->element) {
+	if (strcmp(elem, t->element) < 0) {
 		return find(elem, t->left);
-	} else if (elem > t->element) {
+	} else if (strcmp(elem, t->element) > 0) {
 		return find(elem, t->right);
 	} else {
 		return t;
@@ -90,7 +90,7 @@ Tree *find(int elem, Tree *t) {
 
 //Insert i into the tree t, duplicate will be discarded
 //Return a pointer to the resulting tree.
-Tree * insert(int value, Tree * t) {
+Tree * insert(char* value, Tree * t) {
 	Tree * new_node;
 
 	if (t == NULL) {
@@ -105,9 +105,9 @@ Tree * insert(int value, Tree * t) {
 		return new_node;
 	}
 
-	if (value < t->element) {
+	if (strcmp(value, t->element) < 0) {
 		t->left = insert(value, t->left);
-	} else if (value > t->element) {
+	} else if (strcmp(value, t->element) > 0) {
 		t->right = insert(value, t->right);
 	} else {
 		//duplicate, ignore it
@@ -116,7 +116,7 @@ Tree * insert(int value, Tree * t) {
 	return t;
 }
 
-Tree * delete(int value, Tree * t) {
+Tree * delete(char* value, Tree * t) {
 	//Deletes node from the tree
 	// Return a pointer to the resulting tree
 	//Tree * x;
@@ -125,9 +125,9 @@ Tree * delete(int value, Tree * t) {
 	if (t == NULL)
 		return NULL;
 
-	if (value < t->element) {
+	if (strcmp(value, t->element) < 0) {
 		t->left = delete(value, t->left);
-	} else if (value > t->element) {
+	} else if (strcmp(value, t->element) > 0) {
 		t->right = delete(value, t->right);
 	} else if (t->left && t->right) {
 		tmp_cell = find_min(t->right);
@@ -172,7 +172,7 @@ asciinode * build_ascii_tree_recursive(Tree * t) {
 		node->right->parent_dir = 1;
 	}
 
-	sprintf(node->label, "%d", t->element);
+	sprintf(node->label, "%s", t->element);
 	node->lablen = strlen(node->label);
 
 	return node;
@@ -369,7 +369,7 @@ Tree * createTreeFromBST(tBSTNodePtr originalRoot){
 
 	root->left=createTreeFromBST(originalRoot->l);
 	root->right=createTreeFromBST(originalRoot->r);
-	root->element=atoi(originalRoot->key->str);
+	root->element=originalRoot->key->str;
 
 	return root;
 }
