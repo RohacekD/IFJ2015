@@ -14,6 +14,7 @@
 #define LEXICAL_ERR 0
 #define SYNTAX_ERR 2
 #define SEMANTIC_ERROR 3
+#define MEM_ALLOC_ERROR 99
 
 
 // vytvorim strukturu pro globalni tabulku symbolu
@@ -51,8 +52,8 @@ tTabSymVarNoAutoDataType tokenTypeToVarType(TokenTypes ttype) {
 
 
 /**
- * Uvodni funkce parseru, vubec nevim, co ma delat
- * U nas je syntakticky validni i prazdny program, je to semanticka chyba?
+ * Uvodni funkce parseru
+ * zpracovava chyby a uvolnuje pamet
  */
 void parse() {
     
@@ -178,36 +179,6 @@ int parseFunction() {
 }
 
 /**
- * zpracovava pravidla:
- * 8. <arguments> -> epsilon
- * 9. <arguments> -> <argument>
- *
- * @param paramList[out]        -   list parametru k naplneni   
- * @return 
- */
-int parseArguments(tParamListPtr paramList, tTabSymElemData *data) {
-    int result;
-    tToken *token;
-    
-    //nacteme token
-    if((result = getToken(token, f)) != 1) {
-        return LEXICAL_ERR;
-    }
-    
-    //zadne argumenty:
-    if(token->typ == PARENTHESIS_CLOSING) {
-        //pokud provadime semantickou kontrolu hlavicky
-        if(data != NULL) {
-            //list argumentu neni prazdny
-            if(data->info.func->params->first != NULL) {
-                freeTokenMem(token);
-                return SEMANTIC_ERROR;
-            }
-        }
-    }
-}
-
-/**
  * zpracovava nasledujici pravidla:
  * 4. <Kdata_types> -> keyw_bool
  * 5. <Kdata_types> -> keyw_int
@@ -232,5 +203,146 @@ int kDataTypes(tTabSymVarNoAutoDataType *variableType, TokenTypes tokenType) {
         //jina hodnota - chyba
         default:
             return SYNTAX_ERR;
+    }
+}
+
+/**
+ * * zpracovava pravidla:
+ * 8. <arguments> -> epsilon
+ * 9. <arguments> -> <argument>
+ * @param paramList[out]     -   seznam argumentu k naplneni
+ * @param data[in]           -   NULL, jestli se identifikator funkce v globalni tabulce nenachazi
+ *                               jinak odkaz na dany prvek
+ * @return 
+ */
+int parseArguments(tParamListPtr paramList, tTabSymElemData *data) {
+    int result;
+    tToken *token;
+    //typ parametru
+    tTabSymVarNoAutoDataType paramType;
+    
+    //nacteme token
+    if((result = getToken(token, f)) != 1) {
+        return LEXICAL_ERR;
+    }
+    
+    //zadne argumenty: pravidlo 8
+    if(token->typ == PARENTHESIS_CLOSING) {
+        //pokud je dany ID v globalni tabulce, provadime semantickou kontrolu hlavicky
+        if(data != NULL) {
+            //list argumentu neni prazdny, chyba
+            if((*data)->info.func->params->first != NULL) {
+                freeTokenMem(token);
+                return SEMANTIC_ERROR;
+            }
+        }
+        freeTokenMem(token);
+        return 1;
+    }
+    
+    //pravidlo 9
+    if ((result = kDataTypes(&paramType, token->typ)) != 1) {
+        //uvolnim token
+        freeTokenMem(token);
+        return result;
+    }
+    //seznam parametru neni prazdny
+    first((*data)->info.func->params);
+    
+    //volam funkci pro zpracovani argumentu
+    return parseArgument(paramList, data, paramType);
+}
+
+/**
+ * pravidlo 10: <argument> -> <Kdata_types>ID<argumentNext>
+ * @param paramList[out]        -   seznam parametru k doplneni 
+ * @param data[in]              -   NULL, jestli se identifikator funkce v globalni tabulce nenachazi 
+ *                                  jinak odkaz na dany prvek
+ * @param paramType[in]         -   datovy typ promenne
+ * @return      pokud probehlo vse v poradku, tak 1
+ */
+int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarNoAutoDataType paramType) {
+    tToken *token;
+    int result;
+    //uchovavam nazev identifikatoru
+    string idName;
+    
+    //pozadam o novy token
+    if((result = getToken(token, f)) != 1) {
+        freeTokenMem(token);
+        return LEXICAL_ERR;
+    }
+    //token neni ID
+    if(token->typ != IDENTIFICATOR) {
+        freeTokenMem(token);
+        return SYNTAX_ERR;
+    }
+    //ulozim si nazev identifikatoru
+    idName = token->value.stringVal;
+    
+    //vkladam prvek do seznamu parametru
+    if(data == NULL) {
+        if (insertEl(paramList, &idName, paramType) == 0) {
+            return MEM_ALLOC_ERROR;
+        }
+    }
+    //porovnavam parametry
+    else {
+        if ((paramType != (*data)->info.func->params->act->dataType) ||
+                (strcmp(idName->str, (*data)->info.func->params->act->idName->str) != 0)) {
+            return SEMANTIC_ERROR;
+        }
+    }
+    
+    //volam dalsi cast pro zpracovani parametru
+    return argumentNext(paramList, data);
+}
+
+/**
+ * funkce zpracovava providla:
+ * 11. <argumentNext> -> epsilon
+ * 12. <argumentNext> -> , <argument>
+ * @return      pokud probehlo vse v poradku, tak 1
+ */
+int argumentNext(tParamListPtr paramList, tTabSymElemData *data) {
+    tToken *token;
+    int result;
+    //typ parametru
+    tTabSymVarNoAutoDataType paramType;
+    
+    //nactu dalsi token
+    if((result = getToken(token, f)) != 1) {
+        freeTokenMem(token);
+        return LEXICAL_ERR;
+    }
+    
+    //token je ')'
+    if (token->typ == PARENTHESIS_CLOSING) {
+        freeTokenMem(token);
+        return 1;
+    }
+    //token je ,
+    else if(token->typ == COMMA) {
+        //uvolnim token
+        freeTokenMem(token);
+        //prectu jeste jeden token, jelikoz funkce parse Argument
+        //ocekava jako prvni token v me implementaci az ID
+         if((result = getToken(token, f)) != 1) {
+            freeTokenMem(token);
+            return LEXICAL_ERR;
+        }
+        if ((result = kDataTypes(&paramType, token->typ)) != 1) {
+            //uvolnim token
+            freeTokenMem(token);
+             return result;
+        }
+        //posunu se v seznamu argumentu na dalsi prvek
+        succ((*data)->info.func->params);
+        return parseArgument(paramList, data, paramType);
+    }
+    //neocekavany token
+    else {
+        freeTokenMem(token);
+        return SYNTAX_ERR;
     }
 }

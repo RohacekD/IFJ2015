@@ -266,7 +266,7 @@ void postInsert(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dat
  * @return              0 - nastala chyba
  *                      1 - funkce probehla v poradku
  */
-int insertEL(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataType);
+int insertEl(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataType);
 
 /**
  * Funkce nastavi aktivitu na prvni prvek
