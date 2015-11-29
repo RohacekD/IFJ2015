@@ -5,6 +5,7 @@
 #include "error.h"
 #include "parser.h"
 #include "token.h"
+#include "parserExpr.h"
 #include <stdbool.h>
 #include <string.h>
 
@@ -516,9 +517,44 @@ int parseStatementList(tTabSym *localTable) {
  * @return 
  */
 int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
+    tToken token;
+    int result;
+    tTabSymVarNoAutoDataType expressionType;
+    
     switch(tokenType) {
         //pravidlo 23
         case KEYW_IF:
+            //nactu dalsi token - mel by byt '('
+            if((result = getToken(&token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            if (token->typ != PARENTHESIS_OPENING){
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            //TODO - volat parser pro zpracovani vyrazu
+            parseExpression(globalTable, localTable, , &expressionType, f);
+            
+            if((result = getToken(&token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            //ocekavam uzaviraci zavorku
+            if(token->typ != PARENTHESIS_CLOSING) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //TODO
+            if((result = parseBlock()) != 1) {
+                return result;
+            }
+            
+            //TODO
+            if((result = parseElse()) != 1) {
+                return result;
+            }
             
             break;
         //pravidlo 24
