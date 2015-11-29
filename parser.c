@@ -480,6 +480,9 @@ int parseStatementList(tTabSym *localTable) {
         case KEYW_CIN:
         case KEYW_COUT:
         case KEYW_DO:
+        case TYPE_IDENTIFICATOR:
+        case INCREMENTATION:
+        case DECREMENTATION:
             
             //ulozim si typ tokenu
             tokenType = token->typ;
@@ -490,6 +493,68 @@ int parseStatementList(tTabSym *localTable) {
             }
             
             return parseStatementList(localTable);
+            
+            break;
+        default:
+            return SYNTAX_ERR;
+    }
+}
+
+
+/**
+ * zpracovava nasledujici pravidla:
+ * 19. <statement> -> <assignment>;
+ * 20. <statement> -> cin >> ID <cin>;
+ * 21. <statement> -> cout << <term><cout>;
+ * 22. <statement> -> return expression;
+ * 23. <statement> -> if(expression)<block><else>
+ * 24. <statement> -> for(<Kdata_types>ID=expression; expression; <assignment>)<block>
+ * 25. <statement> -> while(expression)<block>
+ * 26. <statement> -> do <block>while(expression);
+ * @param localTable
+ * @param token
+ * @return 
+ */
+int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
+    switch(tokenType) {
+        //pravidlo 23
+        case KEYW_IF:
+            
+            break;
+        //pravidlo 24
+        case KEYW_FOR:
+            
+            break;
+        //pravidlo 20
+        case KEYW_CIN:
+            
+            break;
+        //pravidlo 21
+        case KEYW_COUT:
+            
+            break;
+        //pravidlo 22
+        case KEYW_RETURN:
+            
+            break;
+        //pravidlo 25
+        case KEYW_WHILE:
+            
+            break;
+        //pravidlo 26
+        case KEYW_DO:
+            
+            break;
+        //pravidlo 19
+        case INCREMENTATION:
+            
+            break;
+        //pravidlo 19
+        case DECREMENTATION:
+            
+            break;
+        //pravidlo 19
+        case TYPE_IDENTIFICATOR:
             
             break;
         default:
