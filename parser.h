@@ -24,7 +24,7 @@ void setSourceFile(FILE *file);
  * @param ttype[in]         typ tokenu k prevodu
  * @return                  typ promenne
  */
-tTabSymVarNoAutoDataType tokenTypeToVarType(TokenTypes ttype);
+tTabSymVarDataType tokenTypeToVarType(TokenTypes ttype);
 
 /**
  * Uvodni funkce parseru
@@ -59,7 +59,7 @@ int parseArguments();
  * @param tokenType[in]         -   typ prijimaneho tokenu
  * @return      funkce vraci 1, pokud je vse v poradku
  */
-int kDataTypes(tTabSymVarNoAutoDataType *variableType, TokenTypes tokenType);
+int kDataTypes(tTabSymVarDataType *variableType, TokenTypes tokenType);
 
 /**
  * * zpracovava pravidla:
@@ -68,9 +68,10 @@ int kDataTypes(tTabSymVarNoAutoDataType *variableType, TokenTypes tokenType);
  * @param paramList[out]     -   seznam argumentu k naplneni
  * @param data[in]           -   NULL, jestli se identifikator funkce v globalni tabulce nenachazi
  *                               jinak odkaz na dany prvek
+ * @param localTabel[out]    -  odkaz na lokalni tabulku, do ktere ukladame parametry
  * @return 
  */
-int parseArguments(tParamListPtr paramList, tTabSymElemData *data);
+int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localTable);
 
 /**
  * pravidlo 10: <argument> -> <Kdata_types>ID<argumentNext>
@@ -78,9 +79,10 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data);
  * @param data[in]              -   NULL, jestli se identifikator funkce v globalni tabulce nenachazi 
  *                                  jinak odkaz na dany prvek
  * @param paramType[in]         -   datovy typ promenne
+ * @param localTabel[out]       -  odkaz na lokalni tabulku, do ktere ukladame parametry
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarNoAutoDataType paramType);
+int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarDataType paramType, tTabSym *localTable);
 
 
 /**
@@ -89,7 +91,18 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarNoAu
  * 12. <argumentNext> -> , <argument>
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int argumentNext(tParamListPtr paramList, tTabSymElemData *data);
+int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localTable);
+
+/**
+ * zpracovava nasledujici pravidla:
+ * 15. <st_list> -> epsilon
+ * 16. <st_list> -> <statement><st_list>
+ * 17. <st_list> -> <declaration><st_list>
+ * 18. <st_list> -> {<st_list>}<st_list>
+ * @param localTable        -   lokalni tabulka funkce
+ * @return      pokud probehlo vse v poradku, tak 1
+ */
+int parseStatementList(tTabSym *localTable);
 
 #endif	/* PARSER_H */
 

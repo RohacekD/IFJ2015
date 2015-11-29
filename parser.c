@@ -31,22 +31,24 @@ void setSourceFile(FILE *file)
  * @param ttype[in]         typ tokenu k prevodu
  * @return                  typ promenne
  */
-tTabSymVarNoAutoDataType tokenTypeToVarType(TokenTypes ttype) {
+tTabSymVarDataType tokenTypeToVarType(TokenTypes ttype) {
     switch(ttype) {
         case KEYW_INT:
-            return TAB_SYM_VAR_NO_AUTO_INTEGER;
+            return TAB_SYM_VAR_INTEGER;
             break;
         case KEYW_DOUBLE:
-            return TAB_SYM_VAR_NO_AUTO_DOUBLE;
+            return TAB_SYM_VAR_DOUBLE;
             break;
         case KEYW_STRING:
-            return TAB_SYM_VAR_NO_AUTO_STRING;
+            return TAB_SYM_VAR_STRING;
             break;
         case KEYW_BOOL:
-            return TAB_SYM_VAR_NO_AUTO_BOOLEAN;
+            return TAB_SYM_VAR_BOOLEAN;
             break;
+        case KEYW_AUTO:
+            return TAB_SYM_VAR_AUTO;
         default:
-            return 42;
+            return INTERNAL_ERROR;
     }
 }
 
@@ -77,8 +79,8 @@ void parse() {
  */
 int parseFunction() {
     int result;
-    tToken *token;
-    tTabSymVarNoAutoDataType returnType;
+    tToken token;
+    tTabSymVarDataType returnType;
     //promenna, ktera slouzi pro kontrolu, zda uz je dana funkce deklarovana
     tTabSymElemData *funcID_info;
     //uchovavam nazev identifikatoru
@@ -89,7 +91,7 @@ int parseFunction() {
     
     
     //nactu prvni token, prisel chybny token
-    if((result = getToken(token, f)) != 1) {
+    if((result = getToken(&token, f)) != 1) {
         return LEXICAL_ERR;
     }
     //program muze byt i prazdny
@@ -107,7 +109,7 @@ int parseFunction() {
     //uvolnim token
     freeTokenMem(token);
     
-    if((result = getToken(token, f)) != 1)
+    if((result = getToken(&token, f)) != 1)
         return LEXICAL_ERR;
     
     //dalsi token je ID - <function> -> <Kdata_types> fID
@@ -119,9 +121,9 @@ int parseFunction() {
         //funkce jeste nebyla deklarovana
         if((funcID_info = tabSymSearch(globalTable, &idName)) == NULL) {
             //zkontroluji, zda je ID pouzitelne
-            if((strcmp(idName->str, "length") == 0) || (strcmp(idName->str, "substr") == 0) ||
-                    (strcmp(idName->str, "concat") == 0) || (strcmp(idName->str, "find") == 0) ||
-                    (strcmp(idName->str, "sort") == 0)) {
+            if((strcmp(idName.str, "length") == 0) || (strcmp(idName.str, "substr") == 0) ||
+                    (strcmp(idName.str, "concat") == 0) || (strcmp(idName.str, "find") == 0) ||
+                    (strcmp(idName.str, "sort") == 0)) {
                 freeTokenMem(token);
                 return SEMANTIC_ERROR; //pokus o redefinici funkce
             }
@@ -135,7 +137,7 @@ int parseFunction() {
                 return INTERNAL_ERROR;
             }
             //v tuto chvili uz muzu zkontrolovat, zda sedi navratovy typ funkce
-            if(funcID_info->info.func->retType != returnType) {
+            if(funcID_info->info.func->retType != (tTabSymVarNoAutoDataType)returnType) {
                 freeTokenMem(token);
                 return SEMANTIC_ERROR; //nesouhlasi navratovy typ
             }
@@ -144,7 +146,7 @@ int parseFunction() {
         freeTokenMem(token);
         
         //dalsi token by mel byt '('
-        if ((result = getToken(token, f) != 1)) {
+        if ((result = getToken(&token, f) != 1)) {
             return LEXICAL_ERR;
         }
         //token byl '('
@@ -161,7 +163,7 @@ int parseFunction() {
 
             //<function> -> <Kdata_types> fID(<arguments>)<body>
             //jsme u <body> -> bud ';'(deklarace), nebo '{' (definice)
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -197,6 +199,7 @@ int parseFunction() {
         freeTokenMem(token);
         return SYNTAX_ERR;
     }
+    return SYNTAX_ERR;
 }
 
 /**
@@ -209,7 +212,7 @@ int parseFunction() {
  * @param tokenType[in]         -   typ prijimaneho tokenu
  * @return      funkce vraci 1, pokud je vse v poradku
  */
-int kDataTypes(tTabSymVarNoAutoDataType *variableType, TokenTypes tokenType) {
+int kDataTypes(tTabSymVarDataType *variableType, TokenTypes tokenType) {
     
     //ocekavana klicova slova
     switch(tokenType) {
@@ -219,7 +222,9 @@ int kDataTypes(tTabSymVarNoAutoDataType *variableType, TokenTypes tokenType) {
         case KEYW_BOOL:
             
             //prevedu typ tokenu na typ promenne
-            *variableType = tokenTypeToVarType(tokenType);
+            if ((*variableType = tokenTypeToVarType(tokenType)) == INTERNAL_ERROR) {
+                return INTERNAL_ERROR;
+            }
             return 1;
         //jina hodnota - chyba
         default:
@@ -239,12 +244,12 @@ int kDataTypes(tTabSymVarNoAutoDataType *variableType, TokenTypes tokenType) {
  */
 int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localTable) {
     int result;
-    tToken *token;
+    tToken token;
     //typ parametru
-    tTabSymVarNoAutoDataType paramType;
+    tTabSymVarDataType paramType;
     
     //nacteme token
-    if((result = getToken(token, f)) != 1) {
+    if((result = getToken(&token, f)) != 1) {
         return LEXICAL_ERR;
     }
     
@@ -253,7 +258,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
         //pokud je dany ID v globalni tabulce, provadime semantickou kontrolu hlavicky
         if(data != NULL) {
             //list argumentu neni prazdny, chyba
-            if(data->info.func->params->first != NULL) {
+            if((*data->info.func->params)->first != NULL) {
                 freeTokenMem(token);
                 return SEMANTIC_ERROR;
             }
@@ -269,7 +274,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
         return result;
     }
     //seznam parametru neni prazdny, nastavime aktivitu prvni prvek seynamu parametru
-    first(data->info.func->params);
+    first(*(data->info.func->params));
     
     //volam funkci pro zpracovani argumentu
     return parseArgument(paramList, data, paramType, localTable);
@@ -284,20 +289,18 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
  * @param localTabel[out]       -  odkaz na lokalni tabulku, do ktere ukladame parametry
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseArgument(tParamListPtr paramList, tTabSymElemData *data,
-                    tTabSymVarNoAutoDataType paramType, tTabSym *localTable) {
-    tToken *token;
+int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarDataType paramType, tTabSym *localTable) {
+    tToken token;
     int result;
     //uchovavam nazev identifikatoru
     string idName;
     
     //pozadam o novy token
-    if((result = getToken(token, f)) != 1) {
-        freeTokenMem(token);
+    if((result = getToken(&token, f)) != 1) {
         return LEXICAL_ERR;
     }
     //token neni ID
-    if(token->typ != IDENTIFICATOR) {
+    if(token->typ != TYPE_IDENTIFICATOR) {
         freeTokenMem(token);
         return SYNTAX_ERR;
     }
@@ -330,14 +333,14 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data,
     }
     //porovnavam parametry
     else {
-        if ((paramType != data->info.func->params->act->dataType) ||
-                (strcmp(idName->str, data->info.func->params->act->idName->str) != 0)) {
+        if (((tTabSymVarNoAutoDataType)paramType != (*data->info.func->params)->act->dataType) ||
+                (strcmp(idName.str, (*data->info.func->params)->act->idName->str) != 0)) {
             return SEMANTIC_ERROR;
         }
     }
     
     //volam dalsi cast pro zpracovani parametru
-    return argumentNext(paramList, data);
+    return argumentNext(paramList, data, localTable);
 }
 
 /**
@@ -346,14 +349,14 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data,
  * 12. <argumentNext> -> , <argument>
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int argumentNext(tParamListPtr paramList, tTabSymElemData *data) {
-    tToken *token;
+int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localTable) {
+    tToken token;
     int result;
     //typ parametru
-    tTabSymVarNoAutoDataType paramType;
+    tTabSymVarDataType paramType;
     
     //nactu dalsi token
-    if((result = getToken(token, f)) != 1) {
+    if((result = getToken(&token, f)) != 1) {
         freeTokenMem(token);
         return LEXICAL_ERR;
     }
@@ -362,7 +365,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data) {
     if (token->typ == PARENTHESIS_CLOSING) {
         freeTokenMem(token);
         //zkontroluji, zda neni dana funkce uz deklarovana s vice parametry
-        if (data->info.func->params->act->next != NULL) {
+        if ((*data->info.func->params)->act->next != NULL) {
             return SEMANTIC_ERROR;
         }
         return 1;
@@ -373,7 +376,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data) {
         freeTokenMem(token);
         //prectu jeste jeden token, jelikoz funkce parse Argument
         //ocekava jako prvni token v me implementaci az ID
-         if((result = getToken(token, f)) != 1) {
+         if((result = getToken(&token, f)) != 1) {
             freeTokenMem(token);
             return LEXICAL_ERR;
         }
@@ -383,8 +386,8 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data) {
              return result;
         }
         //posunu se v seznamu argumentu na dalsi prvek
-        succ(data->info.func->params);
-        return parseArgument(paramList, data, paramType);
+        succ((*data->info.func->params));
+        return parseArgument(paramList, data, paramType, localTable);
     }
     //neocekavany token
     else {
@@ -393,52 +396,108 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data) {
     }
 }
 
-
+/**
+ * zpracovava nasledujici pravidla:
+ * 15. <st_list> -> epsilon
+ * 16. <st_list> -> <statement><st_list>
+ * 17. <st_list> -> <declaration><st_list>
+ * 18. <st_list> -> {<st_list>}<st_list>
+ * @param localTable        -   lokalni tabulka funkce
+ * @return      pokud probehlo vse v poradku, tak 1
+ */
 int parseStatementList(tTabSym *localTable) {
-    tToken *token;
+    tToken token;
     int result;
+    tTabSymVarDataType dataType;
+    TokenTypes tokenType;
     
     //pozadam o token
-    if((result = getToken(token, f)) != 1) {
+    if((result = getToken(&token, f)) != 1) {
         return LEXICAL_ERR;
     }
     
-    switch(token) {
+    switch(token->typ) {
+        //pravidlo 17 - <st_list> -> <declaration><st_list>
         case KEYW_INT:
         case KEYW_DOUBLE:
         case KEYW_STRING:
         case KEYW_BOOL:
-        
-            break;
         case KEYW_AUTO:
-       
+            
+            //ulozim si datovy typ promenne
+            if ((dataType = tokenTypeToVarType(token->typ)) == INTERNAL_ERROR) {
+                return INTERNAL_ERROR;
+            }
+            
+            //uvolnim token
+            freeTokenMem(token);
+            
+            //volam funkci pro zpracovani deklarace
+            if ((result = parseDeclaration(localTable)) != 1) {
+                return result;
+            }
+            
+            //opet volam funkci pro zpracovani statement-listu
+            return parseStatementList(localTable);
+            
             break;
+            
+        //pravidlo 15 - <st_list> -> epsilon (konec funkce)
+        //TO-DO jak a kde kontrolovat, zda dana funkce obsahovala return
         case BRACES_CLOSING:
-            
+            freeTokenMem(token);
+            return 1;
             break;
-            
+        
+        //pravidlo 18 - <st_list> -> {<st_list>}<st_list>
+        //TODO - vsechno to nastavovani veci okolo bloku
         case BRACES_OPENING:
+            freeTokenMem(token);
             
+            if ((result = parseStatementList(localTable)) != 1) {
+                return result;
+            }
+            
+            if((result = getToken(&token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //dalsi token by mel byt uzaviraci slozena zavorka
+            if(token->typ != BRACES_CLOSING) {
+                freeTokenMem(token);
+                return SEMANTIC_ERROR;
+            }
+            freeTokenMem(token);
+            
+            return parseStatementList(localTable);
             break;
+            
+        //pravidlo 16 - <st_list> -> <statement><st_list>
         case KEYW_IF:
-            
-            break;
         case KEYW_FOR:
-            
-            break;
         case KEYW_WHILE:
-            
-            break;
         case KEYW_RETURN:
-            
-            break;
         case KEYW_CIN:
-            
-            break;
         case KEYW_COUT:
+        case KEYW_DO:
+            
+            //ulozim si typ tokenu
+            tokenType = token->typ;
+            freeTokenMem(token);
+            
+            if((result = parseStatement(localTable, tokenType)) != 1) {
+                return result;
+            }
+            
+            return parseStatementList(localTable);
             
             break;
         default:
             return SYNTAX_ERR;
     }
+}
+
+
+int parseDeclaration(tTabSym *localTable) {
+    
 }
