@@ -66,8 +66,9 @@ tInsTapeInsPtr createInstruction(tInstructTypes type, void* adr1, void* adr2,
 		newIns->adr1 = adr1;
 		newIns->adr2 = adr2;
 		newIns->adr3 = adr3;
-		newIns->lptr;
-		newIns->rptr;
+		newIns->lptr = lptr;
+		newIns->rptr = rptr;
+		return newIns;
 	}
 	return NULL;
 }
