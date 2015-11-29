@@ -395,8 +395,10 @@ int main()
     int errCount = 0;
 
     printf("Vytvoreni tabulky symbolu\n");
-    if((symbolTable = tabSymCreate(context)) == NULL)
+    if((symbolTable = tabSymCreate(context)) == NULL) {
         printf("Alokace tabulky se nezdarila\n");
+        tabSymFree(symbolTable);
+    }
     //alokace se zdarila
     else {
         printf("Test 0: Ocekavana hodnota korene: NULL\t | Ocekavany typ tabulky symbolu: TAB_SYM_LOC\n");
@@ -613,7 +615,7 @@ int main()
             printf("Zruseni lokalni tabulky symbolu\n");
             tabSymFree(symbolTable);
             
-            //uvolneni stringu
+            //uvolneni vsech stringu
             strFree(&p);
             strFree(&tmp2);
             strFree(&doubleV);
