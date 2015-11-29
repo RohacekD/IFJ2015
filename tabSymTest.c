@@ -500,7 +500,8 @@ int main()
             unionValue val;
             val.intVal = 5;
             tConstantInfo *konstantaInfo = tabSymCreateConstantInfo(TAB_SYM_VAR_INTEGER, val);
-             
+;
+            
             int retValue1, retValue2, retValue3, retValue4, retValue5;
             
             printf("----------------------------------\n");
@@ -604,13 +605,22 @@ int main()
             }
             
             
-            //pridani prvku do globalni tabulky symbolu
-            
+            //TODO - pridani prvku do globalni tabulky symbolu
+            //TODO - zkontrolovat a pripadne opravit memory leaky
             
             
             printf("----------------------------------\n");
             printf("Zruseni lokalni tabulky symbolu\n");
             tabSymFree(symbolTable);
+            
+            //uvolneni stringu
+            strFree(&p);
+            strFree(&tmp2);
+            strFree(&doubleV);
+            strFree(&autoV);
+            strFree(&stringV);
+            strFree(&boolV);
+            strFree(&konstanta);
             
         }
     }

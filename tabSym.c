@@ -17,7 +17,7 @@
 #include "tabSym.h"
 #include "insTape.h"
 #include "ial.h"
-#include "paramList.c"
+
 #define BUFFER_SIZE 100
 
 tTabSym* tabSymCreate(tTabSymTypes tabType) {
