@@ -254,7 +254,7 @@ void paramListFree(tParamListPtr list);
  * @param idName        jmeno identifikatoru
  * @param dataType      datovy typ argumentu
  */
-void postInsert(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataType);
+int postInsert(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataType);
 
 /**
  * Funkce, ktera vlozi prvek do seznamu na posledni pozici
