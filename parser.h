@@ -27,6 +27,13 @@ void setSourceFile(FILE *file);
 tTabSymVarDataType tokenTypeToVarType(TokenTypes ttype);
 
 /**
+ * funkce rozpozna, zda je dany token term
+ * @param ttype         -       typ token
+ * @return  1, pokud je token terminal, jinak 0
+ */
+int isTerm(TokenTypes ttype);
+
+/**
  * Uvodni funkce parseru
  * zpracovava chyby a uvolnuje pamet
  */
@@ -103,6 +110,22 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
  * @return      pokud probehlo vse v poradku, tak 1
  */
 int parseStatementList(tTabSym *localTable);
+
+/**
+ * zpracovava nasledujici pravidla:
+ * 19. <statement> -> <assignment>;
+ * 20. <statement> -> cin >> ID <cin>;
+ * 21. <statement> -> cout << <term><cout>;
+ * 22. <statement> -> return expression;
+ * 23. <statement> -> if(expression)<block><else>
+ * 24. <statement> -> for(<Kdata_types>ID=expression; expression; <assignment>)<block>
+ * 25. <statement> -> while(expression)<block>
+ * 26. <statement> -> do <block>while(expression);
+ * @param localTable        -   loklni tabulka symbolu
+ * @param token             -   typ tokenu
+ * @return      pokud probehlo vse v poradku, tak 1
+ */
+int parseStatement(tTabSym *localTable, TokenTypes tokenType);
 
 #endif	/* PARSER_H */
 

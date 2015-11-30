@@ -74,6 +74,7 @@ int isTerm(TokenTypes ttype) {
 }
 
 
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
  * Uvodni funkce parseru
  * zpracovava chyby a uvolnuje pamet
@@ -93,6 +94,8 @@ void parse() {
     
 }
 
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
  * pravidlo ve tvaru:
  *          <function> -> <Kdata_types> fID(<arguments>)<body><function>
@@ -432,6 +435,8 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
     }
 }
 
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 15. <st_list> -> epsilon
@@ -542,6 +547,8 @@ int parseStatementList(tTabSym *localTable) {
 }
 
 
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 19. <statement> -> <assignment>;
@@ -552,15 +559,16 @@ int parseStatementList(tTabSym *localTable) {
  * 24. <statement> -> for(<Kdata_types>ID=expression; expression; <assignment>)<block>
  * 25. <statement> -> while(expression)<block>
  * 26. <statement> -> do <block>while(expression);
- * @param localTable
- * @param token
- * @return 
+ * @param localTable        -   loklni tabulka symbolu
+ * @param token             -   typ tokenu
+ * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
+int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
     tToken token;
     int result;
     tTabSymVarNoAutoDataType expressionType;
     tTabSymVarDataType dataType;
+    TokenTypes tokenType2;
     
     switch(tokenType) {
         //pravidlo 23
@@ -588,13 +596,50 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             freeTokenMem(token);
             
             //TODO
-            if((result = parseBlock()) != 1) {
+            //TODO - vytvorit nejspis novou lokalni tabulku, novou instrukcni pasku...
+            if((result = parseBlock(localBlockTable)) != 1) {
                 return result;
             }
             
-            //TODO
-            if((result = parseElse()) != 1) {
-                return result;
+            //TODO - zpracovani else vetve
+            if((result = getToken(&token, f)) != 1) {
+                return SYNTAX_ERR;
+            }
+            
+            switch(token->typ) {
+                //pravidlo 30 - <else> -> epsilon
+                case KEYW_IF:
+                case KEYW_FOR:
+                case KEYW_WHILE:
+                case KEYW_RETURN:
+                case KEYW_CIN:
+                case KEYW_COUT:
+                case KEYW_DO:
+                case TYPE_IDENTIFICATOR:
+                case INCREMENTATION:
+                case DECREMENTATION:
+                case KEYW_INT:
+                case KEYW_DOUBLE:
+                case KEYW_STRING:
+                case KEYW_BOOL:
+                case KEYW_AUTO:
+                case BRACES_CLOSING:
+                case BRACES_OPENING:
+                    //navratim token, dalsi funkce pocitaji s tim, ze ho prectou
+                    ungetToken(&token);
+                    freeTokenMem(token);
+                    return 1;
+                    break;
+                    
+                //pravidlo 31 <else> -> else <block>
+                case KEYW_ELSE:
+                    //TODO - co poslu bloku
+                    freeTokenMem(token);
+                    return parseBlock(localBlockTable);
+                    break;
+                    
+                default:
+                    return SYNTAX_ERR;
             }
             
             break;
@@ -605,7 +650,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
         //TODO - lokalni tabulka u funkce for?
         case KEYW_FOR:
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -615,7 +660,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             }
             freeTokenMem(token);
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -628,17 +673,17 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             freeTokenMem(token);
             
             //dalsi token by mel byt ID
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
-            if(token->typ != IDENTIFICATOR) {
+            if(token->typ != TYPE_IDENTIFICATOR) {
                 freeTokenMem(token);
                 return SYNTAX_ERR;
             }
             freeTokenMem(token);
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -654,7 +699,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             //TODO - zpracovat vystup parseru
             parseExpression(globalTable, localTable, , &expressionType, f);
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -668,7 +713,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             //TODO - zpracovat vystup parseru
             parseExpression(globalTable, localTable, , &expressionType, f);
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -680,11 +725,26 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             
             //TODO - funkce pro parseAssingment
             //TODO - asi ji budu chtit predavat rovnou typ tokenu
-            if((result = parseAssingnment()) != 1) {
+            //for(<Kdata_types>ID=expression; expression; <assignment>
+            
+            if((result = getToken(&token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != INCREMENTATION || token->typ != DECREMENTATION ||
+                    token->typ != TYPE_IDENTIFICATOR) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            
+            //TODO - co predavat 
+            tokenType = token->typ;
+            freeTokenMem(token);
+            if((result = parseAssingnment(tokenType2, localTable)) != 1) {
                 return result;
             }
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -704,7 +764,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
         //pravidlo 20 - cin >> ID <cin>;
         case KEYW_CIN:
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -715,7 +775,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             }
             freeTokenMem(token);
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -726,7 +786,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             }
             freeTokenMem(token);
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -742,7 +802,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
                 return result;
             }
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -763,7 +823,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
         case KEYW_COUT:
             
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -774,7 +834,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             }
             freeTokenMem(token);
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -785,7 +845,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             }
             freeTokenMem(token);
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -801,7 +861,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
                 return result;
             }
             
-            if ((result = getToken(token, f)) != 1) {
+            if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -823,7 +883,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             //TODO - zpracovani vyrazu
             parseExpression(globalTable, localTable, , &expressionType, f);
             
-            if((result = getToken(token, f)) != 1) {
+            if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -838,7 +898,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             
         //pravidlo 25 - while(expression)<block>
         case KEYW_WHILE:
-            if((result = getToken(token, f)) != 1) {
+            if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -851,7 +911,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             //TODO - zpracovani vyrazu
             parseExpression(globalTable, localTable, , &expressionType, f);
             
-            if((result = getToken(token, f)) != 1) {
+            if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -876,7 +936,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
                 return result;
             }
             
-            if((result = getToken(token, f)) != 1) {
+            if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -889,7 +949,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             //TODO - zpracovani vyrazu
             parseExpression(globalTable, localTable, , &expressionType, f);
             
-            if((result = getToken(token, f)) != 1) {
+            if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -899,7 +959,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             }
             freeTokenMem(token);
             
-            if((result = getToken(token, f)) != 1) {
+            if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -918,21 +978,24 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
         case INCREMENTATION:
         case DECREMENTATION:
         case TYPE_IDENTIFICATOR:
+            
             //TODO - parse Assignment
-            return parseAssignment();
+            return parseAssignment(tokenType, localTable);
             break;
         default:
             return SYNTAX_ERR;
     }
 }
 
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 36. <declaration> -> <Kdata_types> ID<dec_init>
  * 37. <declaration> -> auto ID = expression;
  * @param dataType
  * @param localTable
- * @return 
+ * @return      pokud probehlo vse v poradku, tak 1
  */
 int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable) {
     int result;
@@ -980,7 +1043,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable) {
             
             //cast <decInit>
             
-            if((result = getToken(token, f)) != 1) {
+            if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -1014,9 +1077,195 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable) {
             return SYNTAX_ERR;
             
             break;
+            
+            
+        // pravidlo 37 - <declaration> -> auto ID = expression;
         case TAB_SYM_VAR_AUTO:
+            if((result = getToken(&token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if (token->typ != TYPE_IDENTIFICATOR) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            
+            idName = token->value.stringVal;
+            freeTokenMem(token);
+            
+            //kontroluji, zda uz promenna byla definovana
+            varIdentifikator = tabSymSearch(localTable, &idName);
+            funcIdentifikator = tabSymSearch(globalTable, &idName);
+            if (varIdentifikator != NULL || funcIdentifikator != NULL) {
+                return SEMANTIC_ERROR;
+            }
+            
+            //TODO - zpracovani vyrazu
+            parseExpression(globalTable, localTable, , &expressionType, f);
+            
+            //vytvoreni informaci o promenne
+            //TODO - vkladam jeji datovy typ az na zaklade datoveho typu
+                    // po vyhodnoceni vyrazu
+            if ((variableInfo = tabSymCreateVariableInfo((tTabSymVarDataType)expressionType)) == NULL) {
+                return MEM_ALLOC_ERROR;
+            }
+            
+            //vlozeni promenne do lokalni tabulky symbolu
+            if ((tabSymInsertVar(localTable, &idName, variableInfo)) == 0) {
+                return INTERNAL_ERROR;
+            }
+            
+            if ((result = getToken(&token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != SEMICOLON){
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            //pokud jsem se dostal az sem, tak je vse v poradku
+            return 1;
             
             break;
+        default:
+            return SYNTAX_ERR;
+    }
+    return SYNTAX_ERR;
+}
+
+
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+/**
+ * zpracovava nasledujici pravidla:
+ * 27.  <block> -> {<st_list>}
+ * 28.  <block> -> <statement>
+ * @param localTable[in]            -   lokalni tabulka symbolu
+ * @return          pokud probehlo vse v poradku, tak 1
+ */
+int parseBlock(tTabSym *localTable) {
+    tToken token;
+    int result;
+    TokenTypes tokenType;
+    
+    if((result = getToken(&token, f)) != 1) {
+        return LEXICAL_ERR;
+    }
+    
+    switch(token->typ) {
+        // pravidlo 27 - <block> -> {<st_list>}
+        case BRACES_OPENING:
+            freeTokenMem(token);
+            if((result = parseStatementList(localTable)) != 1) {
+                return result;
+            }
+            
+            if((result = getToken(&token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if (token->typ != BRACES_CLOSING) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            //pokud jsem dosel az sem, tak je vse v poradku
+            return 1;
+            break;
+            
+        // pravidlo 28 - <block> -> <statement>
+        case KEYW_IF:
+        case KEYW_FOR:
+        case KEYW_WHILE:
+        case KEYW_RETURN:
+        case KEYW_CIN:
+        case KEYW_COUT:
+        case KEYW_DO:
+        case TYPE_IDENTIFICATOR:
+        case INCREMENTATION:
+        case DECREMENTATION:
+            
+            //ulozim si typ tokenu
+            tokenType = token->typ;
+            freeTokenMem(token);
+            
+            return parseStatement(localTable, tokenType);
+            
+        default:
+            return SYNTAX_ERR;
+    }
+    return SYNTAX_ERR;
+}
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+//nejakym zpusobem musim prohledavat rozsah platnosti (lokalni tabulky bloku...)
+/**
+ * zpracovava pravidla:
+ * 40. <assignment> = ID<specID>
+ * 41. <assignment> = <specID>ID
+ * @param tokenType
+ * @param localTable
+ * @return          pokud probehlo vse v poradku, tak 1
+ */
+
+int parseAssignment(TokenTypes tokenType, tTabSym *localTable) {
+    int result; 
+    tToken token;
+    
+    switch(tokenType) {
+        case TYPE_IDENTIFICATOR:
+            
+            if((result = getToken(&token, f))) {
+                return LEXICAL_ERR;
+            }
+            
+            //TODO semanticky akce a generovani vnitrniho kodu
+            if(token->typ == INCREMENTATION) {
+                freeTokenMem(token);
+                return 1;
+            }
+            else if(token->typ == DECREMENTATION) {
+                freeTokenMem(token);
+                return 1;
+            }
+            else {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            
+            break;
+            
+        case INCREMENTATION:
+            //TODO - semanticke akce a generovani kodu
+            if((result = getToken(&token, f))) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != TYPE_IDENTIFICATOR) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            //pokud jsem se dostal az sem, vse je v poradku
+            return 1;
+            break;
+            
+        case DECREMENTATION:
+            //TODO - semanticke akce a generovani kodu
+            if((result = getToken(&token, f))) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != TYPE_IDENTIFICATOR) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            //pokud jsem se dostal az sem, vse je v poradku
+            return 1;
+            break;
+            
         default:
             return SYNTAX_ERR;
     }
