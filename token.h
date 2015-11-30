@@ -57,6 +57,7 @@ typedef enum tTokenTypes
 	KEYW_RETURN,
 	KEYW_TRUE,//toto by scanner nemel vratit nikdy
 	KEYW_FALSE,//toto by scanner nemel vratit nikdy
+	KEYW_DO,
 
 	END_OF_FILE
 }TokenTypes;

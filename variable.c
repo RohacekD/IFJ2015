@@ -19,5 +19,24 @@ void variableDelete(void* var) {
 	if (((tVariablePtr)var)->type == VAR_TYPE_STRING) {
 		strFree(&((tVariablePtr)var)->data.stringVal);
 	}
-       // printf("Mazu promennou %d\n",((tVariablePtr)var)->data.intVal);
+	free((tVariablePtr*)var);
+     // printf("Mazu promennou %d\n",((tVariablePtr)var)->data.intVal);
+}
+
+tVariableType tTabSymToVarNotatation(tTabSymVarDataType type) {
+	switch (type) {
+	case TAB_SYM_VAR_INTEGER:
+		return VAR_TYPE_INT;
+		break;
+	case TAB_SYM_VAR_DOUBLE:
+		return VAR_TYPE_DOUBLE;
+		break;
+	case TAB_SYM_VAR_STRING:
+		return VAR_TYPE_STRING;
+		break;
+	case TAB_SYM_VAR_BOOLEAN:
+		return VAR_TYPE_BOOL;
+		break;
+	}
+	return 42; 
 }

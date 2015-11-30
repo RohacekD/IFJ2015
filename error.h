@@ -22,9 +22,9 @@ typedef enum{
 
 	ERR_LEX,//!< ERR_LEX Chyba lexikalni analyzy
 
-	ERR_SYNTAX,//!< ERR_SYNTAX Syntaktická chyba
+	ERR_SYNTAX,//!< ERR_SYNTAX Syntaktickï¿½ chyba
 
-	ERR_SEM_DEF,//!< ERR_SEM_DEF Prace s nedefinouvanou promennou/funkcí
+	ERR_SEM_DEF,//!< ERR_SEM_DEF Prace s nedefinouvanou promennou/funkcï¿½
 
 	ERR_SEM_COM,//!< ERR_SEM_COM Chyba kompatibilty dat. typu
 
@@ -40,7 +40,7 @@ typedef enum{
 
 	ERR_RUNTIME_REST,//!< ERR_RUNTIME_REST Ostatni behove chyby
 
-	// posledni
+	ERR_INTERNAL=99,
 	ERR_OK    //!< ERR_OK	Vse v poradku
 }ERR_CODES;
 
