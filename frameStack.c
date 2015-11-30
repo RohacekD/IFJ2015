@@ -100,7 +100,7 @@ void deleteFunctionsFrames(tStack* list) {
 }
 
 void insertNewVariable(tFrameContainer* frameContainer, tVariablePtr var, string* name) {
-    
+	if (!frameContainer) return;
     if (frameContainer->frame == NULL) {
         if (!BSTCreateNode(&(frameContainer->frame), name, (void*)var)) {
             //todo
@@ -117,12 +117,11 @@ void insertNewVariable(tFrameContainer* frameContainer, tVariablePtr var, string
 int findVariable(const tStack* stack, string* s, tVariablePtr* var) {
     tBSTNodePtr node = NULL;
     *var = NULL;
-    if (stack == NULL || s == NULL) {
+    if (stack == NULL || s == NULL || !stack->Top) {
         return 0;
     }
 
     tSElemPtr elem = stack->Top;
-
     if (!elem->frameContainer.passable) {
         BSTSearchTree((elem->frameContainer.frame), s, &node);
     } 
