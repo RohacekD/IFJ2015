@@ -22,4 +22,27 @@ int strCmpConstStr(string *s1, char *s2);
 char *strGetStr(string *s);
 int strGetLength(string *s);
 int strCharToString(string* s, char* c);
+
+/**
+ * vestavena funkce jazyka IFJ2015
+ * @param s vstupni retezec
+ * @param i zacatek podretezce
+ * @param n delka podretezce
+ * @return vraci podretezec
+ */
+string substr(string s, int i, int n);
+
+/**
+ * vestavena funkce jazyka IFJ2015
+ * @param s1
+ * @param s2
+ * @return konkatenace retezcu
+ */
+string concat(string s1, string s2);
+
+/**
+ * @param s retezec
+ * @return vrati delku retezce
+ */        
+int length(string s);
 #endif /* STR_H_ */
