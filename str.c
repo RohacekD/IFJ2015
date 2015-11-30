@@ -122,3 +122,39 @@ int strCharToString(string* s, char* c)
     }
 	return 1;
 }
+
+string substr(string s, int i, int n){
+    string new;
+    strInit(&new);
+    if(i<0){
+        return new; //zde by mel nastat pravdepodobne runtime error
+    }
+    
+    if(n<0){
+        while(s.str[i] != 0){
+            strAddChar(&new,s.str[i]);
+            i++;
+        }
+    }
+    else{
+        for(int k = 0; k<n; k++){
+            if(s.str[i+k] == 0) return new;
+            strAddChar(&new,s.str[i+k]);
+        }
+    }
+    return new;
+}
+
+string concat(string s1, string s2){
+    string new;
+    strInit(&new);
+    strCopyString(&new,&s1);
+    for(int i = 0; i<= s2.length; i++){
+        strAddChar(&new,s2.str[i]);
+    }
+    return new;
+}
+
+int length(string s){
+    return s.length;
+}
