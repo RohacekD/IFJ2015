@@ -53,8 +53,23 @@ tTabSymVarDataType tokenTypeToVarType(TokenTypes ttype) {
     }
 }
 
-bool isTerm(TokenTypes ttype) {
-    
+/**
+ * funkce rozpozna, zda je dany token term
+ * @param ttype         -       typ token
+ * @return  1, pokud je token terminal, jinak 0
+ */
+int isTerm(TokenTypes ttype) {
+    switch(ttype) {
+        case TYPE_BOOL:
+        case TYPE_DOUBLE:
+        case TYPE_STRING:
+        case TYPE_INTEGER:
+        case TYPE_IDENTIFICATOR:
+            return 1;
+            break;
+        default:
+            return 0;
+    }
 }
 
 
@@ -718,7 +733,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             }
             freeTokenMem(token);
             
-            //zpracovani dalsich vstupu
+            //TODO - zpracovani dalsich vstupu
             if ((result = parseCin()) != 1) {
                 return result;
             }
@@ -766,8 +781,35 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             }
             freeTokenMem(token);
             
-            //isTerm
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
             
+            //isTerm
+            if((result = isTerm(token->typ)) == 0){
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //TODO - zpracovani dalsich vstupu
+            if((result = parseCout()) != 1) {
+                return result;
+            }
+            
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //dalsi token by mel byt ;
+            if(token->typ != SEMICOLON) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //pokud jsem se dostal az sem, tak syntakticka analyza probehla v poradku
+            return 1;
             break;
         //pravidlo 22
         case KEYW_RETURN:
