@@ -9,11 +9,27 @@ int executeTape(tInsTapeInsPtr ins) {
 	static tStack* frameStack = NULL;
 	/*Prvotni inicializace stacku*/
 	if (!frameStack) {
-		if ((tStack *)malloc(sizeof(tStack))) {
+		if (!(frameStack = (tStack *)malloc(sizeof(tStack)))) {
 			FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 		}
 		SInit(frameStack);
 	}
+	else {
+
+		tVariablePtr var;
+		variableCreate(&var, VAR_TYPE_DOUBLE);
+		var->data.doubleVal = 42;
+		string varName;
+		strInit(&varName);
+		strCharToString(&varName, "var");
+		insertNewVariable(&frameStack->Top->frameContainer, var, &varName);
+
+
+
+		strFree(&varName);
+	}
+	executeIns(ins, frameStack);
+	return 1;//todo
 }
 
 
@@ -29,7 +45,7 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = getVarVal(oper1) + getVarVal(oper2);
+			dest->data.intVal = (int)getVarVal(oper1) + (int)getVarVal(oper2);
 		}
 		else if (dest->type == VAR_TYPE_DOUBLE) {
 			dest->data.doubleVal = getVarVal(oper1) + getVarVal(oper2);
