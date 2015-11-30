@@ -81,6 +81,8 @@ void parse() {
 int parseFunction() {
     int result;
     tToken token;
+    //oznacuje, zda byla funkce deklarovana, nebo definovana
+    bool defined = false;
     tTabSymVarDataType returnType;
     //promenna, ktera slouzi pro kontrolu, zda uz je dana funkce deklarovana
     tTabSymElemData *funcID_info;
@@ -114,7 +116,7 @@ int parseFunction() {
         return LEXICAL_ERR;
     
     //dalsi token je ID - <function> -> <Kdata_types> fID
-    if (token->typ == TYPE_IDENTIFICATOR) {
+    if (token->typ == TYPE_FUNCTION_IDENTIFICATOR) {
         //do idName ulozim identifikator
         //identifikator potrebuji ulozit do globalni tabulky symbolu
         idName = token->value.stringVal;
@@ -171,6 +173,7 @@ int parseFunction() {
             //jde pouze o deklaraci funkce
             if(token->typ == SEMICOLON) {
                 //zpracovavame nasledujici funkci
+                freeTokenMem(token);
                 return parseFunction();
             }
             
@@ -181,6 +184,11 @@ int parseFunction() {
                     freeTokenMem(token);
                     return SEMANTIC_ERROR;
                 }
+                
+                //funkce je definovana
+                defined = true;
+                freeTokenMem(token);
+                
                 //funkce jeste nebyla definovana
                 //<function> -> <Kdata_types> fID (<arguments>)<body>
                 //TODO - doplnit funkci zpracovavajici <statementList>
@@ -200,6 +208,7 @@ int parseFunction() {
         freeTokenMem(token);
         return SYNTAX_ERR;
     }
+    //neco je spatne
     return SYNTAX_ERR;
 }
 
@@ -274,7 +283,9 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
         freeTokenMem(token);
         return result;
     }
-    //seznam parametru neni prazdny, nastavime aktivitu prvni prvek seynamu parametru
+    
+    freeTokenMem(token);
+    //seznam parametru neni prazdny, nastavime aktivitu prvni prvek seznamu parametru
     first(*(data->info.func->params));
     
     //volam funkci pro zpracovani argumentu
@@ -316,8 +327,9 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
         }
         //kontroluji, zda uz neni promenna definovana a vkladam do lokalni tabulky symbolu
         tTabSymElemData *localTableInfo = tabSymSearch(localTable, &idName);
+        tTabSymElemData *globalTableInfo = tabSymSearch(globalTable, &idName);
         //promenna uz byla definovana
-        if(localTableInfo != NULL) {
+        if(localTableInfo != NULL || globalTableInfo != NULL) {
             return SEMANTIC_ERROR;
         }
         else {
@@ -340,6 +352,8 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
         }
     }
     
+    freeTokenMem(token);
+    
     //volam dalsi cast pro zpracovani parametru
     return argumentNext(paramList, data, localTable);
 }
@@ -358,7 +372,6 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
     
     //nactu dalsi token
     if((result = getToken(&token, f)) != 1) {
-        freeTokenMem(token);
         return LEXICAL_ERR;
     }
     
@@ -378,7 +391,6 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
         //prectu jeste jeden token, jelikoz funkce parse Argument
         //ocekava jako prvni token v me implementaci az ID
          if((result = getToken(&token, f)) != 1) {
-            freeTokenMem(token);
             return LEXICAL_ERR;
         }
         if ((result = kDataTypes(&paramType, token->typ)) != 1) {
@@ -386,6 +398,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
             freeTokenMem(token);
              return result;
         }
+        freeTokenMem(token);
         //posunu se v seznamu argumentu na dalsi prvek
         succ((*data->info.func->params));
         return parseArgument(paramList, data, paramType, localTable);
