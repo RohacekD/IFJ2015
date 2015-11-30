@@ -219,12 +219,13 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
  * 	Kontroluje jestli je funkce jiz definovana.
  * @param globTable[in]	-	ukazatel na globalni tabulku symbolu
  * @param table[in]		-	ukazatel na lokalni tabulku symbolu
+ * @param tableListElem[in]	-	element listu tabulek v aktualnim zanoreni
  * @param termKind[in]	-	druh terminalu
  * @param token[in]		-	ukazatel na token
  * @param id[out]		-	ukazatel na string, kde da ukazatel na alkovany string s id
  * @return Pokud vse v poradku vraci ERR_OK. Pri chybe vraci error kody (ERR_INTERNAL, ERR_SEM_DEF).
  */
-int semHandleNewToken(tTabSym* globTable, tTabSym* table, tParExpTerminals termKind, tToken* token,
+int semHandleNewToken(tTabSym* globTable, tTabSym* table, tTabSymListElemPtr tableListElem, tParExpTerminals termKind, tToken* token,
 		string* id) {
 	string* newString;
 	if (termKind == TERMINAL_IDENTIFICATOR) {
@@ -248,10 +249,15 @@ int semHandleNewToken(tTabSym* globTable, tTabSym* table, tParExpTerminals termK
 
 			CONSTANT_HANDLE:
 
-			id = tabSymCreateTmpSymbol(table);
+			id = tabSymListCreateTmpSymbol(tableListElem,table);
 			tConstantInfo* constInfo = tabSymCreateConstantInfo(dataType, token->value);
 
-			if (id == NULL || tConstantInfo == NULL) {
+			if (id == NULL) {
+				return ERR_INTERNAL;	//chyba
+			}
+			if(tConstantInfo == NULL){
+				strFree(id);
+				free(id);
 				return ERR_INTERNAL;	//chyba
 			}
 
@@ -267,7 +273,8 @@ int semHandleNewToken(tTabSym* globTable, tTabSym* table, tParExpTerminals termK
 			 * jestli je jiz v tabulce, jinak se jedna o semantickou chybu
 			 * nedefinovana promenna.
 			 */
-			if(tabSymSearch(table, token->value->stringVal)==NULL){
+
+			if(tabSymListSearch(tableListElem, table, token->value->stringVal) ==NULL){
 				//nenalezeno semanticka chyba
 				return ERR_SEM_DEF;
 			}
@@ -277,9 +284,12 @@ int semHandleNewToken(tTabSym* globTable, tTabSym* table, tParExpTerminals termK
 				return ERR_INTERNAL;
 			}
 			if(strInit(newString)){
+				free(newString);
 				return ERR_INTERNAL;
 			}
 			if(strCopyString(newString, token->value->stringVal)){
+				strFree(newString);
+				free(newString);
 				return ERR_INTERNAL;
 			}
 			id=newString;
@@ -302,9 +312,12 @@ int semHandleNewToken(tTabSym* globTable, tTabSym* table, tParExpTerminals termK
 			return ERR_INTERNAL;
 		}
 		if(strInit(newString)){
+			free(newString);
 			return ERR_INTERNAL;
 		}
 		if(strCopyString(newString, token->value->stringVal)){
+			strFree(newString);
+			free(newString);
 			return ERR_INTERNAL;
 		}
 		id=newString;
@@ -312,7 +325,317 @@ int semHandleNewToken(tTabSym* globTable, tTabSym* table, tParExpTerminals termK
 	return ERR_OK;
 }
 
-int parseExpression(tTabSym* globTable, tTabSym* table, tInsTape* tape,
+/**
+ * SLouzi pro kodove oznaceni stavu v automatu S_F znamena konecny stav
+ */
+typedef enum{
+	S_START,                         //!< S_START
+	S_F_I,                           //!< S_F_I
+	S_MINUS,                         //!< S_MINUS
+	S_F_MINUS_E,                     //!< S_F_MINUS_E
+	S_NOT,                   		 //!< S_NOT
+	S_F_NOT_E,               		 //!< S_F_NOT_E
+	S_INC,                           //!< S_INC
+	S_F_INC_E,                       //!< S_F_INC_E
+	S_DEC,                           //!< S_DEC
+	S_F_DEC_E,                       //!< S_F_DEC_E
+	S_FUN,                           //!< S_FUN
+	S_FUN_OPEN_BRACKET,              //!< S_FUN_OPEN_BRACKET
+	S_FUN_OPEN_BRACKET_E,            //!< S_FUN_OPEN_BRACKET_E
+	S_F_FUN,                         //!< S_F_FUN
+	S_OPEN_BRACKET,                  //!< S_OPEN_BRACKET
+	S_OPEN_BRACKET_E,                //!< S_OPEN_BRACKET_E
+	S_F_OPEN_BRACKET_E_CLOSE_BRACKET,//!< S_F_OPEN_BRACKET_E_CLOSE_BRACKET
+	S_E,                             //!< S_E
+	S_E_PLUS,                        //!< S_E_PLUS
+	S_F_E_PLUS_E,                    //!< S_F_E_PLUS_E
+	S_E_MINUS,                       //!< S_E_MINUS
+	S_F_E_MINUS_E,                   //!< S_F_E_MINUS_E
+	S_E_MUL,                         //!< S_E_MUL
+	S_F_E_MUL_E,                     //!< S_F_E_MUL_E
+	S_E_DIV,                         //!< S_E_DIV
+	S_F_E_DIV_E,                     //!< S_F_E_DIV_E
+	S_E_EQU,                         //!< S_E_EQU
+	S_F_E_EQU_E,                     //!< S_F_E_EQU_E
+	S_E_NEQU,                        //!< S_E_NEQU
+	S_F_E_NEQU_E,                    //!< S_F_E_NEQU_E
+	S_E_LESS,                        //!< S_E_LESS
+	S_F_E_LESS_E,                    //!< S_F_E_LESS_E
+	S_E_GRATER,                      //!< S_E_GRATER
+	S_F_E_GREATER_E,                 //!< S_F_E_GREATER_E
+	S_E_LESSEQU,                     //!< S_E_LESSEQU
+	S_F_E_LESSEQU_E,                 //!< S_F_E_LESSEQU_E
+	S_E_GRATEREQU,                   //!< S_E_GRATEREQU
+	S_F_E_GREATEREQU_E,              //!< S_F_E_GREATEREQU_E
+	S_F_E_INC,                       //!< S_F_E_INC
+	S_F_E_DEC,                       //!< S_F_E_DEC
+	S_E_AND,                         //!< S_E_AND
+	S_F_E_AND_E,                     //!< S_F_E_AND_E
+	S_E_OR,                          //!< S_E_OR
+	S_F_E_OR_E                       //!< S_F_E_OR_E
+}ruleAutomateStates;
+
+int chooseRule(tPrecStack* stack){
+
+	tPrecStackElemPtr act = stack->top;
+	ruleAutomateStates actState=S_START;
+	ruleAutomateStates nextState;
+	/*
+	 * Konecny automat, ktery zpracovava obsah zasobniku po < a snazi se najit pravidlo,
+	 * ktery by takoveto poslopnosti odpovidalo.
+	 */
+	while(act!=NULL && act->data.type!=PREC_STACK_SIGN && act->data.type!=PREC_STACK_ENDMARK){
+		switch (actState) {
+			case S_START:
+				if(act->data.type==PREC_STACK_NONTERMINAL){
+					//neterminal
+					actState=S_E;
+				}else{
+					//terminal
+					switch (act->data.key) {
+						case TERMINAL_IDENTIFICATOR:
+							actState=S_F_I;
+							break;
+						case TERMINAL_UNARY_MINUS:
+							actState=S_MINUS;
+							break;
+						case TERMINAL_NOT:
+							actState=S_NOT;
+							break;
+						case TERMINAL_INCREMENT_PREFIX:
+							actState=S_INC;
+							break;
+						case TERMINAL_DECREMENT_PREFIX:
+							actState=S_DEC;
+							break;
+						case TERMINAL_FUNCTION_IDENTIFICATOR:
+							actState=S_FUN;
+							break;
+						case TERMINAL_OPEN_BRACKET:
+							actState=S_OPEN_BRACKET;
+							break;
+						default:
+							//chyba
+							return 0;
+							break;
+					}
+				}
+				break;
+			case S_MINUS:
+				if(act->data.type==PREC_STACK_NONTERMINAL){
+					actState=S_F_MINUS_E;
+				}else{
+					//chyba
+					return 0;
+				}
+				break;
+			case S_NOT:
+				if(act->data.type==PREC_STACK_NONTERMINAL){
+					actState=S_F_NOT_E;
+				}else{
+					//chyba
+					return 0;
+				}
+				break;
+			case S_INC:
+				if(act->data.type==PREC_STACK_NONTERMINAL){
+					actState=S_F_INC_E;
+				}else{
+					//chyba
+					return 0;
+				}
+				break;
+			case S_FUN:
+				if(act->data.type==PREC_STACK_TERMINAL &&
+						act->data.key==TERMINAL_OPEN_BRACKET){
+					actState=S_FUN_OPEN_BRACKET;
+				}else{
+					//chyba
+					return 0;
+				}
+				break;
+			case S_FUN_OPEN_BRACKET:
+				if(act->data.type==PREC_STACK_NONTERMINAL){
+					actState=S_FUN_OPEN_BRACKET_E;
+				}else{
+					//chyba
+					return 0;
+				}
+				break;
+
+			case S_FUN_OPEN_BRACKET_E:
+				if(act->data.type==PREC_STACK_TERMINAL &&
+					act->data.key==TERMINAL_CLOSE_BRACKET){
+					actState=S_F_FUN;
+				}else if(act->data.type==PREC_STACK_TERMINAL &&
+					act->data.key==TERMINAL_COMMA){
+					actState=S_FUN_OPEN_BRACKET;
+				}else{
+					//chyba
+					return 0;
+				}
+				break;
+			case S_DEC:
+				if(act->data.type==PREC_STACK_NONTERMINAL){
+					actState=S_F_DEC_E;
+				}else{
+					//chyba
+					return 0;
+				}
+				break;
+			case S_OPEN_BRACKET:
+				if(act->data.type==PREC_STACK_NONTERMINAL){
+					actState=S_OPEN_BRACKET_E;
+				}else{
+					//chyba
+					return 0;
+				}
+				break;
+			case S_OPEN_BRACKET_E:
+				if(act->data.type==PREC_STACK_TERMINAL &&
+						act->data.key==TERMINAL_CLOSE_BRACKET){
+					actState=S_F_OPEN_BRACKET_E_CLOSE_BRACKET;
+				}else{
+					//chyba
+					return 0;
+				}
+				break;
+			case S_E:
+				if(act->data.type==PREC_STACK_TERMINAL){
+					switch (act->data.key) {
+						case TERMINAL_ADDITION:
+							actState=S_E_PLUS;
+							break;
+						case TERMINAL_SUBTRACTION:
+							actState=S_E_MINUS;
+							break;
+						case TERMINAL_MULTIPLICATION:
+							actState=S_E_MUL;
+							break;
+						case TERMINAL_DIVISION:
+							actState=S_E_DIV;
+							break;
+						case TERMINAL_EQUAL:
+							actState=S_E_EQU;
+							break;
+						case TERMINAL_NOT_EQUAL:
+							actState=S_E_NEQU;
+							break;
+						case TERMINAL_LESS_THAN:
+							actState=S_E_LESS;
+							break;
+						case TERMINAL_GREATER_THAN:
+							actState=S_E_GRATER;
+							break;
+						case TERMINAL_LESS_THAN_OR_EQUAL:
+							actState=S_E_LESSEQU;
+							break;
+						case TERMINAL_GREATER_THAN_OR_EQUAL:
+							actState=S_E_GRATEREQU;
+							break;
+						case TERMINAL_INCREMENT_POSTFIX:
+							actState=S_F_E_INC;
+							break;
+						case TERMINAL_DECREMENT_POSTFIX:
+							actState=S_F_E_DEC;
+							break;
+						case TERMINAL_AND:
+							actState=S_E_AND;
+							break;
+						case TERMINAL_OR:
+							actState=S_E_OR;
+							break;
+						default:
+							//chyba
+							return 0;
+					}
+				}else{
+					//chyba
+					return 0;
+				}
+				break;
+
+			case S_E_PLUS:
+				nextState=S_F_E_PLUS_E;
+				goto NEXT_STATE_LOGIC_S_E;
+			case S_E_MINUS:
+				nextState=S_F_E_MINUS_E;
+				goto NEXT_STATE_LOGIC_S_E;
+			case S_E_MUL:
+				nextState=S_F_E_MUL_E;
+				goto NEXT_STATE_LOGIC_S_E;
+			case S_E_DIV:
+				nextState=S_F_E_DIV_E;
+				goto NEXT_STATE_LOGIC_S_E;
+			case S_E_EQU:
+				nextState=S_F_E_EQU_E;
+				goto NEXT_STATE_LOGIC_S_E;
+			case S_E_NEQU:
+				nextState=S_F_E_NEQU_E;
+				goto NEXT_STATE_LOGIC_S_E;
+			case S_E_LESS:
+				nextState=S_F_E_LESS_E;
+				goto NEXT_STATE_LOGIC_S_E;
+			case S_E_GRATER:
+				nextState=S_F_E_GREATER_E;
+				goto NEXT_STATE_LOGIC_S_E;
+			case S_E_LESSEQU:
+				nextState=S_F_E_LESSEQU_E;
+				goto NEXT_STATE_LOGIC_S_E;
+			case S_E_GRATEREQU:
+				nextState=S_F_E_GREATEREQU_E;
+				goto NEXT_STATE_LOGIC_S_E;
+			case S_E_AND:
+				nextState=S_F_E_AND_E;
+				goto NEXT_STATE_LOGIC_S_E;
+			case S_E_OR:
+				nextState=S_F_E_OR_E;
+		NEXT_STATE_LOGIC_S_E:
+				if(act->data.type==PREC_STACK_NONTERMINAL){
+					actState=nextState;
+				}else{
+					//chyba
+					return 0;
+				}
+				break;
+
+			case S_F_I:
+			case S_F_MINUS_E:
+			case S_F_NOT_E:
+			case S_F_INC_E:
+			case S_F_DEC_E:
+			case S_F_FUN:
+			case S_F_OPEN_BRACKET_E_CLOSE_BRACKET:
+			case S_F_E_PLUS_E:
+			case S_F_E_MINUS_E:
+			case S_F_E_MUL_E:
+			case S_F_E_DIV_E:
+			case S_F_E_EQU_E:
+			case S_F_E_NEQU_E:
+			case S_F_E_LESS_E:
+			case S_F_E_GREATER_E:
+			case S_F_E_LESSEQU_E:
+			case S_F_E_GREATEREQU_E:
+			case S_F_E_INC:
+			case S_F_E_DEC:
+			case S_F_E_AND_E:
+			case S_F_E_OR_E:
+				//chyba mel byt uz konec
+				return 0;
+
+			default:
+				//chyba ovsem ne syntakticka
+				return 0;
+				break;
+		}
+		act=act->next;
+	}
+
+	//mame stav potrebujeme pravidlo
+
+}
+
+int parseExpression(tTabSym* globTable, tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* tape,
 		tTabSymVarNoAutoDataType expDataType, FILE* scanFile) {
 	string* id; //pro vytvareni identifikatoru v tabulce symbolu
 
