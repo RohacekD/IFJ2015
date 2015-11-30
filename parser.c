@@ -677,6 +677,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             freeTokenMem(token);
             
             //TODO - funkce pro parseAssingment
+            //TODO - asi ji budu chtit predavat rovnou typ tokenu
             if((result = parseAssingnment()) != 1) {
                 return result;
             }
@@ -695,6 +696,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             return parseBlock();
 
             break;
+            
             
             
         //pravidlo 20 - cin >> ID <cin>;
@@ -811,29 +813,111 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             //pokud jsem se dostal az sem, tak syntakticka analyza probehla v poradku
             return 1;
             break;
-        //pravidlo 22
+            
+            
+            
+        //pravidlo 22 - <statement> -> return expression;
         case KEYW_RETURN:
+            //TODO - zpracovani vyrazu
+            parseExpression(globalTable, localTable, , &expressionType, f);
             
+            if((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != SEMICOLON) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            return 1;
             break;
-        //pravidlo 25
+            
+            
+            
+        //pravidlo 25 - while(expression)<block>
         case KEYW_WHILE:
+            if((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != PARENTHESIS_OPENING) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //TODO - zpracovani vyrazu
+            parseExpression(globalTable, localTable, , &expressionType, f);
+            
+            if((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != PARENTHESIS_CLOSING) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //TODO - zpracovani bloku
+            return parseBlock();
             
             break;
-        //pravidlo 26
+            
+            
+            
+        //pravidlo 26 - <statement> -> do <block>while(expression);
         case KEYW_DO:
             
+            //TODO - zpracovani bloku
+            if ((result = parseBlock()) != 1) {
+                return result;
+            }
+            
+            if((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != PARENTHESIS_OPENING) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //TODO - zpracovani vyrazu
+            parseExpression(globalTable, localTable, , &expressionType, f);
+            
+            if((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != PARENTHESIS_CLOSING) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            if((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != SEMICOLON) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //pokud jsem se dostal az sem, tak je vse v poradku
+            return 1;
             break;
+            
+            
         //pravidlo 19
         case INCREMENTATION:
-            
-            break;
-        //pravidlo 19
         case DECREMENTATION:
-            
-            break;
-        //pravidlo 19
         case TYPE_IDENTIFICATOR:
-            
+            //TODO - parse Assignment
+            return parseAssignment();
             break;
         default:
             return SYNTAX_ERR;
