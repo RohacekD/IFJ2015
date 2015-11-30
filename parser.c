@@ -53,6 +53,10 @@ tTabSymVarDataType tokenTypeToVarType(TokenTypes ttype) {
     }
 }
 
+bool isTerm(TokenTypes ttype) {
+    
+}
+
 
 /**
  * Uvodni funkce parseru
@@ -174,6 +178,7 @@ int parseFunction() {
             if(token->typ == SEMICOLON) {
                 //zpracovavame nasledujici funkci
                 freeTokenMem(token);
+                //TODO - musim do globalni tabulky symbolu ulozit informace o funkci
                 return parseFunction();
             }
             
@@ -327,6 +332,7 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
         }
         //kontroluji, zda uz neni promenna definovana a vkladam do lokalni tabulky symbolu
         tTabSymElemData *localTableInfo = tabSymSearch(localTable, &idName);
+        //TODO - muze byt ID funkce a ID promenne stejne
         tTabSymElemData *globalTableInfo = tabSymSearch(globalTable, &idName);
         //promenna uz byla definovana
         if(localTableInfo != NULL || globalTableInfo != NULL) {
@@ -464,6 +470,9 @@ int parseStatementList(tTabSym *localTable) {
             break;
         
         //pravidlo 18 - <st_list> -> {<st_list>}<st_list>
+        //TODO - zanoreny blok, musim vytvorit novou lokalni tabulku symbolu...
+        //TODO - mel bych vytvorit instrukci, pomoci niz dam interpretu vedet
+                //ze si ma vytvorit novy ramec
         //TODO - vsechno to nastavovani veci okolo bloku
         case BRACES_OPENING:
             freeTokenMem(token);
@@ -502,6 +511,7 @@ int parseStatementList(tTabSym *localTable) {
             tokenType = token->typ;
             freeTokenMem(token);
             
+            //TODO - jeste nevim, co vse musim predat funkci parseStatement
             if((result = parseStatement(localTable, tokenType)) != 1) {
                 return result;
             }
@@ -533,6 +543,7 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
     tToken token;
     int result;
     tTabSymVarNoAutoDataType expressionType;
+    tTabSymVarDataType dataType;
     
     switch(tokenType) {
         //pravidlo 23
@@ -570,16 +581,192 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
             }
             
             break;
-        //pravidlo 24
+            
+            
+            
+        //pravidlo 24 - for(<Kdata_types>ID=expression; expression; <assignment>)<block>
+        //TODO - lokalni tabulka u funkce for?
         case KEYW_FOR:
             
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != PARENTHESIS_OPENING) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //v promenne dataType je ulozeny datovy typ promenne
+            if ((result = kDataTypes(&dataType, token->typ)) != 1) {
+                //uvolnim token
+                freeTokenMem(token);
+                return result;
+            }
+            freeTokenMem(token);
+            
+            //dalsi token by mel byt ID
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != IDENTIFICATOR) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //dalsi token by mel byt =
+            
+            if (token->typ != EQUAL) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //TODO - volat parser  pro zpracovani vyrazu
+            //TODO - zpracovat vystup parseru
+            parseExpression(globalTable, localTable, , &expressionType, f);
+            
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != SEMICOLON) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //TODO - zpracovat dalsi cast vyrazu
+            //TODO - zpracovat vystup parseru
+            parseExpression(globalTable, localTable, , &expressionType, f);
+            
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != SEMICOLON) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //TODO - funkce pro parseAssingment
+            if((result = parseAssingnment()) != 1) {
+                return result;
+            }
+            
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //ocekavam uzaviraci zavorku - for(<Kdata_types>ID=expression; expression; <assignment>)
+            if(token->typ != PARENTHESIS_CLOSING) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            return parseBlock();
+
             break;
-        //pravidlo 20
+            
+            
+        //pravidlo 20 - cin >> ID <cin>;
         case KEYW_CIN:
             
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //ocekavam prvni >
+            if (token->typ != GREATER) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //ocekavam druhe >
+            if (token->typ != GREATER) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //ocekavam identifikator
+            if (token->typ != TYPE_IDENTIFICATOR) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //zpracovani dalsich vstupu
+            if ((result = parseCin()) != 1) {
+                return result;
+            }
+            
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //dalsi token by mel byt ;
+            if(token->typ != SEMICOLON) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //pokud jsem se dostal az sem, tak syntakticka analyza probehla bez chyby
+            return 1;
             break;
-        //pravidlo 21
+            
+            
+            
+        //pravidlo 21 - <statement> -> cout << <term><cout>;
         case KEYW_COUT:
+            
+            
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //ocekavam prvni <
+            if (token->typ != LESS) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            if ((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //ocekavam druhe <
+            if (token->typ != LESS) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            freeTokenMem(token);
+            
+            //isTerm
             
             break;
         //pravidlo 22
