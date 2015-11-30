@@ -941,6 +941,7 @@ char* keyWords[] = {
 	"return",
 	"true",
 	"false",
+	"do",
 	""
 };
 
@@ -955,12 +956,12 @@ char* keyWords[] = {
 int isKeyWord(string* s) {
 	int ret = 0;
 	int i = 0;
-	for (i = 0; i < 15; i++) {
+	for (i = 0; i < 16; i++) {
 		if (strCmpConstStr(s, keyWords[i]) == 0) {
 			break;
 		}
 	}
-	if (i == 15) {
+	if (i == 16) {
 		return TYPE_IDENTIFICATOR;
 	}
 	return KEYW_AUTO + i;
