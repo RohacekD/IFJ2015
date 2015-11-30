@@ -1,0 +1,9 @@
+//toto je komentar a nesmim najit nic jineho
+"str"
+///
+"dalsi"
+/**/
+"jeste"
+/***/
+"posledni"
+/*/**/
