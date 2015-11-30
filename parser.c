@@ -8,6 +8,7 @@
 #include "parserExpr.h"
 #include <stdbool.h>
 #include <string.h>
+#include <limits.h>
 
 //ve funkcich muze dojit k ruznym typum chyb
 //chyba v lexikalni analyze(kdy ma vratit 1), nemuzu
@@ -468,7 +469,8 @@ int parseStatementList(tTabSym *localTable) {
             freeTokenMem(token);
             
             //volam funkci pro zpracovani deklarace
-            if ((result = parseDeclaration(localTable)) != 1) {
+            //TODO - co vsechno ji predavat? 
+            if ((result = parseDeclaration(dataType, localTable)) != 1) {
                 return result;
             }
             
@@ -924,7 +926,98 @@ int parseStatement(tTabSym *localTable, tTokenTypes tokenType) {
     }
 }
 
-
-int parseDeclaration(tTabSym *localTable) {
+/**
+ * zpracovava nasledujici pravidla:
+ * 36. <declaration> -> <Kdata_types> ID<dec_init>
+ * 37. <declaration> -> auto ID = expression;
+ * @param dataType
+ * @param localTable
+ * @return 
+ */
+int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable) {
+    int result;
+    tToken token;
+    tTabSymElemData *varIdentifikator, *funcIdentifikator;
+    tTabSymVarNoAutoDataType expressionType;
+    tVariableInfo *variableInfo;
+    string idName;
     
+    switch(dataType) {
+        //pravidlo 36 - <declaration> -> <Kdata_types> ID<dec_init>
+        case TAB_SYM_VAR_BOOLEAN:
+        case TAB_SYM_VAR_DOUBLE:
+        case TAB_SYM_VAR_INTEGER:
+        case TAB_SYM_VAR_STRING:
+            
+            if((result = getToken(&token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if (token->typ != TYPE_IDENTIFICATOR) {
+                freeTokenMem(token);
+                return SYNTAX_ERR;
+            }
+            
+            idName = token->value.stringVal;
+            freeTokenMem(token);
+            
+            //kontroluji, zda uz promenna byla definovana
+            varIdentifikator = tabSymSearch(localTable, &idName);
+            funcIdentifikator = tabSymSearch(globalTable, &idName);
+            if (varIdentifikator != NULL || funcIdentifikator != NULL) {
+                return SEMANTIC_ERROR;
+            }
+            
+            //vytvoreni informaci o promenne
+            if ((variableInfo = tabSymCreateVariableInfo(dataType)) == NULL) {
+                return MEM_ALLOC_ERROR;
+            }
+            
+            //vlozeni promenne do lokalni tabulky symbolu
+            if ((tabSymInsertVar(localTable, &idName, variableInfo)) == 0) {
+                return INTERNAL_ERROR;
+            }
+            
+            //cast <decInit>
+            
+            if((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            //pouze deklarace promenne
+            if(token->typ == SEMICOLON) {
+                freeTokenMem(token);
+                return 1;
+            }
+            
+            if(token->typ == EQUAL) {
+                freeTokenMem(token);
+                //TODO - zpracovani vyrazu
+                 parseExpression(globalTable, localTable, , &expressionType, f);
+                 
+                 if((result = getToken(&token, f)) != 1) {
+                     return LEXICAL_ERR;
+                 }
+                 
+                 //dalsi token by mel byt ;
+                 if(token->typ != SEMICOLON){
+                     freeTokenMem(token);
+                     return SYNTAX_ERR;
+                 }
+                 freeTokenMem(token);
+                 //pokud jsem se dostal az sem, vse je v poradku
+                 return 1;
+            }
+            
+            freeTokenMem(token);
+            //chybna syntaxe
+            return SYNTAX_ERR;
+            
+            break;
+        case TAB_SYM_VAR_AUTO:
+            
+            break;
+        default:
+            return SYNTAX_ERR;
+    }
 }
