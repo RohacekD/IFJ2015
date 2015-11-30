@@ -24,18 +24,18 @@ typedef enum{
 	I_DIV,//bezna konvence
 	I_EQUAL,//bezna konvence - 3. operand je bool
 	I_NOTEQUAL,//bezna konvence - 3. operand je bool
-	I_GREATER,//bezna konvence - 3. operand je bool
-	I_LESSER,//bezna konvence - 3. operand je bool
-	I_GEQUAL,//bezna konvence - 3. operand je bool
-	I_LEQUAL,//bezna konvence - 3. operand je bool
-	I_UMINUS,//
+	I_GREATER,//bezna konvence - 3. operand je bool adr1>adr2
+	I_LESSER,//bezna konvence - 3. operand je bool adr1<adr2
+	I_GEQUAL,//bezna konvence - 3. operand je bool adr1>=adr2
+	I_LEQUAL,//bezna konvence - 3. operand je bool adr1<=adr2
+	I_UMINUS,//adr1 operand adr3 vysledek
 	I_POST_INC,//postfix 
 	I_POST_DEC,
-	I_PRE_INC,
+	I_PRE_INC,//je potreba?
 	I_PRE_DEC,
-	I_NOT,//bezna konvence - 3. operand je bool
-	I_AND,
-	I_OR,
+	I_LOG_NOT,//adr1 operand adr3 vysledek
+	I_LOG_AND,//bezna konvence - 3. operand je bool
+	I_LOG_OR,//bezna konvence - 3. operand je bool
 	I_CBF, //create block frame
 	I_CF, //call function adr1 - locTab adr2 - ins
 	I_ASSIGN, //prirazeni =

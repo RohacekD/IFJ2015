@@ -2,6 +2,7 @@
 #define VARIABLE_H_
 #include "str.h"
 #include "error.h"
+#include "tabSym.h"
 #include <stdbool.h>
 
 #define getVarVal(var)		\
@@ -30,15 +31,21 @@ typedef struct {
 
 /*
 * Utvori strukturu promenne, inicializuje string.
-* @param tVariable* struktura promenne
-* @param tVariableType urcuje typ
+* @param tVariable[out] struktura promenne
+* @param tVariableType[in] urcuje typ
 */
 void variableCreate(tVariablePtr*, tVariableType);
 /*
 * Spravne smaze promennou. Preda se ukazatelem pri mazani stromu
-* @param tVariable* struktura promenne
+* @param tVariable[in] struktura promenne
 */
 void variableDelete(void*);
 
+/*
+ * Prevede notaci dat. typu tabulky symbolu do notace promenne
+ * @param tTabSymVarDataType[in] notace v tabulce symbolu
+ * @return tVariableType[out] notece ve variable
+ */
+tVariableType tTabSymToVarNotatation(tTabSymVarDataType);
 
 #endif //VARIABLE_H_
