@@ -38,7 +38,7 @@ void Push(tStack *, tFrameContainer*);
  * Vrati prvek na vrcholu zasobniku
  */
 void Top(tStack *, tFrameContainer*);
-void Pop(tStack *);
+void SPop(tStack *);
 
 void pushNewFrame(tStack*, bool);
 /*

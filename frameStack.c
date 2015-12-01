@@ -62,9 +62,6 @@ void STop(tStack *Stack, tFrameContainer *val) {
     *val = Stack->Top->frameContainer;
 }
 
-/*
- * @depractated musi pocitat s mazanim stromu
- */
 void SPop(tStack *Stack) {
     tSElemPtr tmp = NULL;
     if (Stack->Top == NULL) return;
@@ -82,6 +79,7 @@ void deleteTopFrame(tStack* list) {
     tFrameContainer frame;
     STop(list, &frame);
     BSTFree(&(frame.frame), variableDelete);
+	SPop(list);
 }
 
 void pushNewFrame(tStack* list, bool passable) {
