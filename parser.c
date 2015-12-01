@@ -130,7 +130,7 @@ int parseFunction() {
         return 1;
     }
        
-    //volani funkce pro zpracovani <Kdata_types>
+    //volani funkce pro zpracovani <Kdata_types> - kontrola, zda mi prisel datovy typ
     if ((result = kDataTypes(&returnType, token->typ)) != 1) {
         //uvolnim token
         freeTokenMem(token);
@@ -260,7 +260,7 @@ int parseFunction() {
         return SYNTAX_ERR;
     }
     //neco je spatne
-    return SYNTAX_ERR;
+    return INTERNAL_ERROR;
 }
 
 /**
@@ -329,12 +329,14 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
     }
     
     //upravene pravidlo 9: <arguments> -> <argument>
+    //kontroluji, zda je token datoveho typu
     if ((result = kDataTypes(&paramType, token->typ)) != 1) {
         //uvolnim token
         freeTokenMem(token);
         return result;
     }
     
+    //token je klicove slovo pro datovy typ
     freeTokenMem(token);
     //seznam parametru neni prazdny, nastavime aktivitu prvni prvek seznamu parametru
     first(*(data->info.func->params));
@@ -367,25 +369,29 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
         freeTokenMem(token);
         return SYNTAX_ERR;
     }
+    
+    //token je identifikator
     //ulozim si nazev identifikatoru
     idName = token->value.stringVal;
+    freeTokenMem(token);
     
     //vkladam prvek do seznamu parametru a lokalni tabulky symbolu
     if(data == NULL) {
-        //vkladam do seznamu
-        if (insertEl(paramList, &idName, paramType) == 0) {
-            return MEM_ALLOC_ERROR;
-        }
+        
         //kontroluji, zda uz neni promenna definovana a vkladam do lokalni tabulky symbolu
         tTabSymElemData *localTableInfo = tabSymSearch(localTable, &idName);
-        //TODO - muze byt ID funkce a ID promenne stejne
         tTabSymElemData *globalTableInfo = tabSymSearch(globalTable, &idName);
         //promenna uz byla definovana
         if(localTableInfo != NULL || globalTableInfo != NULL) {
             return SEMANTIC_ERROR;
         }
+         //vkladam do seznamu parametru
+        if (insertEl(paramList, &idName, paramType) == 0) {
+            return MEM_ALLOC_ERROR;
+        }
+        //podarilo se mi vlozit parametr do seznamu parametru
         else {
-            //vytvorim informace o promenne - nejsem si jisty, jestli musim/muzu pretypovavat
+            //TODO - vlozeni promenne do lokalni tabulky symbolu
             tVariableInfo* varInfo = tabSymCreateVariableInfo((tTabSymVarDataType)paramType);
             if (varInfo == NULL) {
                 return INTERNAL_ERROR;
@@ -403,8 +409,6 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
             return SEMANTIC_ERROR;
         }
     }
-    
-    freeTokenMem(token);
     
     //volam dalsi cast pro zpracovani parametru
     return argumentNext(paramList, data, localTable);
