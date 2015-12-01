@@ -162,7 +162,7 @@ int parseBlock(tTabSym *localTable);
  */
 int parseAssignment(TokenTypes tokenType, tTabSym *localTable);
 
-/!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 32.  <cin> -> epsilon
@@ -170,6 +170,16 @@ int parseAssignment(TokenTypes tokenType, tTabSym *localTable);
  * @return 
  */
 int parseCin();
+
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+/**
+ * zpracovava nasledujici pravidla
+ *34. <cout> -> epsilon
+ *35. <cout> -> << <term> <cout>
+ * @return      pokud probehlo vse v poradku, tak 1
+ */
+int parseCout();
 
 #endif	/* PARSER_H */
 

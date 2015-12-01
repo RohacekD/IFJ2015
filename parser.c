@@ -1278,7 +1278,7 @@ int parseAssignment(TokenTypes tokenType, tTabSym *localTable) {
  * zpracovava nasledujici pravidla:
  * 32.  <cin> -> epsilon
  * 33.  <cin> -> >>ID<cin>
- * @return 
+ * @return      pokud probehlo vse v poradku, tak 1
  */
 int parseCin() {
     int result;
@@ -1288,7 +1288,7 @@ int parseCin() {
         return LEXICAL_ERR;
     }
     
-    if(token->typ == BRACES_CLOSING) {
+    if(token->typ == SEMICOLON) {
         freeTokenMem(token);
         return 1;
     }
@@ -1313,6 +1313,62 @@ int parseCin() {
             }
             
             freeTokenMem(token);
+            return SYNTAX_ERR;
+        }
+        
+        freeTokenMem(token);
+        return SYNTAX_ERR;
+    }
+    
+    freeTokenMem(token);
+    return SYNTAX_ERR;
+}
+
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+/**
+ * zpracovava nasledujici pravidla
+ *34. <cout> -> epsilon
+ *35. <cout> -> << <term> <cout>
+ * @return      pokud probehlo vse v poradku, tak 1
+ */
+int parseCout() {
+    tToken token;
+    int result;
+    TokenTypes ttype;
+    
+    if ((result = getToken(&token, f)) != 1) {
+        return LEXICAL_ERR;
+    }
+    
+    //pravidlo 34
+    if(token->typ == SEMICOLON) {
+        freeTokenMem(token);
+        return 1;
+    }
+    
+    //pravidlo 35
+    if(token->typ == LESS) {
+        freeTokenMem(token);
+        
+        if((result = getToken(&token)) != 1) {
+            return LEXICAL_ERR;
+        }
+        
+        if(token->typ == LESS) {
+            freeTokenMem(token);
+            
+            if((result = getToken(token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            ttype = token->typ;
+            freeTokenMem(token);
+            
+            if((result = isTerm(ttype)) == 1) {
+                return parseCout();
+            }
+            
             return SYNTAX_ERR;
         }
         
