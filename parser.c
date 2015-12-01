@@ -106,9 +106,12 @@ int parseFunction() {
     tToken token;
     //oznacuje, zda byla funkce deklarovana, nebo definovana
     bool defined = false;
+    //do teto promenne ukladam navratovy typ funkce
     tTabSymVarDataType returnType;
     //promenna, ktera slouzi pro kontrolu, zda uz je dana funkce deklarovana
     tTabSymElemData *funcID_info;
+    //promenna do ktere ukladam vytvorene informace o funkci
+    tFuncInfo *funcInfo;
     //uchovavam nazev identifikatoru
     string idName;
     //pro kazdou funkci tvorim novy seznam parametru
@@ -120,6 +123,7 @@ int parseFunction() {
     if((result = getToken(&token, f)) != 1) {
         return LEXICAL_ERR;
     }
+    
     //program muze byt i prazdny
     if (token->typ == EOF) {
         freeTokenMem(token);
@@ -158,7 +162,6 @@ int parseFunction() {
         else {
             //zkontroluji, zda je dany identifikator identifikatorem funkce
             if (funcID_info->type != TAB_SYM_FUNCTION) {
-               //TODO - jaka je to chyba?
                 freeTokenMem(token);
                 return INTERNAL_ERROR;
             }
@@ -177,15 +180,18 @@ int parseFunction() {
         }
         //token byl '('
         if(token->typ == PARENTHESIS_OPENING) {
+            //uvolnim token
+            freeTokenMem(token);
             
-            //vytvorim si lokalni tabulku symbolu
+            //vytvorim si lokalni tabulku symbolu 
+            //do ni uz budu ukladat parametry funkce
             tTabSym *localTabSym = tabSymCreate(TAB_SYM_LOC);
             
             //volani funkce pro zpracovani <arguments>
-            result = parseArguments(paramList, funcID_info, localTabSym);
-            //behem funkce parseArguments nastala chyba
-            if(result != 1)
+            if((result = parseArguments(paramList, funcID_info, localTabSym)) != 1) {
+                //navratim chybovy kod
                 return result;
+            }
 
             //<function> -> <Kdata_types> fID(<arguments>)<body>
             //jsme u <body> -> bud ';'(deklarace), nebo '{' (definice)
@@ -195,9 +201,21 @@ int parseFunction() {
             
             //jde pouze o deklaraci funkce
             if(token->typ == SEMICOLON) {
-                //zpracovavame nasledujici funkci
+                //uvolnim token
                 freeTokenMem(token);
-                //TODO - musim do globalni tabulky symbolu ulozit informace o funkci
+                
+                //TODO - vytvoreni informaci o globalni tabulce symbolu
+                if((funcInfo = tabSymCreateFuncInfo(&paramList, (tTabSymVarNoAutoDataType)returnType, 
+                        localTabSym, NULL, NULL, false)) == NULL) {
+                    return INTERNAL_ERROR;
+                }
+                
+                //TODO - vlozeni id funkce do globalni tabulky symbolu
+                if((result = tabSymInsertFunc(globalTable, &idName, funcInfo)) == 0) {
+                    return INTERNAL_ERROR;
+                }
+                
+                //muzeme zpracovavat  dalsi funkci 
                 return parseFunction();
             }
             
@@ -209,16 +227,25 @@ int parseFunction() {
                     return SEMANTIC_ERROR;
                 }
                 
-                //funkce je definovana
-                defined = true;
                 freeTokenMem(token);
                 
-                //funkce jeste nebyla definovana
+                //funkce nyni uz je definovana
+                defined = true;
+                
                 //<function> -> <Kdata_types> fID (<arguments>)<body>
                 //TODO - doplnit funkci zpracovavajici <statementList>
-                result = parseStatementList(localTabSym);
+                if ((result = parseStatementList(localTabSym)) != 1) {
+                    return result;
+                }
+                
+                //muzu zpracovavat dalsi funkci
+                return parseFunction();
                 
             }
+            
+            //token neni ; ani {
+            freeTokenMem(token);
+            return SYNTAX_ERR;
 
         }
         //token neni oteviraci zavorka
@@ -1358,7 +1385,7 @@ int parseCout() {
         if(token->typ == LESS) {
             freeTokenMem(token);
             
-            if((result = getToken(token, f)) != 1) {
+            if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
