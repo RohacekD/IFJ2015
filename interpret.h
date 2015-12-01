@@ -18,5 +18,6 @@ int executeTape(tInsTapeInsPtr);
  */
 int executeIns(tInsTapeInsPtr, tStack*);
 
+void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer);
 
 #endif //INTERPRET_H_

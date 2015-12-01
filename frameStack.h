@@ -1,3 +1,5 @@
+#ifndef FRAMESTACK_H_
+#define FRAMESTACK_H_
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdbool.h>
@@ -38,7 +40,7 @@ void Push(tStack *, tFrameContainer*);
 void Top(tStack *, tFrameContainer*);
 void Pop(tStack *);
 
-int pushNewFrame(tStack*, bool);
+void pushNewFrame(tStack*, bool);
 /*
  * Volana pri navratu z fce. Maze vsechny frame i s framem funkce.
  * @param list[in]	- Ukazatel na frameStack
@@ -63,3 +65,5 @@ void insertNewVariable(tFrameContainer*, tVariablePtr, string*);
  * @param var[out] zde vrati ukazatel na promennou pokud ji najde jinak NULL
  */
 int findVariable(const tStack* , string *, tVariablePtr*); 
+
+#endif //FRAMESTACK_H_

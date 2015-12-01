@@ -84,7 +84,7 @@ void deleteTopFrame(tStack* list) {
     BSTFree(&(frame.frame), variableDelete);
 }
 
-int pushNewFrame(tStack* list, bool passable) {
+void pushNewFrame(tStack* list, bool passable) {
     tFrameContainer frame;
     frame.passable = passable;
     frame.frame = NULL;
