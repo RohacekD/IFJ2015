@@ -985,6 +985,8 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
         default:
             return SYNTAX_ERR;
     }
+    //nikdy bych se sem nemel dostat
+    return INTERNAL_ERROR;
 }
 
 
@@ -1269,4 +1271,55 @@ int parseAssignment(TokenTypes tokenType, tTabSym *localTable) {
         default:
             return SYNTAX_ERR;
     }
+}
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+/**
+ * zpracovava nasledujici pravidla:
+ * 32.  <cin> -> epsilon
+ * 33.  <cin> -> >>ID<cin>
+ * @return 
+ */
+int parseCin() {
+    int result;
+    tToken token;
+    
+    if((result = getToken(&token, f)) != 1) {
+        return LEXICAL_ERR;
+    }
+    
+    if(token->typ == BRACES_CLOSING) {
+        freeTokenMem(token);
+        return 1;
+    }
+    
+    if(token->typ == GREATER) {
+        freeTokenMem(token);
+        
+        if((result = getToken(&token, f)) != 1) {
+            return LEXICAL_ERR;
+        }
+        
+        if(token->typ == GREATER) {
+            freeTokenMem(token);
+            
+            if((result = getToken(&token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ == TYPE_IDENTIFICATOR) {
+                freeTokenMem(token);
+                return parseCin();
+            }
+            
+            freeTokenMem(token);
+            return SYNTAX_ERR;
+        }
+        
+        freeTokenMem(token);
+        return SYNTAX_ERR;
+    }
+    
+    freeTokenMem(token);
+    return SYNTAX_ERR;
 }

@@ -100,6 +100,7 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
  */
 int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localTable);
 
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 15. <st_list> -> epsilon
@@ -111,6 +112,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
  */
 int parseStatementList(tTabSym *localTable);
 
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 19. <statement> -> <assignment>;
@@ -126,6 +128,48 @@ int parseStatementList(tTabSym *localTable);
  * @return      pokud probehlo vse v poradku, tak 1
  */
 int parseStatement(tTabSym *localTable, TokenTypes tokenType);
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+/**
+ * zpracovava nasledujici pravidla:
+ * 36. <declaration> -> <Kdata_types> ID<dec_init>
+ * 37. <declaration> -> auto ID = expression;
+ * @param dataType
+ * @param localTable
+ * @return      pokud probehlo vse v poradku, tak 1
+ */
+int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable);
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+/**
+ * zpracovava nasledujici pravidla:
+ * 27.  <block> -> {<st_list>}
+ * 28.  <block> -> <statement>
+ * @param localTable[in]            -   lokalni tabulka symbolu
+ * @return          pokud probehlo vse v poradku, tak 1
+ */
+int parseBlock(tTabSym *localTable);
+
+//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+//nejakym zpusobem musim prohledavat rozsah platnosti (lokalni tabulky bloku...)
+/**
+ * zpracovava pravidla:
+ * 40. <assignment> = ID<specID>
+ * 41. <assignment> = <specID>ID
+ * @param tokenType
+ * @param localTable
+ * @return          pokud probehlo vse v poradku, tak 1
+ */
+int parseAssignment(TokenTypes tokenType, tTabSym *localTable);
+
+/!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+/**
+ * zpracovava nasledujici pravidla:
+ * 32.  <cin> -> epsilon
+ * 33.  <cin> -> >>ID<cin>
+ * @return 
+ */
+int parseCin();
 
 #endif	/* PARSER_H */
 
