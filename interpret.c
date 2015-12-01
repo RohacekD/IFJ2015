@@ -1,7 +1,5 @@
 #include "interpret.h"
 
-void tTabSymToFrame(tBSTNodePtr node, tFrameContainer frameContainer);
-
 int executeTape(tInsTapeInsPtr ins) {
 	/* Prottoze tato fce je volana rekurzivne je nutno si frameStack drzet
 	 * v static
@@ -39,20 +37,22 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 	tVariablePtr oper2;
 	tVariablePtr dest;
 
+	tTabSym* tab;
+
 	switch (ins->type)
 	{
 	case I_COUT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
-		if (dest->type == VAR_TYPE_INT) {
+		if (oper1->type == VAR_TYPE_INT) {
 			printf("%d", oper1->data.intVal);
 		}
-		else if (dest->type == VAR_TYPE_DOUBLE) {
+		else if (oper1->type == VAR_TYPE_DOUBLE) {
 			printf("%f", oper1->data.doubleVal);
 		}
-		else if (dest->type == VAR_TYPE_BOOL) {
+		else if (oper1->type == VAR_TYPE_BOOL) {
 			//todo
 		}
-		else if (dest->type == VAR_TYPE_STRING) {
+		else if (oper1->type == VAR_TYPE_STRING) {
 			printf("%s", oper1->data.stringVal.str);
 		}
 		break;
@@ -256,14 +256,14 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 		//vytoreni blokoveho ramce
 	case I_CBF:
 		pushNewFrame(stack, true);
-		tTabSym* tab = (tTabSym*)ins->adr1;
-		tTabSymToFrame(tab->root, stack->Top->frameContainer);
+		tab = (tTabSym*)ins->adr1;
+		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
 		break;
 		//volani fce
 	case I_CF:
 		pushNewFrame(stack, false);
-		tTabSym* tab = (tTabSym*)ins->adr1;
-		tTabSymToFrame(tab->root, stack->Top->frameContainer);
+		tab = (tTabSym*)ins->adr1;
+		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
 		break;
 
 
@@ -288,12 +288,12 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 /*
  * Projde cely strom pomoci preorder
  */
-void tTabSymToFrame(tBSTNodePtr node, tFrameContainer frameContainer) {
+void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer) {
 	if (node) {
 		tVariablePtr var;
 		tVariableType type = tTabSymToVarNotatation(((tTabSymElemData*)node->data)->info.var->dataType);
 		variableCreate(&var, type);
-		insertNewVariable(&frameContainer, &var,node->key);
+		insertNewVariable(frameContainer, var,node->key);
 		tTabSymToFrame(node->l, frameContainer);
 		tTabSymToFrame(node->r, frameContainer);
 	}
