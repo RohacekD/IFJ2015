@@ -12,20 +12,6 @@ int executeTape(tInsTapeInsPtr ins) {
 		}
 		SInit(frameStack);
 	}
-	else {
-
-		tVariablePtr var;
-		variableCreate(&var, VAR_TYPE_DOUBLE);
-		var->data.doubleVal = 42;
-		string varName;
-		strInit(&varName);
-		strCharToString(&varName, "var");
-		insertNewVariable(&frameStack->Top->frameContainer, var, &varName);
-
-
-
-		strFree(&varName);
-	}
 	executeIns(ins, frameStack);
 	return 1;//todo
 }
@@ -265,11 +251,6 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 		tab = (tTabSym*)ins->adr1;
 		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
 		break;
-
-
-
-
-
 	case I_DBF:
 		deleteTopFrame(stack);
 		break;

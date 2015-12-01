@@ -19,7 +19,7 @@ void variableDelete(void* var) {
 	if (((tVariablePtr)var)->type == VAR_TYPE_STRING) {
 		strFree(&((tVariablePtr)var)->data.stringVal);
 	}
-	free((tVariablePtr*)var);
+	free((tVariablePtr)var);
      // printf("Mazu promennou %d\n",((tVariablePtr)var)->data.intVal);
 }
 
