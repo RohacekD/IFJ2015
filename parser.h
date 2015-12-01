@@ -135,7 +135,8 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
  * @param blockListElem     -   aktualni element v listu tabulek symbolu pro bloky
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseStatement(tTabSym *localTable, TokenTypes tokenType, tInsTape *instructionTape, tTabSymList *blocklist,tTabSymListElemPtr blockListElem);
+int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionTape,
+                    tTabSymList *blockList,tTabSymListElemPtr blockListElem);
 
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
@@ -175,7 +176,9 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
  * @param localTable
  * @return          pokud probehlo vse v poradku, tak 1
  */
-int parseAssignment(TokenTypes tokenType, tTabSym *localTable);
+
+int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instructionTape,
+                tTabSymListElemPtr blockListElem);
 
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
