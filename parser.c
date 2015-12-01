@@ -89,7 +89,13 @@ void parse() {
     }
     
     //TODO - osetreni chyb a uvolneni pameti
-    result = parseFunction();
+    if ((result = parseFunction()) != 1) {
+        //TODO
+    }
+    //TODO - syntakticka a semanticka kontrola probehla v poradku
+    else {
+        //TODO;
+    }
     
     
 }
@@ -232,9 +238,20 @@ int parseFunction() {
                 //funkce nyni uz je definovana
                 defined = true;
                 
+                //vytvorim prazdny seznam tabulek bloku
+                //TODO - nesmim zapomenout na uvolneni pameti
+                tTabSymList *blockList;
+                if ((blockList = tabSymListCreate()) == NULL) {
+                    return INTERNAL_ERROR;
+                } 
+                
+                //vytvoreni instrukcni pasky
+                tInsTape *instructionTape;
+                if ((instructionTape = insTapeCreate()) == NULL) {
+                    return INTERNAL_ERROR;
+                }
                 //<function> -> <Kdata_types> fID (<arguments>)<body>
-                //TODO - doplnit funkci zpracovavajici <statementList>
-                if ((result = parseStatementList(localTabSym)) != 1) {
+                if ((result = parseStatementList(localTabSym, blockList, NULL, instructionTape)) != 1) {
                     return result;
                 }
                 
@@ -474,10 +491,13 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
  * 16. <st_list> -> <statement><st_list>
  * 17. <st_list> -> <declaration><st_list>
  * 18. <st_list> -> {<st_list>}<st_list>
- * @param localTable        -   lokalni tabulka funkce
+ * @param localTable        -   ukazatel na lokalni tabulku funkce
+ * @param blockList         -   ukazatel na list tabulek bloku
+ * @param parent            -   ukazatel na rodicovsky prvek 
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseStatementList(tTabSym *localTable) {
+int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
+                        tTabSymListElemPtr parent, tInsTape *instructionTape) {
     tToken token;
     int result;
     tTabSymVarDataType dataType;
@@ -506,7 +526,7 @@ int parseStatementList(tTabSym *localTable) {
             
             //volam funkci pro zpracovani deklarace
             //TODO - co vsechno ji predavat? 
-            if ((result = parseDeclaration(dataType, localTable)) != 1) {
+            if ((result = parseDeclaration(dataType, localTable, instructionTape)) != 1) {
                 return result;
             }
             
@@ -516,7 +536,8 @@ int parseStatementList(tTabSym *localTable) {
             break;
             
         //pravidlo 15 - <st_list> -> epsilon (konec funkce)
-        //TO-DO jak a kde kontrolovat, zda dana funkce obsahovala return
+        //TODO jak a kde kontrolovat, zda dana funkce obsahovala return
+        //ukonceni bloku funkce, nebo normalniho bloku
         case BRACES_CLOSING:
             freeTokenMem(token);
             return 1;
@@ -530,10 +551,30 @@ int parseStatementList(tTabSym *localTable) {
         case BRACES_OPENING:
             freeTokenMem(token);
             
-            if ((result = parseStatementList(localTable)) != 1) {
+            // list tabulek symbolu pro bloky
+            tTabSym *blockLocalTable;
+            // polozka v seznamu tabulek pro bloky
+            tTabSymListElemPtr newElement;
+            
+            //vytvoreni nove lokalni tabulky symbolu
+            if ((blockLocalTable = tabSymCreate(TAB_SYM_LOC)) == NULL){
+                return INTERNAL_ERROR;
+            }
+            
+            //vlozeni nove lokalni tabulky symbolu do listu bloku
+            if((newElement = tabSymListInsertTable(blockList, blockLocalTable, parent)) == NULL) {
+                return INTERNAL_ERROR;
+            }
+            
+            
+            //rodicem se stane novy element, budeme pracovat s novou lokalni tabulkou
+            //a novym listem
+            if ((result = parseStatementList(blockLocalTable, newElement->childList, newElement)) != 1) {
                 return result;
             }
             
+            //TODO - toto asi nechci
+            /*
             if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
@@ -541,11 +582,12 @@ int parseStatementList(tTabSym *localTable) {
             //dalsi token by mel byt uzaviraci slozena zavorka
             if(token->typ != BRACES_CLOSING) {
                 freeTokenMem(token);
-                return SEMANTIC_ERROR;
+                return SYNTAX_ERR;
             }
             freeTokenMem(token);
+             */
             
-            return parseStatementList(localTable);
+            return parseStatementList(localTable, blockList, parent);
             break;
             
         //pravidlo 16 - <st_list> -> <statement><st_list>
@@ -1030,7 +1072,7 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
  * @param localTable
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable) {
+int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable, tInsTape *instructionTape) {
     int result;
     tToken token;
     tTabSymElemData *varIdentifikator, *funcIdentifikator;
@@ -1080,16 +1122,19 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable) {
                 return LEXICAL_ERR;
             }
             
-            //pouze deklarace promenne
+            //pouze definice promenne
             if(token->typ == SEMICOLON) {
                 freeTokenMem(token);
                 return 1;
             }
             
+            //inicializace
             if(token->typ == EQUAL) {
                 freeTokenMem(token);
                 //TODO - zpracovani vyrazu
-                 parseExpression(globalTable, localTable, , &expressionType, f);
+                 if ((result = parseExpression(globalTable, localTable, instructionTape, &expressionType, f)) != 1) {
+                     return result;
+                 }
                  
                  if((result = getToken(&token, f)) != 1) {
                      return LEXICAL_ERR;

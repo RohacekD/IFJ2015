@@ -138,7 +138,7 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType);
  * @param localTable
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable);
+int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable, tInsTape *instructionTape);
 
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
