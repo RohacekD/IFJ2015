@@ -107,12 +107,17 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
  * 16. <st_list> -> <statement><st_list>
  * 17. <st_list> -> <declaration><st_list>
  * 18. <st_list> -> {<st_list>}<st_list>
- * @param localTable        -   lokalni tabulka funkce
+ * @param localTable        -   ukazatel na lokalni tabulku funkce
+ * @param blockList         -   ukazatel na list tabulek bloku
+ * @param parent            -   ukazatel na rodicovsky prvek 
+ * @param instructionTape   -   ukazatel na pasku instrukci
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseStatementList(tTabSym *localTable);
+int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
+                        tTabSymListElemPtr parent, tInsTape *instructionTape);
 
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+//-----------   DODELAT GENEROVANI INSTRUKCI ---------
 /**
  * zpracovava nasledujici pravidla:
  * 19. <statement> -> <assignment>;
@@ -123,22 +128,28 @@ int parseStatementList(tTabSym *localTable);
  * 24. <statement> -> for(<Kdata_types>ID=expression; expression; <assignment>)<block>
  * 25. <statement> -> while(expression)<block>
  * 26. <statement> -> do <block>while(expression);
- * @param localTable        -   loklni tabulka symbolu
+ * @param localTable        -   lokalni tabulka symbolu
  * @param token             -   typ tokenu
+ * @param instructionTape   -   ukazatel na instrukcni pasku
+ * @param blockList         -   ukazatel na list tabulek bloku
+ * @param blockListElem     -   aktualni element v listu tabulek symbolu pro bloky
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseStatement(tTabSym *localTable, TokenTypes tokenType);
+int parseStatement(tTabSym *localTable, TokenTypes tokenType, tInsTape *instructionTape, tTabSymList *blocklist,tTabSymListElemPtr blockListElem);
 
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 36. <declaration> -> <Kdata_types> ID<dec_init>
  * 37. <declaration> -> auto ID = expression;
- * @param dataType
- * @param localTable
+ * @param dataType          -   datovy typ promenne
+ * @param localTable        -   ukazatel na lokalni tabulku symbolu
+ * @param instructionTape   -   ukazatel na pasku instrukci
+ * @param blockListElem     -   aktualni element v listu tabulek bloku
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable, tInsTape *instructionTape);
+int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
+                    tInsTape *instructionTape, tTabSymListElemPtr blockListElem);
 
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
@@ -146,9 +157,13 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable, tInsTape 
  * 27.  <block> -> {<st_list>}
  * 28.  <block> -> <statement>
  * @param localTable[in]            -   lokalni tabulka symbolu
+ * @param instructionTape           -   ukazatel na pasku instrukci
+ * @param blockList                 -   list tabulek symbolu pro bloky
+ * @param blockListElem             -   aktualni element v listu tabulek bloku
  * @return          pokud probehlo vse v poradku, tak 1
  */
-int parseBlock(tTabSym *localTable);
+int parseBlock(tTabSym *localTable, tTabSymList *blockList,
+                tTabSymListElemPtr blockListElem, tInsTape *instructionTape);
 
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 //nejakym zpusobem musim prohledavat rozsah platnosti (lokalni tabulky bloku...)

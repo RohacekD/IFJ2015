@@ -494,6 +494,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
  * @param localTable        -   ukazatel na lokalni tabulku funkce
  * @param blockList         -   ukazatel na list tabulek bloku
  * @param parent            -   ukazatel na rodicovsky prvek 
+ * @param instructionTape   -   ukazatel na pasku instrukci
  * @return      pokud probehlo vse v poradku, tak 1
  */
 int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
@@ -526,12 +527,13 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             
             //volam funkci pro zpracovani deklarace
             //TODO - co vsechno ji predavat? 
-            if ((result = parseDeclaration(dataType, localTable, instructionTape)) != 1) {
+            // parent je v tomto pripade aktualni element z listu tabulek symbolu bloku
+            if ((result = parseDeclaration(dataType, localTable, instructionTape, parent)) != 1) {
                 return result;
             }
             
             //opet volam funkci pro zpracovani statement-listu
-            return parseStatementList(localTable);
+            return parseStatementList(localTable, blockList, parent, instructionTape);
             
             break;
             
@@ -568,8 +570,8 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             
             
             //rodicem se stane novy element, budeme pracovat s novou lokalni tabulkou
-            //a novym listem
-            if ((result = parseStatementList(blockLocalTable, newElement->childList, newElement)) != 1) {
+            //a novym listem, insrtrukcni paska je stejna
+            if ((result = parseStatementList(blockLocalTable, newElement->childList, newElement, instructionTape)) != 1) {
                 return result;
             }
             
@@ -587,7 +589,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             freeTokenMem(token);
              */
             
-            return parseStatementList(localTable, blockList, parent);
+            return parseStatementList(localTable, blockList, parent, instructionTape);
             break;
             
         //pravidlo 16 - <st_list> -> <statement><st_list>
@@ -607,21 +609,24 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             freeTokenMem(token);
             
             //TODO - jeste nevim, co vse musim predat funkci parseStatement
-            if((result = parseStatement(localTable, tokenType)) != 1) {
+            if((result = parseStatement(localTable, tokenType, instructionTape, blockList, parent)) != 1) {
                 return result;
             }
             
-            return parseStatementList(localTable);
+            return parseStatementList(localTable, blockList, parent, instructionTape);
             
             break;
         default:
             return SYNTAX_ERR;
     }
+    //nikdy bych se sem nemel dostat
+    return INTERNAL_ERROR;
 }
 
 
 
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+//-----------   DODELAT GENEROVANI INSTRUKCI ---------
 /**
  * zpracovava nasledujici pravidla:
  * 19. <statement> -> <assignment>;
@@ -632,11 +637,15 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
  * 24. <statement> -> for(<Kdata_types>ID=expression; expression; <assignment>)<block>
  * 25. <statement> -> while(expression)<block>
  * 26. <statement> -> do <block>while(expression);
- * @param localTable        -   loklni tabulka symbolu
+ * @param localTable        -   lokalni tabulka symbolu
  * @param token             -   typ tokenu
+ * @param instructionTape   -   ukazatel na instrukcni pasku
+ * @param blockList         -   ukazatel na list tabulek bloku
+ * @param blockListElem     -   aktualni element v listu tabulek symbolu pro bloky
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
+int parseStatement(tTabSym *localTable, TokenTypes tokenType, tInsTape *instructionTape,
+                    tTabSymList *blockList,tTabSymListElemPtr blockListElem) {
     tToken token;
     int result;
     tTabSymVarNoAutoDataType expressionType;
@@ -644,7 +653,7 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
     TokenTypes tokenType2;
     
     switch(tokenType) {
-        //pravidlo 23
+        //pravidlo 23 - if(expression)<block><else>
         case KEYW_IF:
             //nactu dalsi token - mel by byt '('
             if((result = getToken(&token, f)) != 1) {
@@ -656,7 +665,9 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
             }
             freeTokenMem(token);
             //TODO - volat parser pro zpracovani vyrazu
-            parseExpression(globalTable, localTable, , &expressionType, f);
+            if((result = parseExpression(globalTable, blockListElem ,localTable, instructionTape , &expressionType, f)) != 1) {
+                return result;
+            }
             
             if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -668,9 +679,8 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
             }
             freeTokenMem(token);
             
-            //TODO
-            //TODO - vytvorit nejspis novou lokalni tabulku, novou instrukcni pasku...
-            if((result = parseBlock(localBlockTable)) != 1) {
+            //TODO - doplnit parseBlock
+            if((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != 1) {
                 return result;
             }
             
@@ -708,13 +718,12 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
                 case KEYW_ELSE:
                     //TODO - co poslu bloku
                     freeTokenMem(token);
-                    return parseBlock(localBlockTable);
+                    return parseBlock(localTable, blockList, blockListElem, instructionTape);
                     break;
                     
                 default:
                     return SYNTAX_ERR;
             }
-            
             break;
             
             
@@ -750,6 +759,7 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
                 return LEXICAL_ERR;
             }
             
+            //TODO - ulozeni identifikatoru do tabulky symbolu
             if(token->typ != TYPE_IDENTIFICATOR) {
                 freeTokenMem(token);
                 return SYNTAX_ERR;
@@ -770,7 +780,9 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
             
             //TODO - volat parser  pro zpracovani vyrazu
             //TODO - zpracovat vystup parseru
-            parseExpression(globalTable, localTable, , &expressionType, f);
+            if ((result = parseExpression(globalTable, blockListElem , localTable, instructionTape, &expressionType, f)) != 1) {
+                return result;
+            }
             
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -784,7 +796,9 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
             
             //TODO - zpracovat dalsi cast vyrazu
             //TODO - zpracovat vystup parseru
-            parseExpression(globalTable, localTable, , &expressionType, f);
+            if ((result = parseExpression(globalTable, blockListElem , localTable, instructionTape, &expressionType, f)) != 1) {
+                return result;
+            }
             
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -811,7 +825,7 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
             }
             
             //TODO - co predavat 
-            tokenType = token->typ;
+            tokenType2 = token->typ;
             freeTokenMem(token);
             if((result = parseAssingnment(tokenType2, localTable)) != 1) {
                 return result;
@@ -828,7 +842,8 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
             }
             freeTokenMem(token);
             
-            return parseBlock();
+            //TODO
+            return parseBlock(localTable, blockList, blockListElem, instructionTape);
 
             break;
             
@@ -954,7 +969,9 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
         //pravidlo 22 - <statement> -> return expression;
         case KEYW_RETURN:
             //TODO - zpracovani vyrazu
-            parseExpression(globalTable, localTable, , &expressionType, f);
+            if ((result = parseExpression(globalTable, blockListElem, localTable, instructionTape, &expressionType, f)) != 1) {
+                return result;
+            }
             
             if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -982,7 +999,9 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
             freeTokenMem(token);
             
             //TODO - zpracovani vyrazu
-            parseExpression(globalTable, localTable, , &expressionType, f);
+            if ((result = parseExpression(globalTable, blockListElem ,localTable, instructionTape , &expressionType, f)) != 1) {
+                return result;
+            }
             
             if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -995,7 +1014,7 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
             freeTokenMem(token);
             
             //TODO - zpracovani bloku
-            return parseBlock();
+            return parseBlock(localTable, blockList, blockListElem, instructionTape);
             
             break;
             
@@ -1005,7 +1024,7 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
         case KEYW_DO:
             
             //TODO - zpracovani bloku
-            if ((result = parseBlock()) != 1) {
+            if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != 1) {
                 return result;
             }
             
@@ -1020,7 +1039,9 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
             freeTokenMem(token);
             
             //TODO - zpracovani vyrazu
-            parseExpression(globalTable, localTable, , &expressionType, f);
+            if ((result = parseExpression(globalTable, blockListElem, localTable, instructionTape , &expressionType, f)) != 1) {
+                return result;
+            }
             
             if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -1064,15 +1085,19 @@ int parseStatement(tTabSym *localTable, TokenTypes tokenType) {
 
 
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+//-----------   DODELAT GENEROVANI INSTRUKCI ---------
 /**
  * zpracovava nasledujici pravidla:
  * 36. <declaration> -> <Kdata_types> ID<dec_init>
  * 37. <declaration> -> auto ID = expression;
- * @param dataType
- * @param localTable
+ * @param dataType          -   datovy typ promenne
+ * @param localTable        -   ukazatel na lokalni tabulku symbolu
+ * @param instructionTape   -   ukazatel na pasku instrukci
+ * @param blockListElem     -   aktualni element v listu tabulek bloku
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable, tInsTape *instructionTape) {
+int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
+                    tInsTape *instructionTape, tTabSymListElemPtr blockListElem) {
     int result;
     tToken token;
     tTabSymElemData *varIdentifikator, *funcIdentifikator;
@@ -1132,7 +1157,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable, tInsTape 
             if(token->typ == EQUAL) {
                 freeTokenMem(token);
                 //TODO - zpracovani vyrazu
-                 if ((result = parseExpression(globalTable, localTable, instructionTape, &expressionType, f)) != 1) {
+                 if ((result = parseExpression(globalTable, blockListElem, localTable, instructionTape, &expressionType, f)) != 1) {
                      return result;
                  }
                  
@@ -1179,7 +1204,9 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable, tInsTape 
             }
             
             //TODO - zpracovani vyrazu
-            parseExpression(globalTable, localTable, , &expressionType, f);
+            if((result = parseExpression(globalTable, blockListElem ,localTable, instructionTape, &expressionType, f)) != 1) {
+                return result;
+            }
             
             //vytvoreni informaci o promenne
             //TODO - vkladam jeji datovy typ az na zaklade datoveho typu
@@ -1209,7 +1236,8 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable, tInsTape 
         default:
             return SYNTAX_ERR;
     }
-    return SYNTAX_ERR;
+    //sem bych se nikdy nemel dostat
+    return INTERNAL_ERROR;
 }
 
 
@@ -1220,9 +1248,13 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable, tInsTape 
  * 27.  <block> -> {<st_list>}
  * 28.  <block> -> <statement>
  * @param localTable[in]            -   lokalni tabulka symbolu
+ * @param instructionTape           -   ukazatel na pasku instrukci
+ * @param blockList                 -   list tabulek symbolu pro bloky
+ * @param blockListElem             -   aktualni element v listu tabulek bloku
  * @return          pokud probehlo vse v poradku, tak 1
  */
-int parseBlock(tTabSym *localTable) {
+int parseBlock(tTabSym *localTable, tTabSymList *blockList,
+                tTabSymListElemPtr blockListElem, tInsTape *instructionTape) {
     tToken token;
     int result;
     TokenTypes tokenType;
@@ -1233,9 +1265,13 @@ int parseBlock(tTabSym *localTable) {
     
     switch(token->typ) {
         // pravidlo 27 - <block> -> {<st_list>}
+        //TODO - navratit precteny token, aby funkce parseStatementList
+        //vytvorila novy rozsah platnosti pro blok if?
         case BRACES_OPENING:
             freeTokenMem(token);
-            if((result = parseStatementList(localTable)) != 1) {
+            ungetToken(&token);
+            
+            if((result = parseStatementList(localTable, blockList, blockListElem, instructionTape)) != 1) {
                 return result;
             }
             
@@ -1268,7 +1304,7 @@ int parseBlock(tTabSym *localTable) {
             tokenType = token->typ;
             freeTokenMem(token);
             
-            return parseStatement(localTable, tokenType);
+            return parseStatement(localTable, tokenType, instructionTape, blockList, blockListElem);
             
         default:
             return SYNTAX_ERR;
