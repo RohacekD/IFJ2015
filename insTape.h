@@ -36,17 +36,19 @@ typedef enum{
 	I_LOG_OR,//bezna konvence - 3. operand je bool
 	I_CBF, //create block frame
 	I_CF, //call function adr1 - locTab adr2 - ins adr3 - adresa kam ulozit vysledek fce(u main NULL)
-	I_ASSIGN, //prirazeni =
-	I_SP, //set parametr - musis se podivat o jeden niz
+	I_ASSIGN, //prirazeni = adr1(source) => adr3(dest)
+	I_SP, // adr1 -z volajici funkce, , adr3-z volane | set parametr - musis se podivat o jeden niz
 	I_DBF, //delete block frame
 	I_RETURN, //nepotrebuje nic
 	I_IFZERO,//jmp if adr1 == 0 to adr2 (ins)
 	I_IFNZERO,//jmp if adr1 != 0 to adr2 (ins)
-	I_SORT,
-	I_FIND,
-	I_CONCAT,
-	I_SUBSTR,
-	I_LENGTH
+	I_SORT,//adr1 string(argument 1), adr2,adr3 variable INT (argument 2 a 3)
+	I_SORT_DEST, //adr3 kam ulozit vysledek
+	I_FIND,//
+	I_CONCAT,//adr1 argument 1, adr2 argument 2 adr3 destination
+	I_SUBSTR,//adr1 string(argument 1), adr2,adr3 variable INT (argument 2 a 3)
+	I_SUBSTR_DEST, //adr3 kam ulozit vysledek
+	I_LENGTH//adr1 string adr3 int
 }tInstructTypes;
 
 
