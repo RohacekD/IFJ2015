@@ -919,7 +919,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             
-            if ((result = parseCin()) != 1) {
+            if ((result = parseCin(instructionTape, localTable, blockListElem)) != 1) {
                 return result;
             }
             
@@ -1470,12 +1470,15 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 //-----------   DODELAT GENEROVANI INSTRUKCI ---------
 /**
- * zpracovava nasledujici pravidla:
+ * * zpracovava nasledujici pravidla:
  * 32.  <cin> -> epsilon
  * 33.  <cin> -> >>ID<cin>
- * @return      pokud probehlo vse v poradku, tak 1
+ * @param instructionTape           -   odkaz na instrukcni pasku
+ * @param localTable                -   odkaz na lokalni tabulku symbolu
+ * @param blockListElem             -   aktualni element v tabulce symbolu pro bloky
+ * @return              pokud probehlo vse v poradku, tak 1
  */
-int parseCin() {
+int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr blockListElem) {
     int result;
     tToken token;
     
@@ -1484,7 +1487,8 @@ int parseCin() {
     }
     
     if(token->typ == SEMICOLON) {
-        freeTokenMem(token);
+        //navratime token, protoze s nim pocita volajici funkce
+        ungetToken(&token);
         return 1;
     }
     
@@ -1494,7 +1498,7 @@ int parseCin() {
         if((result = getToken(&token, f)) != 1) {
             return LEXICAL_ERR;
         }
-        
+        //uz mame >>
         if(token->typ == GREATER) {
             freeTokenMem(token);
             
@@ -1502,9 +1506,24 @@ int parseCin() {
                 return LEXICAL_ERR;
             }
             
+            //ocekavam identifikator
             if(token->typ == TYPE_IDENTIFICATOR) {
+                string *idName; 
+                idName = token->value.stringVal;
+                tTabSymElemData* idUsable;
                 freeTokenMem(token);
-                return parseCin();
+                
+                //semanticka kontrola
+                if((idUsable = tabSymListSearch(blockListElem, localTable, &idName)) == NULL) {
+                    return SEMANTIC_ERROR_DEFINITION;
+                }
+                
+                //TODO - vlozeni instrukce 
+                if ((result = insTapeInsertLast(instructionTape, I_CIN, NULL, NULL, (void *) &idName)) == 0) {
+                    return INTERNAL_ERROR;
+                }
+                //muzeme funkci provadet znovu
+                return parseCin(instructionTape, localTable, blockListElem);
             }
             
             freeTokenMem(token);

@@ -180,14 +180,19 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
 int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instructionTape,
                 tTabSymListElemPtr blockListElem);
 
+
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+//-----------   DODELAT GENEROVANI INSTRUKCI ---------
 /**
- * zpracovava nasledujici pravidla:
+ * * zpracovava nasledujici pravidla:
  * 32.  <cin> -> epsilon
  * 33.  <cin> -> >>ID<cin>
- * @return 
+ * @param instructionTape           -   odkaz na instrukcni pasku
+ * @param localTable                -   odkaz na lokalni tabulku symbolu
+ * @param blockListElem             -   aktualni element v tabulce symbolu pro bloky
+ * @return              pokud probehlo vse v poradku, tak 1
  */
-int parseCin();
+int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr blockListElem);
 
 
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
