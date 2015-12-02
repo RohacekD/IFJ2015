@@ -902,9 +902,23 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 freeTokenMem(token);
                 return SYNTAX_ERR;
             }
+            
+            string idName = token->value.stringVal;
+            
             freeTokenMem(token);
             
-            //TODO - zpracovani dalsich vstupu
+            //semanticka kontrola, zda je ID pouzitelne 
+            tTabSymElemData *idUsable;
+            if ((idUsable = tabSymListSearch(blockListElem, localTable, &idName)) == NULL) {
+                return SEMANTIC_ERROR_DEFINITION; //promenna nedefinovana
+            }
+            
+            //TODO - VLOZENI INSTRUKCE
+            if ((result = insTapeInsertLast(instructionTape, I_CIN, NULL, NULL, (void*) &idName)) == 0) {
+                return INTERNAL_ERROR;
+            }
+            
+            
             if ((result = parseCin()) != 1) {
                 return result;
             }
