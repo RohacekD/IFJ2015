@@ -17,7 +17,7 @@ int executeTape(tInsTapeInsPtr);
  * 
  * @return Vraci 0 pokud nastane chyba, jinak 1;
  */
-int executeIns(tInsTapeInsPtr, tStack*);
+int executeIns(tInsTapeInsPtr* , tStack* );
 
 void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer);
 

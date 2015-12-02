@@ -15,7 +15,8 @@
 //zakodovat jako 1, protoze to u me znamena uspech
 #define LEXICAL_ERR 0
 #define SYNTAX_ERR 2
-#define SEMANTIC_ERROR 3
+#define SEMANTIC_ERROR_DEFINITION 3
+#define SEMANTIC_ERROR_PARAM 4
 #define MEM_ALLOC_ERROR 99
 #define INTERNAL_ERROR 42
 
@@ -91,6 +92,25 @@ void parse() {
     //TODO - osetreni chyb a uvolneni pameti
     if ((result = parseFunction()) != 1) {
         //TODO
+        //uvolneni pameti - globalni tabulky symbolu
+        tabSymFree(globalTable);
+        //vraceni chyboveho kodu na zaklade chyby v parseru
+        switch(result) {
+            case LEXICAL_ERR:
+                //TODO
+            case SYNTAX_ERR:
+                //TODO
+            case SEMANTIC_ERROR_DEFINITION:
+                //TODO
+            case SEMANTIC_ERROR_PARAM:
+                //TODO
+            case MEM_ALLOC_ERROR:
+                //TODO
+            case INTERNAL_ERROR:
+                //TODO
+            default:
+                break;
+        }
     }
     //TODO - syntakticka a semanticka kontrola probehla v poradku
     else {
@@ -161,7 +181,7 @@ int parseFunction() {
                     (strcmp(idName.str, "concat") == 0) || (strcmp(idName.str, "find") == 0) ||
                     (strcmp(idName.str, "sort") == 0)) {
                 freeTokenMem(token);
-                return SEMANTIC_ERROR; //pokus o redefinici funkce
+                return SEMANTIC_ERROR_DEFINITION; //pokus o redefinici funkce
             }
         }
         //funkce uz byla deklarovana
@@ -174,7 +194,7 @@ int parseFunction() {
             //v tuto chvili uz muzu zkontrolovat, zda sedi navratovy typ funkce
             if(funcID_info->info.func->retType != (tTabSymVarNoAutoDataType)returnType) {
                 freeTokenMem(token);
-                return SEMANTIC_ERROR; //nesouhlasi navratovy typ
+                return SEMANTIC_ERROR_PARAM; //nesouhlasi navratovy typ
             }
         }
         //uvolneni tokenu
@@ -230,7 +250,7 @@ int parseFunction() {
                 //zkontroluji, zda se uz dana funkce nebyla definovana
                 if (funcID_info->info.func->defined == true) {
                     freeTokenMem(token);
-                    return SEMANTIC_ERROR;
+                    return SEMANTIC_ERROR_DEFINITION;
                 }
                 
                 freeTokenMem(token);
@@ -338,7 +358,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
             //list argumentu neni prazdny, chyba
             if((*data->info.func->params)->first != NULL) {
                 freeTokenMem(token);
-                return SEMANTIC_ERROR;
+                return SEMANTIC_ERROR_PARAM;
             }
         }
         freeTokenMem(token);
@@ -400,7 +420,7 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
         tTabSymElemData *globalTableInfo = tabSymSearch(globalTable, &idName);
         //promenna uz byla definovana
         if(localTableInfo != NULL || globalTableInfo != NULL) {
-            return SEMANTIC_ERROR;
+            return SEMANTIC_ERROR_DEFINITION;
         }
          //vkladam do seznamu parametru
         if (insertEl(paramList, &idName, paramType) == 0) {
@@ -423,7 +443,7 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
     else {
         if (((tTabSymVarNoAutoDataType)paramType != (*data->info.func->params)->act->dataType) ||
                 (strcmp(idName.str, (*data->info.func->params)->act->idName->str) != 0)) {
-            return SEMANTIC_ERROR;
+            return SEMANTIC_ERROR_PARAM;
         }
     }
     
@@ -453,7 +473,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
         freeTokenMem(token);
         //zkontroluji, zda neni dana funkce uz deklarovana s vice parametry
         if ((*data->info.func->params)->act->next != NULL) {
-            return SEMANTIC_ERROR;
+            return SEMANTIC_ERROR_PARAM;
         }
         return 1;
     }
@@ -518,6 +538,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             
             //ulozim si datovy typ promenne
             if ((dataType = tokenTypeToVarType(token->typ)) == INTERNAL_ERROR) {
+                freeTokenMem(token);
                 return INTERNAL_ERROR;
             }
             
@@ -525,7 +546,6 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             freeTokenMem(token);
             
             //volam funkci pro zpracovani deklarace
-            //TODO - co vsechno ji predavat? 
             // parent je v tomto pripade aktualni element z listu tabulek symbolu bloku
             if ((result = parseDeclaration(dataType, localTable, instructionTape, parent)) != 1) {
                 return result;
@@ -548,7 +568,6 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
         //TODO - zanoreny blok, musim vytvorit novou lokalni tabulku symbolu...
         //TODO - mel bych vytvorit instrukci, pomoci niz dam interpretu vedet
                 //ze si ma vytvorit novy ramec
-        //TODO - vsechno to nastavovani veci okolo bloku
         case BRACES_OPENING:
             freeTokenMem(token);
             
@@ -647,7 +666,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
     tTabSymVarNoAutoDataType expressionType;
     tTabSymVarDataType dataType;
     
-    switch(token->typ) {
+    switch(tokenOrig->typ) {
         //pravidlo 23 - if(expression)<block><else>
         case KEYW_IF:
             //uvolnim pamet tokenu
@@ -883,9 +902,23 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 freeTokenMem(token);
                 return SYNTAX_ERR;
             }
+            
+            string idName = token->value.stringVal;
+            
             freeTokenMem(token);
             
-            //TODO - zpracovani dalsich vstupu
+            //semanticka kontrola, zda je ID pouzitelne 
+            tTabSymElemData *idUsable;
+            if ((idUsable = tabSymListSearch(blockListElem, localTable, &idName)) == NULL) {
+                return SEMANTIC_ERROR_DEFINITION; //promenna nedefinovana
+            }
+            
+            //TODO - VLOZENI INSTRUKCE
+            if ((result = insTapeInsertLast(instructionTape, I_CIN, NULL, NULL, (void*) &idName)) == 0) {
+                return INTERNAL_ERROR;
+            }
+            
+            
             if ((result = parseCin()) != 1) {
                 return result;
             }
@@ -1132,7 +1165,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             varIdentifikator = tabSymSearch(localTable, &idName);
             funcIdentifikator = tabSymSearch(globalTable, &idName);
             if (varIdentifikator != NULL || funcIdentifikator != NULL) {
-                return SEMANTIC_ERROR;
+                return SEMANTIC_ERROR_DEFINITION;
             }
             
             //vytvoreni informaci o promenne
@@ -1160,11 +1193,22 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             //inicializace
             if(token->typ == EQUAL) {
                 freeTokenMem(token);
-                //TODO - zpracovani vyrazu
+
                  if ((result = parseExpression(globalTable, blockListElem, localTable, instructionTape, &expressionType, f)) != 1) {
                      return result;
                  }
                  
+                string *lastGeneratedTMP;
+                
+                if((lastGeneratedTMP = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+                    return INTERNAL_ERROR;
+                }
+                
+                //TODO GENEROVANI INSTRUKCE
+                if ((result = insTapeInsertLast(instructionTape, I_ASSIGN, (void*) lastGeneratedTMP, NULL, (void*) &idName)) == 0) {
+                    return INTERNAL_ERROR;
+                }
+                
                  if((result = getToken(&token, f)) != 1) {
                      return LEXICAL_ERR;
                  }
@@ -1204,7 +1248,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             varIdentifikator = tabSymSearch(localTable, &idName);
             funcIdentifikator = tabSymSearch(globalTable, &idName);
             if (varIdentifikator != NULL || funcIdentifikator != NULL) {
-                return SEMANTIC_ERROR;
+                return SEMANTIC_ERROR_DEFINITION;
             }
             
             //TODO - zpracovani vyrazu
@@ -1224,6 +1268,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 return INTERNAL_ERROR;
             }
             
+            //TODO - GENEROVANI INSTRUKCE
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
@@ -1262,7 +1307,6 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
                 tTabSymListElemPtr blockListElem, tInsTape *instructionTape) {
     tToken token;
     int result;
-    TokenTypes tokenType;
     
     if((result = getToken(&token, f)) != 1) {
         return LEXICAL_ERR;
@@ -1340,7 +1384,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             //semanticka kontrala, zda je promenna definovana v danem rozsahu platnosti
             if ((idUsable = tabSymListSearch(blockListElem, localTable, &idName)) == NULL) {
                 freeTokenMem(tokenOrig);
-                return SEMANTIC_ERROR;
+                return SEMANTIC_ERROR_DEFINITION;
             }
             
             freeTokenMem(tokenOrig);
@@ -1383,7 +1427,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             //semanticka kontrala, zda je promenna definovana v danem rozsahu platnosti
             if ((idUsable = tabSymListSearch(blockListElem, localTable, &idName)) == NULL) {
                 freeTokenMem(token);
-                return SEMANTIC_ERROR;
+                return SEMANTIC_ERROR_DEFINITION;
             }
             
             freeTokenMem(token);
@@ -1409,7 +1453,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             //semanticka kontrala, zda je promenna definovana v danem rozsahu platnosti
             if ((idUsable = tabSymListSearch(blockListElem, localTable, &idName)) == NULL) {
                 freeTokenMem(token);
-                return SEMANTIC_ERROR;
+                return SEMANTIC_ERROR_DEFINITION;
             }
             
             freeTokenMem(token);
