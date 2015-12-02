@@ -1,7 +1,4 @@
 #include "scanner.h"
-#include "error.h"
-#include "str.h"
-#include <stdio.h>
 
 tTokenQueue *TQueue = NULL;
 

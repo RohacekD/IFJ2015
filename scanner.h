@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "token.h"
+#include "error.h"
+#include "str.h"
 /* @var int citac radku*/
 extern int line;
 /* @var int citac znaku na radku*/
