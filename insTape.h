@@ -35,13 +35,12 @@ typedef enum{
 	I_LOG_AND,//bezna konvence - 3. operand je bool
 	I_LOG_OR,//bezna konvence - 3. operand je bool
 	I_CBF, //create block frame
-	I_CF, //call function adr1 - locTab adr2 - ins adr3 - adresa kam ulozit vysledek fce(u main NULL)
+	I_CF, //call function adr1 - locTab adr2 - ins
 	I_ASSIGN, //prirazeni =
-	I_SP, //set parametr - musis se podivat o jeden niz
+	I_SP, // adr1 -z volajici funkce, , adr3-z volane | set parametr - musis se podivat o jeden niz
 	I_DBF, //delete block frame
-	I_RETURN, //nepotrebuje nic
+	I_RETURN, //adr1=>promenna vracena(source) z volane, ,adr3=>promenna pro vraceni(dest)
 	I_IFZERO,//jmp if adr1 == 0 to adr2 (ins)
-	I_IFNZERO,//jmp if adr1 != 0 to adr2 (ins)
 	I_SORT,
 	I_FIND,
 	I_CONCAT,

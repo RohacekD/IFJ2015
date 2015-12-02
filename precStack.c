@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+
 void precStackInit(tPrecStack * stack){
 	stack->top=NULL;
 }
@@ -144,6 +145,28 @@ int precStackTopTerminal(tPrecStack* stack, tParExpTerminals* terminal){
 	*terminal=element->data.key;
 	return 1;
 
+}
+
+tPrecStack * precStackCreateRevertedTopReduc(tPrecStack * stack){
+	tPrecStack * newStack=malloc(sizeof(tPrecStack));
+	if(newStack!=NULL){
+
+		precStackInit(newStack);
+		tPrecStackData actData = *precStackTop(stack);
+
+		//naplnime zasobnikem <y
+		while(!precStackEmpty(stack) &&  actData.type!=PREC_STACK_ENDMARK){
+			precStackPush(newStack,actData);
+			precStackPop(stack);
+			if(actData.type!=PREC_STACK_SIGN){
+				//koncime
+				break;
+			}
+			actData = precStackTop(stack);
+		}
+
+	}
+	return newStack;
 }
 
 int precStackEmpty(tPrecStack * stack){

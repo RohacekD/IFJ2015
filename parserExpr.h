@@ -17,7 +17,6 @@
 
 /**
  * Provede precedencni syntaktickou, semantickou analyzu a generovani tri adresneho kodu.
- * @param globTable[in]		-	globalni tabulka symbolu (pouziva se pro funkce)
  * @param tableListElem[in]	-	element listu tabulek v aktualnim zanoreni
  * @param table[in]			-	tabulka symbolu
  * @param tape[in]			-	paska instrukci
@@ -29,7 +28,7 @@
  * @param scanFile[in]		-	Soubor pro scanner.
  * @return kod chyby / uspechu
  */
-int parseExpression(tTabSym* globTable, tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* tape, tTabSymVarNoAutoDataType* expDataType, FILE* scanFile);
+int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* tape, tTabSymVarNoAutoDataType* expDataType, FILE* scanFile);
 
 
 

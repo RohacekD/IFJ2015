@@ -22,13 +22,6 @@ typedef enum
 	PREC_STACK_ENDMARK
 }tPrecStackElemType;
 
-typedef union{
-	int intVal;
-	double doubleVal;
-	string stringVal;
-	bool boolVal;
-}tPrecStacValue;
-
 typedef struct{
 	tPrecStackElemType type;
 	int key;				// klic, daneho neterminalu, terminalu
@@ -105,6 +98,14 @@ tPrecStackElemPtr precStackTopElement(tPrecStack * stack);
  * @return	Pokud je chyba (terminal nenalezen) vraci 0, jinak 1.
  */
 int precStackTopTerminal(tPrecStack* stack, tParExpTerminals* terminal);
+
+/**
+ * Vytvori precStack ze vsech polozek z vrcholu zasobniku do < vcetne.
+ * Revertuje jejich poradi. Z puvodni zasobniku zmizi.
+ * @param stack[in]	-	precStack, ze ktereho bere data
+ * @return Vraci novy precStack, pri chybe NULL.
+ */
+tPrecStack * precStackCreateRevertedTopReduc(tPrecStack * stack);
 
 /**
  * Kontroluje prazdnost zasobniku.
