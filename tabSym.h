@@ -86,7 +86,7 @@ typedef struct tParamListElem {
  */
 typedef struct {
 	tParamListElemPtr first;
-        tParamListElemPtr act;
+    tParamListElemPtr act;
 }*tParamListPtr;
 
 /**
@@ -312,6 +312,18 @@ tTabSymListElemPtr tabSymListInsertTable(tTabSymList* tabList, tTabSym* table, t
  * @return	Vraci ukazatel na tTabSymElemData. Nebo NULL, pokud nenajde.
  */
 tTabSymElemData* tabSymListSearch(tTabSymListElemPtr startTabSymListElem, tTabSym* locTable, string* key);
+
+
+/**
+ * Slouzi pro ziskani ukazatele na key primo v tabulce .
+ * @param startTabSymListElem[in]	-	startovaci prvek
+ * @param locTable[in]				-	Tabulka, kterou prohleda jako posledni,
+ * 										tato tabulka je mimo hierarchii rodicu.
+ * 										Napriklad lokalni tabulka funkce.
+ * @param key[in]					-	Klic, ktery chceme vyhledat
+ * @return Vraci ukazatel na string. Nebo NULL, pokud nenajde.
+ */
+string* tabSymListGetPointerToKey(tTabSymListElemPtr startTabSymListElem, tTabSym* locTable, string* key);
 
 /**
  * Vytvori nazev docasne promenne. ($tmpI) Zohlednuje $tmp vsech rodicu i loctable.
