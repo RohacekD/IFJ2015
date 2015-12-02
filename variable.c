@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 void variableCreate(tVariablePtr* var, tVariableType type) {
-    tVariablePtr v = (tVariablePtr) malloc(sizeof(tVariablePtr));
+    tVariablePtr v = (tVariablePtr) malloc(sizeof(struct tVariableStr));
     if(!v){
         FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
     }
@@ -19,7 +19,7 @@ void variableDelete(void* var) {
 	if (((tVariablePtr)var)->type == VAR_TYPE_STRING) {
 		strFree(&((tVariablePtr)var)->data.stringVal);
 	}
-	free((tVariablePtr)var);
+	free(((tVariablePtr)var));
      // printf("Mazu promennou %d\n",((tVariablePtr)var)->data.intVal);
 }
 

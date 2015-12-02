@@ -5,6 +5,9 @@ int executeTape(tInsTapeInsPtr ins) {
 	 * v static
 	 */
 	static tStack* frameStack = NULL;
+
+	tInsTapeInsPtr* instruction = &ins;
+
 	/*Prvotni inicializace stacku*/
 	if (!frameStack) {
 		if (!(frameStack = (tStack *)malloc(sizeof(tStack)))) {
@@ -12,18 +15,29 @@ int executeTape(tInsTapeInsPtr ins) {
 		}
 		SInit(frameStack);
 	}
-	executeIns(ins, frameStack);
+	while (*instruction) {
+		executeIns(instruction, frameStack);
+
+	}
+	tFrameContainer frame;
+	/* Top vraci 0 pri prazdnem framestacku */
+	if (!STop(frameStack, &frame)) {
+		/*Pokud je frame stack prazdny tak ho deinicializuji*/
+		SDispose(frameStack);//redundantni ale vyhneme se mem. leaku
+		free(frameStack);
+	}
 	return 1;//todo
 }
 
 
-int executeIns(tInsTapeInsPtr ins, tStack* stack) {
+int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	if (stack == NULL) return 0;
 	tVariablePtr oper1;
 	tVariablePtr oper2;
 	tVariablePtr dest;
 
 	tTabSym* tab;
+	tInsTapeInsPtr ins = *instruction;
 
 	switch (ins->type)
 	{
@@ -175,16 +189,16 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
-		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = (int)getVarVal(oper1) <= (int)getVarVal(oper2);
-		}
-		else if (dest->type == VAR_TYPE_DOUBLE) {
-			dest->data.doubleVal = getVarVal(oper1) <= getVarVal(oper2);
-		}
-		else if (dest->type == VAR_TYPE_BOOL) {
-			dest->data.boolVal = getVarVal(oper1) <= getVarVal(oper2);
-		}
-		break;
+			if (dest->type == VAR_TYPE_INT) {
+				dest->data.intVal = (int)getVarVal(oper1) <= (int)getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_DOUBLE) {
+				dest->data.doubleVal = getVarVal(oper1) <= getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_BOOL) {
+				dest->data.boolVal = getVarVal(oper1) <= getVarVal(oper2);
+			}
+			break;
 	case I_UMINUS:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -251,6 +265,22 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 		tab = (tTabSym*)ins->adr1;
 		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
 		break;
+	case I_ASSIGN:
+		findVariable(stack, (string*)ins->adr1, &oper1);
+		findVariable(stack, (string*)ins->adr3, &dest);
+		if (dest->type == VAR_TYPE_INT) {
+			dest->data.intVal = (int)getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_DOUBLE) {
+			dest->data.doubleVal = getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_BOOL) {
+			dest->data.boolVal = getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_STRING) {
+			strCopyString(&oper1->data.stringVal, &dest->data.stringVal);
+		}
+		break;
 	case I_DBF:
 		deleteTopFrame(stack);
 		break;
@@ -263,6 +293,7 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 	default:
 		break;
 	}
+	*instruction = ins->rptr;
 	return 1;
 }
 
@@ -272,8 +303,37 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer) {
 	if (node) {
 		tVariablePtr var;
-		tVariableType type = tTabSymToVarNotatation(((tTabSymElemData*)node->data)->info.var->dataType);
-		variableCreate(&var, type);
+		tVariableType type;
+		if (((tTabSymElemData*)node->data)->type == TAB_SYM_VARIABLE){
+			type = tTabSymToVarNotatation(((tTabSymElemData*)node->data)->info.var->dataType);
+			variableCreate(&var, type);
+		}
+		else if (((tTabSymElemData*)node->data)->type == TAB_SYM_CONSTANT) {
+			type = tTabSymToVarNotatation(((tTabSymElemData*)node->data)->info.constant->dataType);
+			variableCreate(&var, type);
+			switch (var->type)
+			{
+			case VAR_TYPE_INT:
+				var->data.intVal = ((tTabSymElemData*)node->data)->info.constant->value.intVal;
+				break;
+			case VAR_TYPE_BOOL:
+				var->data.boolVal = ((tTabSymElemData*)node->data)->info.constant->value.boolVal;
+
+				break;
+			case VAR_TYPE_DOUBLE:
+				var->data.doubleVal = ((tTabSymElemData*)node->data)->info.constant->value.doubleVal;
+
+				break;
+			case VAR_TYPE_STRING://string - strInit vola jiz fce variableCreate
+				strCopyString(&var->data.stringVal, ((tTabSymElemData*)node->data)->info.constant->value.stringVal);
+				break;
+			default:
+				break;
+			}
+		}
+		else {
+			return;
+		}
 		insertNewVariable(frameContainer, var,node->key);
 		tTabSymToFrame(node->l, frameContainer);
 		tTabSymToFrame(node->r, frameContainer);

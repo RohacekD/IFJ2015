@@ -50,16 +50,14 @@ void SPush(tStack *Stack, tFrameContainer *val) {
     }
 }
 
-void STop(tStack *Stack, tFrameContainer *val) {
+int STop(tStack *Stack, tFrameContainer *val) {
     //je prazdny?
     if (Stack->Top == NULL) {
-        //vyhodim chybu
-        //DLError();
-        //todo
-        return;
+		return 0;
     }
     //ulozi hodnotu
     *val = Stack->Top->frameContainer;
+	return 1;
 }
 
 void SPop(tStack *Stack) {
