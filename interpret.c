@@ -89,7 +89,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (getVarVal(oper2)==0) {
-			//todo
+			FatalError(9, ERR_MESSAGES[ERR_RUNTIME_ZERO_DIV]);
 		}
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1) / (int)getVarVal(oper2);
