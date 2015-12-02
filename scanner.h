@@ -5,8 +5,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "token.h"
-#include "error.h"
-#include "str.h"
 /* @var int citac radku*/
 extern int line;
 /* @var int citac znaku na radku*/
@@ -14,7 +12,7 @@ extern int character;
 /* @var int priznak chyby */
 extern int errorFlag;
 /*
- * Hlavni fce lexykalniho analyzatoru
+ * Hlavni fce lexykalniho analyzatoru pokud nastane chyba nevrati naalokovany token
  * @param tToken v teto strukutre je vracen nacteny token
  * @param FILE[in] inject cteneho souboru
  * @return 1 pokud prosla analyza ok
@@ -35,13 +33,7 @@ int strToDouble(string*, double*);
  * @return	1 - pokud prevod probehne v poradku, jinak 0.
  */
 int strToInt(string* forConversion, int* val);
-/**
- * Prevede obsah string na bool. Pokud obsahuje true/false.
- * @param forConversion	-	string, ktery bude preveden na bool
- * @param val	-	ukazatel pomoci, ktereho vraci prevedenou hodnotu (v pripade chyby neprepisuje)
- * @return	1 - pokud prevod probehne v poradku, jinak 0.
- */
-//int strToBool(string* forConversion, bool* val);
+
 int strBinToInt(string* forConversion, int* val);
 int strHexToInt(string* forConversion, int* val);
 int strOctToInt(string* forConversion, int* val);
