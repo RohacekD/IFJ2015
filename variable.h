@@ -24,7 +24,7 @@ typedef union
 	bool boolVal;
 }tVariableData;
 
-typedef struct {
+typedef struct tVariableStr{
 	tVariableType type;
 	tVariableData data;
 } *tVariablePtr;

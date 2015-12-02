@@ -36,8 +36,9 @@ void SDispose(tStack *);
 void Push(tStack *, tFrameContainer*);
 /*
  * Vrati prvek na vrcholu zasobniku
+ * @return 0 pri chybe 1 pri success
  */
-void Top(tStack *, tFrameContainer*);
+int Top(tStack *, tFrameContainer*);
 void SPop(tStack *);
 
 void pushNewFrame(tStack*, bool);

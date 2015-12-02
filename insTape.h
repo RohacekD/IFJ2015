@@ -29,10 +29,8 @@ typedef enum{
 	I_GEQUAL,//bezna konvence - 3. operand je bool adr1>=adr2
 	I_LEQUAL,//bezna konvence - 3. operand je bool adr1<=adr2
 	I_UMINUS,//adr1 operand adr3 vysledek
-	I_POST_INC,//postfix 
-	I_POST_DEC,
-	I_PRE_INC,//je potreba?
-	I_PRE_DEC,
+	I_INC,//adr1 operand adr3 dest
+	I_DEC,//adr1 operand adr3 dest
 	I_LOG_NOT,//adr1 operand adr3 vysledek
 	I_LOG_AND,//bezna konvence - 3. operand je bool
 	I_LOG_OR,//bezna konvence - 3. operand je bool

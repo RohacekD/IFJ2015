@@ -181,6 +181,17 @@ void freeConstantInfo(tConstantInfo * constant) {
  */
 void freeFunctionInfo(tFuncInfo * func) {
 
+	/**
+	 * Informace k funkci.
+	 */
+	/*typedef struct {
+	 tParamListPtr* params;		// parametry funkce
+	 tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
+	 tTabSym* locTab;			// lokalni tabulka symbolu
+	 tInsTape* instTape;			// instrukcni paska
+	 bool defined;				// byla definovana
+
+	 } tFuncInfo;*/
 
 	//uvolnime list parametru
 	paramListFree((*func->params)); //UPRAVENO
@@ -188,8 +199,7 @@ void freeFunctionInfo(tFuncInfo * func) {
 	//uvolnime lokalni tabulku symbolu
 	tabSymFree(func->locTab);
 
-	//uvolnime list tabulek
-	tabSymListFree(func->tabBlockList);
+	//TODO: tabulky symbolu
 
 	//uvolnime pasku instrukci
 	insTapeFree(func->instTape);

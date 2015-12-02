@@ -5,6 +5,9 @@ int executeTape(tInsTapeInsPtr ins) {
 	 * v static
 	 */
 	static tStack* frameStack = NULL;
+
+	tInsTapeInsPtr* instruction = &ins;
+
 	/*Prvotni inicializace stacku*/
 	if (!frameStack) {
 		if (!(frameStack = (tStack *)malloc(sizeof(tStack)))) {
@@ -12,18 +15,29 @@ int executeTape(tInsTapeInsPtr ins) {
 		}
 		SInit(frameStack);
 	}
-	executeIns(ins, frameStack);
+	while (*instruction) {
+		executeIns(instruction, frameStack);
+
+	}
+	tFrameContainer frame;
+	/* Top vraci 0 pri prazdnem framestacku */
+	if (!STop(frameStack, &frame)) {
+		/*Pokud je frame stack prazdny tak ho deinicializuji*/
+		SDispose(frameStack);//redundantni ale vyhneme se mem. leaku
+		free(frameStack);
+	}
 	return 1;//todo
 }
 
 
-int executeIns(tInsTapeInsPtr ins, tStack* stack) {
+int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	if (stack == NULL) return 0;
 	tVariablePtr oper1;
 	tVariablePtr oper2;
 	tVariablePtr dest;
 
 	tTabSym* tab;
+	tInsTapeInsPtr ins = *instruction;
 
 	switch (ins->type)
 	{
@@ -172,19 +186,19 @@ int executeIns(tInsTapeInsPtr ins, tStack* stack) {
 		}
 		break;
 	case I_LEQUAL:
-findVariable(stack, (string*)ins->adr1, &oper1);
-findVariable(stack, (string*)ins->adr2, &oper2);
-findVariable(stack, (string*)ins->adr3, &dest);
-if (dest->type == VAR_TYPE_INT) {
-	dest->data.intVal = (int)getVarVal(oper1) <= (int)getVarVal(oper2);
-}
-else if (dest->type == VAR_TYPE_DOUBLE) {
-	dest->data.doubleVal = getVarVal(oper1) <= getVarVal(oper2);
-}
-else if (dest->type == VAR_TYPE_BOOL) {
-	dest->data.boolVal = getVarVal(oper1) <= getVarVal(oper2);
-}
-break;
+		findVariable(stack, (string*)ins->adr1, &oper1);
+		findVariable(stack, (string*)ins->adr2, &oper2);
+		findVariable(stack, (string*)ins->adr3, &dest);
+			if (dest->type == VAR_TYPE_INT) {
+				dest->data.intVal = (int)getVarVal(oper1) <= (int)getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_DOUBLE) {
+				dest->data.doubleVal = getVarVal(oper1) <= getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_BOOL) {
+				dest->data.boolVal = getVarVal(oper1) <= getVarVal(oper2);
+			}
+			break;
 	case I_UMINUS:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -251,6 +265,22 @@ break;
 		tab = (tTabSym*)ins->adr1;
 		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
 		break;
+	case I_ASSIGN:
+		findVariable(stack, (string*)ins->adr1, &oper1);
+		findVariable(stack, (string*)ins->adr3, &dest);
+		if (dest->type == VAR_TYPE_INT) {
+			dest->data.intVal = (int)getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_DOUBLE) {
+			dest->data.doubleVal = getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_BOOL) {
+			dest->data.boolVal = getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_STRING) {
+			strCopyString(&oper1->data.stringVal, &dest->data.stringVal);
+		}
+		break;
 	case I_DBF:
 		deleteTopFrame(stack);
 		break;
@@ -263,6 +293,7 @@ break;
 	default:
 		break;
 	}
+	*instruction = ins->rptr;
 	return 1;
 }
 
@@ -293,17 +324,17 @@ void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer) {
 				var->data.doubleVal = ((tTabSymElemData*)node->data)->info.constant->value.doubleVal;
 
 				break;
-			case VAR_TYPE_STRING:
-				strInit(&var->data.stringVal);
+			case VAR_TYPE_STRING://string - strInit vola jiz fce variableCreate
 				strCopyString(&var->data.stringVal, ((tTabSymElemData*)node->data)->info.constant->value.stringVal);
 				break;
 			default:
 				break;
 			}
 		}
-		variableCreate(&var, type);
+		else {
+			return;
+		}
 		insertNewVariable(frameContainer, var,node->key);
-		var->data.intVal = 42;
 		tTabSymToFrame(node->l, frameContainer);
 		tTabSymToFrame(node->r, frameContainer);
 	}
