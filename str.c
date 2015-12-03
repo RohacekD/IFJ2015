@@ -101,7 +101,7 @@ int strGetLength(string *s)
 	return s->length;
 }
 /**
- * Prijma incializovany string a vlozi do nej obsah druheho parametru
+ * Prijma NEincializovany string a vlozi do nej obsah druheho parametru
  * @param s[out]
  * @param c[in]
  * @return 1 pokud konverze probehne v poradku jinak 0
