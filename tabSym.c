@@ -351,7 +351,7 @@ string* tabSymListGetPointerToKey(tTabSymListElemPtr startTabSymListElem, tTabSy
 			//vratime ukazatel na klic
 			return store->key;
 		}
-		return store;
+		return NULL;
 	}
 
 	store=BSTSearchTree(startTabSymListElem->table->root, key, store);
