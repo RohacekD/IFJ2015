@@ -354,10 +354,10 @@ string* tabSymListGetPointerToKey(tTabSymListElemPtr startTabSymListElem, tTabSy
 		return NULL;
 	}
 
-	store=BSTSearchTree(startTabSymListElem->table->root, key, store);
+	BSTSearchTree(startTabSymListElem->table->root, key, &store);
 	if(store==NULL){
 		//prohledame rekurzivne
-		return tabSymListSearch(startTabSymListElem->parentElement, locTable, key);
+		return tabSymListGetPointerToKey(startTabSymListElem->parentElement, locTable, key);
 	}
 	//nalezeno na aktualni urovni
 	return store->key;
