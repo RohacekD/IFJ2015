@@ -10,6 +10,26 @@ void initList(tParamListPtr list)
     list->act = NULL;
 }
 
+int createParamListElem(string *idName, tParamListElemPtr elem,
+                        tTabSymVarNoAutoDataType dataType) {
+    string *newString = malloc(sizeof(string));
+    
+    if (newString == NULL) {
+        return 0;
+    }
+    
+    if (strInit(newString) || strCopyString(newString, idName)) {
+        //pokus o alokaci se nazdaril
+        return 0;
+    }
+    
+    elem->idName = newString; 
+    elem->dataType = dataType;
+    elem->next = NULL;
+    
+    return 1;
+}
+
 int insertEl(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataType)
 {
     //vkladam do prazdneho seznamu
@@ -19,10 +39,11 @@ int insertEl(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType dataTy
         if((UkPomEl = (struct tParamListElem *) malloc(sizeof(struct tParamListElem))) == NULL) 
             return 0;
         else{
+            //vytvoreni prostoru pro identifikator a jeho vlozeni
             //vkladani informaci 
-            UkPomEl->dataType = dataType;
-            UkPomEl->idName = idName;
-            UkPomEl->next = NULL; 
+            if(createParamListElem(idName, UkPomEl,dataType) == 0) {
+                return 0;
+            }
             //prvek je prvni a zaroven i aktivni
             list->first = UkPomEl;
             list->act = UkPomEl;
@@ -48,9 +69,9 @@ int postInsert(tParamListPtr list, string *idName, tTabSymVarNoAutoDataType data
       return 0;
         //Todo volani chyby
     else{  //alokace se zdarila
-      UkPomEl->dataType = dataType;
-      UkPomEl->idName = idName;
-      UkPomEl->next = NULL;
+        if(createParamListElem(idName, UkPomEl,dataType) == 0) {
+            return 0;
+        }
       list->act->next = UkPomEl;
     }
   }
@@ -89,7 +110,9 @@ void paramListFree(tParamListPtr list)
         if(list->first == list->act) 
           list->act = NULL;
         //preskocim puvodni prvni element
-        list->first = list->first->next; 
+        list->first = list->first->next;
+        //uvolneni identifikatoru
+        strFree(UkPomEl->idName);
         free(UkPomEl); //uvolnim pamet
     }
 }
