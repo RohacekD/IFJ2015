@@ -17,6 +17,7 @@
 #define SYNTAX_ERR 2
 #define SEMANTIC_ERROR_DEFINITION 3
 #define SEMANTIC_ERROR_PARAM 4
+#define SEMANTIC_ERROR_AUTO 5
 #define MEM_ALLOC_ERROR 99
 #define INTERNAL_ERROR 42
 
@@ -75,6 +76,137 @@ int isTerm(TokenTypes ttype) {
 }
 
 
+/**
+ * vlozi do globalni tabulky predpis pro vnorene funkce
+ * @return      funkce vraci 1, pokud probehla bez chyby, jinak 0
+ */
+int prepareGlobalTable() {
+    tParamListPtr lengthParam, subsParam, concatParam, findParam, sortParam;
+    tFuncInfo *lengthInfo, *subsInfo, *concatInfo, *findInfo, *sortInfo;
+    
+    //inicializace seznamu parametru
+    initList(lengthParam); initList(subsParam); initList(concatParam);
+    initList(findParam); initList(sortParam);
+    
+    //vlozeni predpisu pro funkci:  int length (string s)
+    char *lengthID = "length";
+    string *length;
+    if (strConConstString(length, lengthID) == 1) {
+        return 0;
+    }
+    if ((insertEl(lengthParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0) {
+        return 0;
+    }
+    if ((lengthInfo = tabSymCreateFuncInfo(&lengthParam, TAB_SYM_VAR_NO_AUTO_INTEGER, NULL, NULL, NULL, true)) == NULL) {
+        return 0;
+    }
+    if (tabSymInsertFunc(globalTable, length, lengthInfo) == 0)
+        return 0;
+    
+    //-------------------------------------------------------------------
+    //vlozeni predpisu pro funkci: string substr(string s, int i, int n)
+    char *substrID = "substr";
+    string *substr;
+    if (strConConstString(substr, substrID) == 1) {
+        return 0;
+    }
+    if ((insertEl(subsParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 || 
+         (insertEl(subsParam, NULL, TAB_SYM_VAR_NO_AUTO_INTEGER)) == 0  ||
+             (insertEl(subsParam, NULL, TAB_SYM_VAR_NO_AUTO_INTEGER)) == 0) {
+        return 0;
+    }
+    if ((subsInfo = tabSymCreateFuncInfo(&subsParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+        return 0;
+    }
+    if (tabSymInsertFunc(globalTable, substr, subsInfo) == 0)
+        return 0;
+    
+    //-------------------------------------------------------------------
+    //vlozeni predpisu pro funkci: string concat(string s1, string s2)
+    char *concatID = "concat";
+    string *concat;
+    if (strConConstString(concat, concatID) == 1) {
+        return 0;
+    }
+    if ((insertEl(concatParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 || 
+         (insertEl(concatParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 ) {
+        return 0;
+    }
+    if ((concatInfo = tabSymCreateFuncInfo(&concatParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+        return 0;
+    }
+    if (tabSymInsertFunc(globalTable, concat, concatInfo) == 0)
+        return 0;
+    
+    //-------------------------------------------------------------------
+    //vlozeni predpisu pro funkci: string find(string s, string search)
+    char *findID = "find";
+    string *find;
+    if (strConConstString(find, findID) == 1) {
+        return 0;
+    }
+    if ((insertEl(findParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 || 
+         (insertEl(findParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 ) {
+        return 0;
+    }
+    if ((findInfo = tabSymCreateFuncInfo(&findParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+        return 0;
+    }
+    if (tabSymInsertFunc(globalTable, find, findInfo) == 0)
+        return 0;
+    
+     //-------------------------------------------------------------------
+    //vlozeni predpisu pro funkci: string sort(string s)
+    char *sortID = "sort";
+    string *sort;
+    if (strConConstString(sort, sortID) == 1) {
+        return 0;
+    }
+    if ((insertEl(sortParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0) {
+        return 0;
+    }
+    if ((sortInfo = tabSymCreateFuncInfo(&sortParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+        return 0;
+    }
+    if (tabSymInsertFunc(globalTable, sort, sortInfo) == 0)
+        return 0;
+    //cela funkce probehla uspesne
+    return 1;
+}
+
+/**
+ * funkce vytvori na halde misto pro novy string a skopiruje do nej hodnotu
+ * predaneho stringu
+ * @param identificator         -   string ke zkopirovani
+ * @return      funkce vraci ukazatel na novy string, pokud probehlo vse v poradku, jinak NULL
+ */
+string* copyIdName(string *identificator) {
+    string *idName = malloc(sizeof(string));
+    if (idName == NULL) return 0;
+
+    if (strInit(idName) == 1) {
+        free(idName);
+        return NULL;
+    }
+    if (strCopyString(idName, identificator) == 1) {
+        strFree(idName);
+        free(idName);
+        return NULL;
+    }
+    return idName;
+}
+
+/**
+ * funkce dealokuje pamet alokovanou pro vytvoreny string
+ * @param identificator         -   string, jez je uvolnovan
+ */
+void freeIdName(string *identificator) {
+    if (identificator != NULL) {
+        strFree(identificator);
+        free(identificator);
+    }
+}
+
 //!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
 /**
  * Uvodni funkce parseru
@@ -86,6 +218,11 @@ void parse() {
     
     //vytvorim globalni tabulku symbolu
     if ((globalTable = tabSymCreate(TAB_SYM_GLOB)) == NULL) {
+        FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+    }
+
+    if(prepareGlobalTable() == 0) {
+        tabSymFree(globalTable);
         FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
     }
     
@@ -138,8 +275,6 @@ int parseFunction() {
     tTabSymElemData *funcID_info;
     //promenna do ktere ukladam vytvorene informace o funkci
     tFuncInfo *funcInfo;
-    //uchovavam nazev identifikatoru
-    string idName;
     //pro kazdou funkci tvorim novy seznam parametru
     tParamListPtr paramList;
     initList(paramList);
@@ -168,19 +303,27 @@ int parseFunction() {
     if((result = getToken(&token, f)) != 1)
         return LEXICAL_ERR;
     
-    //dalsi token je ID - <function> -> <Kdata_types> fID
+    //dalsi token je fID - <function> -> <Kdata_types> fID
     if (token->typ == TYPE_FUNCTION_IDENTIFICATOR) {
-        //do idName ulozim identifikator
-        //identifikator potrebuji ulozit do globalni tabulky symbolu
-        idName = token->value.stringVal;
-
+         
+        //uchovavam nazev identifikatoru
+        string *idName;
+        if((idName = copyIdName(&(token->value.stringVal))) == NULL) {
+            freeTokenMem(token);
+            return INTERNAL_ERROR;
+        }
+        
+        //uvolnim token
+        freeTokenMem(token);
+        
         //funkce jeste nebyla deklarovana
-        if((funcID_info = tabSymSearch(globalTable, &idName)) == NULL) {
+        if((funcID_info = tabSymSearch(globalTable, idName)) == NULL) {
             //zkontroluji, zda je ID pouzitelne
-            if((strcmp(idName.str, "length") == 0) || (strcmp(idName.str, "substr") == 0) ||
-                    (strcmp(idName.str, "concat") == 0) || (strcmp(idName.str, "find") == 0) ||
-                    (strcmp(idName.str, "sort") == 0)) {
-                freeTokenMem(token);
+            if((strcmp(idName->str, "length") == 0) || (strcmp(idName->str, "substr") == 0) ||
+                    (strcmp(idName->str, "concat") == 0) || (strcmp(idName->str, "find") == 0) ||
+                    (strcmp(idName->str, "sort") == 0)) {
+                //uvolneni naalokovanych struktur
+                freeIdName(idName);         
                 return SEMANTIC_ERROR_DEFINITION; //pokus o redefinici funkce
             }
         }
@@ -188,20 +331,19 @@ int parseFunction() {
         else {
             //zkontroluji, zda je dany identifikator identifikatorem funkce
             if (funcID_info->type != TAB_SYM_FUNCTION) {
-                freeTokenMem(token);
+                freeIdName(idName);
                 return INTERNAL_ERROR;
             }
             //v tuto chvili uz muzu zkontrolovat, zda sedi navratovy typ funkce
             if(funcID_info->info.func->retType != (tTabSymVarNoAutoDataType)returnType) {
-                freeTokenMem(token);
+                freeIdName(idName);
                 return SEMANTIC_ERROR_PARAM; //nesouhlasi navratovy typ
             }
         }
-        //uvolneni tokenu
-        freeTokenMem(token);
         
         //dalsi token by mel byt '('
         if ((result = getToken(&token, f) != 1)) {
+            freeIdName(idName);
             return LEXICAL_ERR;
         }
         //token byl '('
@@ -215,6 +357,7 @@ int parseFunction() {
             
             //volani funkce pro zpracovani <arguments>
             if((result = parseArguments(paramList, funcID_info, localTabSym)) != 1) {
+                freeIdName(idName);
                 //navratim chybovy kod
                 return result;
             }
@@ -222,6 +365,7 @@ int parseFunction() {
             //<function> -> <Kdata_types> fID(<arguments>)<body>
             //jsme u <body> -> bud ';'(deklarace), nebo '{' (definice)
             if ((result = getToken(&token, f)) != 1) {
+                freeIdName(idName);
                 return LEXICAL_ERR;
             }
             
@@ -230,16 +374,21 @@ int parseFunction() {
                 //uvolnim token
                 freeTokenMem(token);
                 
-                //TODO - vytvoreni informaci o globalni tabulce symbolu
+                //vytvoreni informaci o funkci pro globalni tabulku symbolu
                 if((funcInfo = tabSymCreateFuncInfo(&paramList, (tTabSymVarNoAutoDataType)returnType, 
                         localTabSym, NULL, NULL, false)) == NULL) {
+                    freeIdName(idName);
                     return INTERNAL_ERROR;
                 }
                 
-                //TODO - vlozeni id funkce do globalni tabulky symbolu
-                if((result = tabSymInsertFunc(globalTable, &idName, funcInfo)) == 0) {
+                if((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
+                    freeIdName(idName);
                     return INTERNAL_ERROR;
                 }
+                
+                //nyni uz muzu uvolnit string, ktery nese informace o id funkce
+                //tento identifikator funkce uz je ulozen v globalni tabulce symbolu
+                freeIdName(idName);
                 
                 //muzeme zpracovavat  dalsi funkci 
                 return parseFunction();
@@ -247,46 +396,64 @@ int parseFunction() {
             
             //jedna se o definici funkce
             if(token->typ == BRACES_OPENING) {
+                 freeTokenMem(token);
                 //zkontroluji, zda se uz dana funkce nebyla definovana
                 if (funcID_info->info.func->defined == true) {
-                    freeTokenMem(token);
+                    freeIdName(idName);
                     return SEMANTIC_ERROR_DEFINITION;
                 }
                 
-                freeTokenMem(token);
-                
-                //funkce nyni uz je definovana
+                //nyni uz je funkce definovana
                 defined = true;
                 
                 //vytvorim prazdny seznam tabulek bloku
                 //TODO - nesmim zapomenout na uvolneni pameti
                 tTabSymList *blockList;
                 if ((blockList = tabSymListCreate()) == NULL) {
+                    freeIdName(idName);
                     return INTERNAL_ERROR;
                 } 
                 
                 //vytvoreni instrukcni pasky
                 tInsTape *instructionTape;
                 if ((instructionTape = insTapeCreate()) == NULL) {
+                    freeIdName(idName);
                     return INTERNAL_ERROR;
                 }
-                //<function> -> <Kdata_types> fID (<arguments>)<body>
+                
+                //pripravu jsem dokoncil, muzu provadet telo funkce
                 if ((result = parseStatementList(localTabSym, blockList, NULL, instructionTape)) != 1) {
+                    freeIdName(idName);
                     return result;
                 }
                 
+                //telo funkce probehlo v poradku, doplnim informace do globalni tabulky symbolu
+                if ((funcInfo = tabSymCreateFuncInfo(&paramList, (tTabSymVarNoAutoDataType)returnType,
+                        localTabSym, blockList, instructionTape, defined)) == NULL) {
+                    freeIdName(idName);
+                    return INTERNAL_ERROR;
+                }
+                
+                if ((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
+                    freeIdName(idName);
+                    return INTERNAL_ERROR;
+                }
+                
                 //muzu zpracovavat dalsi funkci
+                freeIdName(idName);
                 return parseFunction();
                 
             }
             
             //token neni ; ani {
             freeTokenMem(token);
+            freeIdName(idName);
             return SYNTAX_ERR;
 
         }
         //token neni oteviraci zavorka
         else {
+            freeIdName(idName);
             freeTokenMem(token);
             return SYNTAX_ERR;
         }
@@ -394,8 +561,6 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
 int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarDataType paramType, tTabSym *localTable) {
     tToken token;
     int result;
-    //uchovavam nazev identifikatoru
-    string idName;
     
     //pozadam o novy token
     if((result = getToken(&token, f)) != 1) {
@@ -408,45 +573,51 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
     }
     
     //token je identifikator
-    //ulozim si nazev identifikatoru
-    idName = token->value.stringVal;
+    string *idName;
+    
+    if((idName = copyIdName(&(token->value.stringVal))) == NULL) {
+        freeTokenMem(token);
+        return INTERNAL_ERROR;
+    }
     freeTokenMem(token);
     
     //vkladam prvek do seznamu parametru a lokalni tabulky symbolu
     if(data == NULL) {
-        
         //kontroluji, zda uz neni promenna definovana a vkladam do lokalni tabulky symbolu
-        tTabSymElemData *localTableInfo = tabSymSearch(localTable, &idName);
-        tTabSymElemData *globalTableInfo = tabSymSearch(globalTable, &idName);
+        tTabSymElemData *localTableInfo = tabSymSearch(localTable, idName);
+        tTabSymElemData *globalTableInfo = tabSymSearch(globalTable, idName);
         //promenna uz byla definovana
         if(localTableInfo != NULL || globalTableInfo != NULL) {
+            freeIdName(idName);
             return SEMANTIC_ERROR_DEFINITION;
         }
          //vkladam do seznamu parametru
-        if (insertEl(paramList, &idName, paramType) == 0) {
+        if (insertEl(paramList, idName, paramType) == 0) {
+            freeIdName(idName);
             return MEM_ALLOC_ERROR;
         }
         //podarilo se mi vlozit parametr do seznamu parametru
-        else {
-            //TODO - vlozeni promenne do lokalni tabulky symbolu
-            tVariableInfo* varInfo = tabSymCreateVariableInfo((tTabSymVarDataType)paramType);
-            if (varInfo == NULL) {
-                return INTERNAL_ERROR;
-            }
-            //vlozim promennou do lokalni tabulky symbolu
-            if (tabSymInsertVar(localTable, &idName, varInfo) == 0) {
-                return INTERNAL_ERROR;
-            }
+        tVariableInfo* varInfo = tabSymCreateVariableInfo((tTabSymVarDataType)paramType);
+        if (varInfo == NULL) {
+            freeIdName(idName);
+            return INTERNAL_ERROR;
+        }
+        //vlozim promennou do lokalni tabulky symbolu
+        if (tabSymInsertVar(localTable, idName, varInfo) == 0) {
+            freeIdName(idName);
+            return INTERNAL_ERROR;
         }
     }
     //porovnavam parametry
     else {
         if (((tTabSymVarNoAutoDataType)paramType != (*data->info.func->params)->act->dataType) ||
-                (strcmp(idName.str, (*data->info.func->params)->act->idName->str) != 0)) {
+                (strcmp(idName->str, (*data->info.func->params)->act->idName->str) != 0)) {
+            freeIdName(idName);
             return SEMANTIC_ERROR_PARAM;
         }
     }
     
+    freeIdName(idName);
     //volam dalsi cast pro zpracovani parametru
     return argumentNext(paramList, data, localTable);
 }
@@ -557,7 +728,6 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             break;
             
         //pravidlo 15 - <st_list> -> epsilon (konec funkce)
-        //TODO jak a kde kontrolovat, zda dana funkce obsahovala return
         //ukonceni bloku funkce, nebo normalniho bloku
         case BRACES_CLOSING:
             freeTokenMem(token);
@@ -565,13 +735,11 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             break;
         
         //pravidlo 18 - <st_list> -> {<st_list>}<st_list>
-        //TODO - zanoreny blok, musim vytvorit novou lokalni tabulku symbolu...
-        //TODO - mel bych vytvorit instrukci, pomoci niz dam interpretu vedet
-                //ze si ma vytvorit novy ramec
+        //TODO - GENEROVANI INSTRUKCE
         case BRACES_OPENING:
             freeTokenMem(token);
             
-            // list tabulek symbolu pro bloky
+            // nova lokalni tabulka
             tTabSym *blockLocalTable;
             // polozka v seznamu tabulek pro bloky
             tTabSymListElemPtr newElement;
@@ -586,14 +754,19 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
                 return INTERNAL_ERROR;
             }
             
+            //TODO - GENEROVANI INSTRUKCE
+            if(insTapeInsertLast(instructionTape, I_CBF, NULL, NULL, NULL) == 0) {
+                return INTERNAL_ERROR;
+            }
             
             //rodicem se stane novy element, budeme pracovat s novou lokalni tabulkou
-            //a novym listem, insrtrukcni paska je stejna
+            //a novym listem, instrukcni paska je stejna
             if ((result = parseStatementList(blockLocalTable, newElement->childList, newElement, instructionTape)) != 1) {
                 return result;
             }
             
-            //TODO - toto asi nechci
+            //TODO - nasledujici blok je nejspis spatne
+            // BRACES_CLOSING uz jsem totiz musel precist, abych mohl pokracovat az sem
             /*
             if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -607,6 +780,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             freeTokenMem(token);
              */
             
+            //volam rekurzivne parseStatementList po vynoreni
             return parseStatementList(localTable, blockList, parent, instructionTape);
             break;
             
@@ -682,7 +856,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeTokenMem(token);
             //TODO - volat parser pro zpracovani vyrazu
-            if((result = parseExpression(globalTable, blockListElem ,localTable, instructionTape , &expressionType, f)) != 1) {
+            if((result = parseExpression( blockListElem ,localTable, instructionTape , &expressionType, f)) != 1) {
                 return result;
             }
             
@@ -727,7 +901,6 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 case BRACES_OPENING:
                     //navratim token, dalsi funkce pocitaji s tim, ze ho prectou
                     ungetToken(&token);
-                    freeTokenMem(token);
                     return 1;
                     break;
                     
@@ -799,7 +972,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             
             //TODO - volat parser  pro zpracovani vyrazu
             //TODO - zpracovat vystup parseru
-            if ((result = parseExpression(globalTable, blockListElem , localTable, instructionTape, &expressionType, f)) != 1) {
+            if ((result = parseExpression( blockListElem , localTable, instructionTape, &expressionType, f)) != 1) {
                 return result;
             }
             
@@ -815,7 +988,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             
             //TODO - zpracovat dalsi cast vyrazu
             //TODO - zpracovat vystup parseru
-            if ((result = parseExpression(globalTable, blockListElem , localTable, instructionTape, &expressionType, f)) != 1) {
+            if ((result = parseExpression( blockListElem , localTable, instructionTape, &expressionType, f)) != 1) {
                 return result;
             }
             
@@ -903,18 +1076,43 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return SYNTAX_ERR;
             }
             
-            string idName = token->value.stringVal;
+            string *idName = malloc(sizeof(string));
+            if (idName == NULL) return INTERNAL_ERROR;
+
+            //ulozim si nazev identifikatoru
+            if ((result = strInit(idName)) == 1) {
+                free(idName);
+                return INTERNAL_ERROR;
+            }
+            if ((result = strCopyString(idName, &(token->value.stringVal))) == 1) {
+                strFree(idName);
+                free(idName);
+                return INTERNAL_ERROR;
+            }
             
             freeTokenMem(token);
             
             //semanticka kontrola, zda je ID pouzitelne 
             tTabSymElemData *idUsable;
-            if ((idUsable = tabSymListSearch(blockListElem, localTable, &idName)) == NULL) {
+            if ((idUsable = tabSymListSearch(blockListElem, localTable, idName)) == NULL) {
+                strFree(idName);
+                free(idName);
                 return SEMANTIC_ERROR_DEFINITION; //promenna nedefinovana
             }
             
+            string *key;
+            //vyhledame klic v existujici tabulce symbolu
+            if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
+                strFree(idName);
+                free(idName);
+                return INTERNAL_ERROR;
+            }
+            
+            strFree(idName);
+            free(idName);
+            
             //TODO - VLOZENI INSTRUKCE
-            if ((result = insTapeInsertLast(instructionTape, I_CIN, NULL, NULL, (void*) &idName)) == 0) {
+            if ((result = insTapeInsertLast(instructionTape, I_CIN, NULL, NULL, (void*) key)) == 0) {
                 return INTERNAL_ERROR;
             }
             
@@ -975,10 +1173,12 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 freeTokenMem(token);
                 return SYNTAX_ERR;
             }
+            
+            //TODO - GENEROVANI INSTRUKCE
             freeTokenMem(token);
             
             //TODO - zpracovani dalsich vstupu
-            if((result = parseCout()) != 1) {
+            if((result = parseCout(instructionTape)) != 1) {
                 return result;
             }
             
@@ -1003,7 +1203,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
         case KEYW_RETURN:
             freeTokenMem(tokenOrig);
             //TODO - zpracovani vyrazu
-            if ((result = parseExpression(globalTable, blockListElem, localTable, instructionTape, &expressionType, f)) != 1) {
+            if ((result = parseExpression( blockListElem, localTable, instructionTape, &expressionType, f)) != 1) {
                 return result;
             }
             
@@ -1035,7 +1235,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(token);
             
             //TODO - zpracovani vyrazu
-            if ((result = parseExpression(globalTable, blockListElem ,localTable, instructionTape , &expressionType, f)) != 1) {
+            if ((result = parseExpression( blockListElem ,localTable, instructionTape , &expressionType, f)) != 1) {
                 return result;
             }
             
@@ -1076,7 +1276,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(token);
             
             //TODO - zpracovani vyrazu
-            if ((result = parseExpression(globalTable, blockListElem, localTable, instructionTape , &expressionType, f)) != 1) {
+            if ((result = parseExpression( blockListElem, localTable, instructionTape , &expressionType, f)) != 1) {
                 return result;
             }
             
@@ -1140,7 +1340,6 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
     tTabSymElemData *varIdentifikator, *funcIdentifikator;
     tTabSymVarNoAutoDataType expressionType;
     tVariableInfo *variableInfo;
-    string idName;
     
     switch(dataType) {
         //pravidlo 36 - <declaration> -> <Kdata_types> ID<dec_init>
@@ -1158,34 +1357,56 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 return SYNTAX_ERR;
             }
             
-            idName = token->value.stringVal;
+            string *idName = malloc(sizeof(string));
+            if (idName == NULL) return INTERNAL_ERROR;
+
+            //ulozim si nazev identifikatoru
+            if ((result = strInit(idName)) == 1) {
+                free(idName);
+                return INTERNAL_ERROR;
+            }
+            if ((result = strCopyString(idName, &(token->value.stringVal))) == 1) {
+                strFree(idName);
+                free(idName);
+                return INTERNAL_ERROR;
+            }
             freeTokenMem(token);
             
             //kontroluji, zda uz promenna byla definovana
-            varIdentifikator = tabSymSearch(localTable, &idName);
-            funcIdentifikator = tabSymSearch(globalTable, &idName);
+            varIdentifikator = tabSymSearch(localTable, idName);
+            funcIdentifikator = tabSymSearch(globalTable, idName);
             if (varIdentifikator != NULL || funcIdentifikator != NULL) {
+                strFree(idName);
+                free(idName);
                 return SEMANTIC_ERROR_DEFINITION;
             }
             
             //vytvoreni informaci o promenne
             if ((variableInfo = tabSymCreateVariableInfo(dataType)) == NULL) {
+                strFree(idName);
+                free(idName);
                 return MEM_ALLOC_ERROR;
             }
             
             //vlozeni promenne do lokalni tabulky symbolu
-            if ((tabSymInsertVar(localTable, &idName, variableInfo)) == 0) {
+            if ((tabSymInsertVar(localTable, idName, variableInfo)) == 0) {
+                strFree(idName);
+                free(idName);
                 return INTERNAL_ERROR;
             }
             
             //cast <decInit>
             
             if((result = getToken(&token, f)) != 1) {
+                strFree(idName);
+                free(idName);
                 return LEXICAL_ERR;
             }
             
             //pouze definice promenne
             if(token->typ == SEMICOLON) {
+                strFree(idName);
+                free(idName);
                 freeTokenMem(token);
                 return 1;
             }
@@ -1194,18 +1415,31 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             if(token->typ == EQUAL) {
                 freeTokenMem(token);
 
-                 if ((result = parseExpression(globalTable, blockListElem, localTable, instructionTape, &expressionType, f)) != 1) {
+                 if ((result = parseExpression( blockListElem, localTable, instructionTape, &expressionType, f)) != 1) {
+                    strFree(idName);
+                    free(idName);
                      return result;
                  }
                  
                 string *lastGeneratedTMP;
+                string *key;
+                //vyhledame klic v existujici tabulce symbolu
+                if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
+                    strFree(idName);
+                    free(idName);
+                    return INTERNAL_ERROR;
+                }
                 
+                strFree(idName);
+                free(idName);
+                
+                //chci ziskat nazev posledn idocasne vygenerovane promenne
                 if((lastGeneratedTMP = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
                     return INTERNAL_ERROR;
                 }
                 
                 //TODO GENEROVANI INSTRUKCE
-                if ((result = insTapeInsertLast(instructionTape, I_ASSIGN, (void*) lastGeneratedTMP, NULL, (void*) &idName)) == 0) {
+                if ((result = insTapeInsertLast(instructionTape, I_ASSIGN, (void*) lastGeneratedTMP, NULL, (void*) key)) == 0) {
                     return INTERNAL_ERROR;
                 }
                 
@@ -1241,18 +1475,47 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 return SYNTAX_ERR;
             }
             
-            idName = token->value.stringVal;
+            string *idName = malloc(sizeof(string));
+            if (idName == NULL) return INTERNAL_ERROR;
+
+            //ulozim si nazev identifikatoru
+            if ((result = strInit(idName)) == 1) {
+                free(idName);
+                return INTERNAL_ERROR;
+            }
+            if ((result = strCopyString(idName, &(token->value.stringVal))) == 1) {
+                strFree(idName);
+                free(idName);
+                return INTERNAL_ERROR;
+            }
             freeTokenMem(token);
             
             //kontroluji, zda uz promenna byla definovana
-            varIdentifikator = tabSymSearch(localTable, &idName);
-            funcIdentifikator = tabSymSearch(globalTable, &idName);
+            varIdentifikator = tabSymSearch(localTable, idName);
+            funcIdentifikator = tabSymSearch(globalTable, idName);
             if (varIdentifikator != NULL || funcIdentifikator != NULL) {
+                strFree(idName);
+                free(idName);
                 return SEMANTIC_ERROR_DEFINITION;
             }
             
+            //nactu dalsi token, ktery by mel by =
+            if((result = getToken(&token, f)) != 1) {
+                strFree(idName);
+                free(idName);
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != EQUAL) {
+                strFree(idName);
+                free(idName);
+                return SEMANTIC_ERROR_AUTO;
+            }
+            
             //TODO - zpracovani vyrazu
-            if((result = parseExpression(globalTable, blockListElem ,localTable, instructionTape, &expressionType, f)) != 1) {
+            if((result = parseExpression( blockListElem ,localTable, instructionTape, &expressionType, f)) != 1) {
+                strFree(idName);
+                free(idName);
                 return result;
             }
             
@@ -1260,15 +1523,41 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             //TODO - vkladam jeji datovy typ az na zaklade datoveho typu
                     // po vyhodnoceni vyrazu
             if ((variableInfo = tabSymCreateVariableInfo((tTabSymVarDataType)expressionType)) == NULL) {
+                strFree(idName);
+                free(idName);
                 return MEM_ALLOC_ERROR;
             }
             
             //vlozeni promenne do lokalni tabulky symbolu
             if ((tabSymInsertVar(localTable, &idName, variableInfo)) == 0) {
+                strFree(idName);
+                free(idName);
                 return INTERNAL_ERROR;
             }
             
             //TODO - GENEROVANI INSTRUKCE
+            string *lastGeneratedTMP;
+            string *key;
+            //vyhledame klic v existujici tabulce symbolu
+            if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
+                strFree(idName);
+                free(idName);
+                return INTERNAL_ERROR;
+            }
+
+            strFree(idName);
+            free(idName);
+
+            //chci ziskat nazev posledn idocasne vygenerovane promenne
+            if((lastGeneratedTMP = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+                return INTERNAL_ERROR;
+            }
+
+            //TODO GENEROVANI INSTRUKCE
+            if ((result = insTapeInsertLast(instructionTape, I_ASSIGN, (void*) lastGeneratedTMP, NULL, (void*) key)) == 0) {
+                return INTERNAL_ERROR;
+            }
+            
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
@@ -1315,9 +1604,8 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
     switch(token->typ) {
         // pravidlo 27 - <block> -> {<st_list>}
         //TODO - navratit precteny token, aby funkce parseStatementList
-        //vytvorila novy rozsah platnosti pro blok if?
+        //vytvorila novy rozsah platnosti pro blok?
         case BRACES_OPENING:
-            freeTokenMem(token);
             ungetToken(&token);
             
             if((result = parseStatementList(localTable, blockList, blockListElem, instructionTape)) != 1) {
@@ -1547,7 +1835,7 @@ int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr 
  *35. <cout> -> << <term> <cout>
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseCout() {
+int parseCout(tInsTape *instructionTape) {
     tToken token;
     int result;
     TokenTypes ttype;
@@ -1558,7 +1846,8 @@ int parseCout() {
     
     //pravidlo 34
     if(token->typ == SEMICOLON) {
-        freeTokenMem(token);
+        //volajici funkce s timto tokenem pocita
+        ungetToken(&token);
         return 1;
     }
     
@@ -1581,7 +1870,7 @@ int parseCout() {
             freeTokenMem(token);
             
             if((result = isTerm(ttype)) == 1) {
-                return parseCout();
+                return parseCout(instructionTape);
             }
             
             return SYNTAX_ERR;

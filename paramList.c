@@ -12,18 +12,25 @@ void initList(tParamListPtr list)
 
 int createParamListElem(string *idName, tParamListElemPtr elem,
                         tTabSymVarNoAutoDataType dataType) {
-    string *newString = malloc(sizeof(string));
     
-    if (newString == NULL) {
-        return 0;
+    if (idName != NULL) {
+        string *newString = malloc(sizeof(string));
+
+        if (newString == NULL) {
+            return 0;
+        }
+
+        if (strInit(newString) || strCopyString(newString, idName)) {
+            //pokus o alokaci se nazdaril
+            return 0;
+        }
+        
+        elem->idName = newString; 
+    }
+    else {
+        elem->idName = NULL;
     }
     
-    if (strInit(newString) || strCopyString(newString, idName)) {
-        //pokus o alokaci se nazdaril
-        return 0;
-    }
-    
-    elem->idName = newString; 
     elem->dataType = dataType;
     elem->next = NULL;
     
