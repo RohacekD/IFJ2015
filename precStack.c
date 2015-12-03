@@ -157,6 +157,7 @@ tPrecStack * precStackCreateRevertedTopReduc(tPrecStack * stack){
 			precStackPush(newStack,actData);
 			precStackPop(stack);
 			if(actData.type!=PREC_STACK_SIGN){
+				precStackPop(newStack);	//sign nechceme
 				//koncime
 				break;
 			}
@@ -176,5 +177,16 @@ void precStackDispose(tPrecStack * stack){
 		precStackPop(stack);
 	}
 	precStackInit(stack);
+}
+void precStackFree(tPrecStack ** stack){
+	if(stack==NULL){
+		return;
+	}
+	if(* stack==NULL){
+		return;
+	}
+	precStackDispose(*stack);
+	free(*stack);
+	*stack=NULL;
 }
 /*** End of file: precStack.c ***/

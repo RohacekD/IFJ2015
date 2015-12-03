@@ -22,7 +22,6 @@
 #include "tabSym.h"
 #include "insTape.h"
 #include "error.h"
-#include "genInstructs.h"
 
 /**
  * Provede precedencni syntaktickou, semantickou analyzu a generovani tri adresneho kodu.

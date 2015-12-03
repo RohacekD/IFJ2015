@@ -30,7 +30,7 @@ typedef enum {
 } tTabSymDataType;
 
 /**
- * Typy promennych
+ * Typy promennych, nesmi se menit poradim
  */
 typedef enum {
 	TAB_SYM_VAR_INTEGER,	//!< TAB_SYM_VAR_INTEGER
@@ -41,7 +41,7 @@ typedef enum {
 } tTabSymVarDataType;
 
 /**
- * Navratove typy funkci.
+ * Navratove typy funkci, nesmi se menit poradim.
  */
 typedef enum {
 	TAB_SYM_VAR_NO_AUTO_INTEGER,    //!< TAB_SYM_VAR_NO_AUTO_INTEGER

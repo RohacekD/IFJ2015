@@ -102,8 +102,8 @@ tPrecStackElemPtr precStackTopElement(tPrecStack * stack);
 int precStackTopTerminal(tPrecStack* stack, tParExpTerminals* terminal);
 
 /**
- * Vytvori precStack ze vsech polozek z vrcholu zasobniku do < vcetne.
- * Revertuje jejich poradi. Z puvodni zasobniku zmizi.
+ * Vytvori precStack ze vsech polozek z vrcholu zasobniku do < (bez).
+ * Revertuje jejich poradi. Z puvodni zasobniku zmizi a to i vcetne <.
  * @param stack[in]	-	precStack, ze ktereho bere data
  * @return Vraci novy precStack, pri chybe NULL.
  */
@@ -121,6 +121,12 @@ int precStackEmpty(tPrecStack * stack);
  * @param stack[in]	-	Zasobnik, ktery vyprazdnuje.
  */
 void precStackDispose(tPrecStack * stack);
+
+/**
+ * Uvolni z pameti cely stack. Nejneom obsah.
+ * @param stack[in]	-	Stack pro uvolneni z pameti.
+ */
+void precStackFree(tPrecStack ** stack);
 
 #endif /* PRECSTACK_H_ */
 /*** End of file: precStack.h ***/
