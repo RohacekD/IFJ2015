@@ -18,8 +18,9 @@
 #include "token.h"
 #include "precTab.h"
 #include "tabSym.h"
+#include "insTape.h"
 #include "error.h"
-
+#include "genInstructs.h"
 
 /**
  * Pripravi dalsi token v rade.
@@ -217,15 +218,15 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
  * 	Ulozi konstantu do tabulky symbolu.
  * 	Kontroluje jestli se promenna jiz nachazi v tabulce symbolu.
  * 	Kontroluje jestli je funkce jiz definovana.
- * @param globTable[in]	-	ukazatel na globalni tabulku symbolu
  * @param table[in]		-	ukazatel na lokalni tabulku symbolu
+ * @param insertToTable[in]	-	Do teto tabulky se vkladaji nove symboly
  * @param tableListElem[in]	-	element listu tabulek v aktualnim zanoreni
  * @param termKind[in]	-	druh terminalu
  * @param token[in]		-	ukazatel na token
  * @param id[out]		-	ukazatel na string, kde da ukazatel na alkovany string s id
  * @return Pokud vse v poradku vraci ERR_OK. Pri chybe vraci error kody (ERR_INTERNAL, ERR_SEM_DEF).
  */
-int semHandleNewToken(tTabSym* globTable, tTabSym* table, tTabSymListElemPtr tableListElem, tParExpTerminals termKind, tToken* token,
+int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr tableListElem, tParExpTerminals termKind, tToken* token,
 		string* id) {
 	string* newString;
 	if (termKind == TERMINAL_IDENTIFICATOR) {
@@ -262,7 +263,7 @@ int semHandleNewToken(tTabSym* globTable, tTabSym* table, tTabSymListElemPtr tab
 			}
 
 			//vlozime do tabulky
-			if(tabSymInsertConst(table, id, constInfo)==0){
+			if(tabSymInsertConst(insertToTable, id, constInfo)==0){
 				return ERR_INTERNAL;
 			}
 
@@ -301,7 +302,7 @@ int semHandleNewToken(tTabSym* globTable, tTabSym* table, tTabSymListElemPtr tab
 		 * symbolu a jestli je definovana.
 		 */
 		tTabSymElemData functionData;
-		if(((functionData=tabSymSearch(globTable, token->value->stringVal))==NULL) ||
+		if(((functionData=tabSymSearch(globalTable, token->value->stringVal))==NULL) ||
 				functionData->info.func->defined==true){
 			//nenalezeno/nedefinovano semanticka chyba
 			return ERR_SEM_DEF;
@@ -330,52 +331,67 @@ int semHandleNewToken(tTabSym* globTable, tTabSym* table, tTabSymListElemPtr tab
  */
 typedef enum{
 	S_START,                         //!< S_START
-	S_F_I,                           //!< S_F_I
 	S_MINUS,                         //!< S_MINUS
-	S_F_MINUS_E,                     //!< S_F_MINUS_E
 	S_NOT,                   		 //!< S_NOT
-	S_F_NOT_E,               		 //!< S_F_NOT_E
 	S_INC,                           //!< S_INC
-	S_F_INC_E,                       //!< S_F_INC_E
 	S_DEC,                           //!< S_DEC
-	S_F_DEC_E,                       //!< S_F_DEC_E
 	S_FUN,                           //!< S_FUN
 	S_FUN_OPEN_BRACKET,              //!< S_FUN_OPEN_BRACKET
 	S_FUN_OPEN_BRACKET_E,            //!< S_FUN_OPEN_BRACKET_E
-	S_F_FUN,                         //!< S_F_FUN
 	S_OPEN_BRACKET,                  //!< S_OPEN_BRACKET
 	S_OPEN_BRACKET_E,                //!< S_OPEN_BRACKET_E
-	S_F_OPEN_BRACKET_E_CLOSE_BRACKET,//!< S_F_OPEN_BRACKET_E_CLOSE_BRACKET
 	S_E,                             //!< S_E
 	S_E_PLUS,                        //!< S_E_PLUS
-	S_F_E_PLUS_E,                    //!< S_F_E_PLUS_E
 	S_E_MINUS,                       //!< S_E_MINUS
-	S_F_E_MINUS_E,                   //!< S_F_E_MINUS_E
 	S_E_MUL,                         //!< S_E_MUL
-	S_F_E_MUL_E,                     //!< S_F_E_MUL_E
 	S_E_DIV,                         //!< S_E_DIV
-	S_F_E_DIV_E,                     //!< S_F_E_DIV_E
 	S_E_EQU,                         //!< S_E_EQU
-	S_F_E_EQU_E,                     //!< S_F_E_EQU_E
 	S_E_NEQU,                        //!< S_E_NEQU
-	S_F_E_NEQU_E,                    //!< S_F_E_NEQU_E
 	S_E_LESS,                        //!< S_E_LESS
-	S_F_E_LESS_E,                    //!< S_F_E_LESS_E
 	S_E_GRATER,                      //!< S_E_GRATER
-	S_F_E_GREATER_E,                 //!< S_F_E_GREATER_E
 	S_E_LESSEQU,                     //!< S_E_LESSEQU
-	S_F_E_LESSEQU_E,                 //!< S_F_E_LESSEQU_E
 	S_E_GRATEREQU,                   //!< S_E_GRATEREQU
-	S_F_E_GREATEREQU_E,              //!< S_F_E_GREATEREQU_E
-	S_F_E_INC,                       //!< S_F_E_INC
-	S_F_E_DEC,                       //!< S_F_E_DEC
 	S_E_AND,                         //!< S_E_AND
-	S_F_E_AND_E,                     //!< S_F_E_AND_E
 	S_E_OR,                          //!< S_E_OR
-	S_F_E_OR_E                       //!< S_F_E_OR_E
+	/**
+	 * Nasleduji koncove stavy, je nutne, aby byly takto za sebou se zacinajicim
+	 * S_F_MINUS_E. Protoze se porovnava na prislusnost do koncovych stavu dle:
+	 * x>=S_F_MINUS_E
+	 */
+	S_F_MINUS_E,                     //!< S_F_MINUS_E						E->-E
+	S_F_I,                           //!< S_F_I								E->i
+	S_F_NOT_E,               		 //!< S_F_NOT_E							E->!E
+	S_F_INC_E,                       //!< S_F_INC_E							E->++E
+	S_F_DEC_E,                       //!< S_F_DEC_E							E->--E
+	S_F_FUN,                         //!< S_F_FUN							E->funkce
+	S_F_OPEN_BRACKET_E_CLOSE_BRACKET,//!< S_F_OPEN_BRACKET_E_CLOSE_BRACKET	E->(E)
+	S_F_E_PLUS_E,                    //!< S_F_E_PLUS_E						E->E+E
+	S_F_E_MINUS_E,                   //!< S_F_E_MINUS_E						E->E-E
+	S_F_E_MUL_E,                     //!< S_F_E_MUL_E						E->E*E
+	S_F_E_DIV_E,                     //!< S_F_E_DIV_E						E->E/E
+	S_F_E_EQU_E,                     //!< S_F_E_EQU_E						E->E==E
+	S_F_E_NEQU_E,                    //!< S_F_E_NEQU_E						E->E!=E
+	S_F_E_LESS_E,                    //!< S_F_E_LESS_E						E->E<E
+	S_F_E_GREATER_E,                 //!< S_F_E_GREATER_E					E->E>E
+	S_F_E_LESSEQU_E,                 //!< S_F_E_LESSEQU_E					E->E<=E
+	S_F_E_GREATEREQU_E,              //!< S_F_E_GREATEREQU_E				E->E>=E
+	S_F_E_INC,                       //!< S_F_E_INC							E->E++
+	S_F_E_DEC,                       //!< S_F_E_DEC							E->E--
+	S_F_E_AND_E,                     //!< S_F_E_AND_E						E->E&&E
+	S_F_E_OR_E                       //!< S_F_E_OR_E						E->E||E
 }ruleAutomateStates;
 
-int chooseRule(tPrecStack* stack){
+/**
+ * Vybere pravidlo na zaklade obsahu stacku
+ * @param stack[in]	-	Stack Obsahujici terminaly a neterminaly ke zjisteni pravdila
+ * @param rule[out]	-	Pokud nedojde k chybe ulozi zde kod pravidla.
+ * 						Kod pravidla se vypocitava na zaklade ruleAutomateStates a to vyhradne z konecnych stavu,
+ * 						kde vzorec pro vypocet pravidla vypada takto pravidlo=state-S_F_MINUS_E kde state je z mnoziny
+ * 						koncovych stavu ruleAutomateStates.
+ * @return	Vraci 0- pri syntakticke chybe, -1- pri chybe a 1 pokud je vse v poradku.
+ */
+
+int chooseRule(tPrecStack* stack, int* rule){
 
 	tPrecStackElemPtr act = stack->top;
 	ruleAutomateStates actState=S_START;
@@ -625,7 +641,7 @@ int chooseRule(tPrecStack* stack){
 
 			default:
 				//chyba ovsem ne syntakticka
-				return 0;
+				return -1;
 				break;
 		}
 		act=act->next;
@@ -633,18 +649,324 @@ int chooseRule(tPrecStack* stack){
 
 	//mame stav potrebujeme pravidlo
 
+	//stav musi byt konecny
+	if(actState<S_F_MINUS_E){
+		//chyba stav neni koncovy
+		return 0;
+	}
+
+	*rule=actState-S_F_E_MINUS_E;
+	return 1;
+
 }
 
-int parseExpression(tTabSym* globTable, tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* tape,
+/***
+ * Vytvori novy neterminal a vlozi ho do tabulky pod symbolem pomocne promenne.
+ * @param startTabSymListElem[in]	-	Slouzi pro vyhledavani symbolu.
+ * @param tabSym[in]				-	Slouzi pro vyhledavani symbolu.
+ * @param insertToTable[in]			-	Do teto tabulky jej vlozi.
+ * @param dataType[in]				-	Datovy typ noveho neterminalu.
+ * @return	Ukzatel na symbol primo v tabulce symbolu. NULL pri chybe.
+ */
+string* createNewNoterminal(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tTabSymVarDataType dataType,
+		tPrecStack stack){
+	//vytvorime novy tmp
+	string* newTmp=tabSymListCreateTmpSymbol(startTabSymListElem, tabSym);
+	if(newTmp==NULL){
+		//chyba
+		return NULL;
+	}
+	//vytvorime variableinfo pro novy tmp
+	tVariableInfo* varInfo = tabSymCreateVariableInfo();
+	if(varInfo==NULL){
+		goto INTERNAL_ERROR;
+	}
+
+	//nastavime datovy typ
+	varInfo->dataType=dataType;
+
+	//vlozime vytvorene tmp do tabulky
+	if(tabSymInsertVar(insertToTable,newTmp,varInfo)==0){
+		//chyba
+		goto INTERNAL_ERROR_2;
+	}
+	string* adrOfString=tabSymListGetPointerToKey(startTabSymListElem, tabSym, newTmp);
+
+	//ulozime neterminal na vrchol stacku
+	if(precStackPushElementOfKind(stack, PREC_STACK_NONTERMINAL, 0, newTmp)==0){
+		goto INTERNAL_ERROR_2;
+	}
+
+
+	return adrOfString;
+
+INTERNAL_ERROR_2:
+//mazeme i varInfo
+	free(varInfo);
+INTERNAL_ERROR:
+//vracime interni chybu a uvolnujeme newTmp
+	strFree(newTmp);
+	free(newTmp);
+	return NULL;
+}
+
+/**
+ * Vraci prevedeny datovy typ symbolu(elementu) v tabulce na tTabSymVarDataType.
+ * @param elemData[in]	-	symbol(element) v tabulce
+ * @param dataType[out]	-	Zde bude ulozen datovy typ. Pokud chyba nemanipuluje.
+ * @return	Vraci dle ERR_CODES.
+ */
+ERR_CODES getDataTypeOfSymbol(tTabSymElemData* elemData, tTabSymVarDataType dataType){
+	//vybereme informaci o typu
+	switch (elemData->type) {
+		case TAB_SYM_VARIABLE:
+			if(elemData->info.var->dataType==TAB_SYM_VAR_AUTO){
+				return ERR_SEM_COM;
+			}
+			dataType=elemData->info.var->dataType;
+			break;
+		case TAB_SYM_CONSTANT:
+			switch (elemData->info.constant->dataType) {
+				case TAB_SYM_VAR_NO_AUTO_INTEGER:
+					dataType=TAB_SYM_VAR_INTEGER;
+					break;
+				case TAB_SYM_VAR_NO_AUTO_DOUBLE:
+					dataType=TAB_SYM_VAR_DOUBLE;
+					break;
+				case TAB_SYM_VAR_NO_AUTO_STRING:
+					dataType=TAB_SYM_VAR_STRING;
+					break;
+				case TAB_SYM_VAR_NO_AUTO_BOOLEAN:
+					dataType=TAB_SYM_VAR_BOOLEAN;
+					break;
+				default:
+					//chyba
+					return ERR_INTERNAL;
+					break;
+			}
+			break;
+		default:
+			//chyba
+			return ERR_INTERNAL;
+			break;
+	}
+	return 1;
+}
+
+//E->i
+ERR_CODES genInsTermToNoterm(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+	//ziskame data o terminalu(promenne konstante)
+	tPrecStackData* topElemData=precStackTop(stackForGen);
+
+	//hledame symbol neterminalu v tabulce
+	tTabSymElemData* elemData= tabSymListSearch(startTabSymListElem,tabSym, topElemData->id);
+
+	if(elemData){
+		/*
+		 * chyba nenalezeno, ale jedna se o interni chybu, protoze,
+		 * kontrola na definici, byla jiz provedena
+		 */
+
+		return ERR_INTERNAL;
+	}
+
+
+	//ziskame kod datoveho typu pro vytvoreni noveho neterminalu
+	tTabSymVarDataType codeOfDataType;
+	ERR_CODES errCode=getDataTypeOfSymbol(elemData, codeOfDataType);
+	if(errCode!=ERR_OK){
+		return errCode;
+	}
+
+	//ziskame pointery primo do tabulky
+	string* adr1=tabSymListGetPointerToKey(startTabSymListElem, tabSym, topElemData->id);
+
+	//vytvorime novy neterminal, ktery bude slouzit, jako cilova adresa
+	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, codeOfDataType, stack);
+
+	if(adr1==NULL || adr3){
+		return ERR_INTERNAL;
+	}
+
+	//vlozime instrukci na pasku
+	if(insTapeInsertLast(insTape, I_ASSIGN, adr1, NULL, adr3)==0){
+		return ERR_INTERNAL;
+	}
+	//vlozim novy neterminal na precedencni stack
+	/**
+		 * Vlozi element typu type s klicem key na vrchol zasobniku stack,
+		 * @param[in] stack		-	Zasobnik, do ktereho vklada.
+		 * @param[in] type		-	Typ elementu(tStackElemType).
+		 * @param[in] key		-	Klic elementu.
+		 * @return 0 pri chybe, jinak 1.
+		 */
+		int precStackPushElementOfKind(stack, , int key, string* id);
+
+	return ERR_OK;
+}
+
+
+ERR_CODES genInsUnaryMinus(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+	//-E
+	//prvni je minus dame jej pryc
+	precStackPop(stackForGen);
+
+	//ziskame data o neterminalu
+	tPrecStackData* topElemData=precStackTop(stackForGen);
+	//hledame symbol neterminalu v tabulce
+	tTabSymElemData* elemData= tabSymListSearch(startTabSymListElem,tabSym, topElemData->id);
+	if(elemData){
+			/*
+			 * chyba nenalezeno, ale jedna se o interni chybu, protoze,
+			 * kontrola na definici, byla jiz provedena
+			 */
+			return ERR_INTERNAL;
+	}
+
+	//ziskame kod datoveho typu pro semantickou kontrolu a vytvoreni noveho neterminalu
+	tTabSymVarDataType codeOfDataType;
+	ERR_CODES errCode=getDataTypeOfSymbol(elemData, codeOfDataType);
+	if(errCode!=ERR_OK){
+		return errCode;
+	}
+
+	/**
+	 * Provedeme semantickou kontrolu,
+	 * prijmame pouze int||double||boolean
+	 */
+	if(codeOfDataType!=TAB_SYM_VAR_INTEGER && codeOfDataType!=TAB_SYM_VAR_DOUBLE
+			&& codeOfDataType!=TAB_SYM_VAR_BOOLEAN){
+		return ERR_SEM_COM;
+	}
+
+	//vysledek s bool budem chtit v int
+	if(codeOfDataType==TAB_SYM_VAR_BOOLEAN){
+		codeOfDataType=TAB_SYM_VAR_INTEGER;
+	}
+
+
+	//ziskame pointery primo do tabulky symbolu
+	string* adr1=tabSymListGetPointerToKey(startTabSymListElem, tabSym, topElemData->id);
+
+	//vytvorime novy neterminal, ktery bude slouzit, jako cilova adresa
+	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, codeOfDataType, stack);
+
+	//vlozime instrukci na pasku
+	if(insTapeInsertLast(insTape, I_UMINUS, adr1, NULL, adr3)==0){
+		return ERR_INTERNAL;
+	}
+	return ERR_OK;
+
+}
+
+ERR_CODES genInsNot(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+	//E->!E
+	//prvni je vykricnik dame jej pryc
+	precStackPop(stackForGen);
+	//ziskame data o neterminalu
+	tPrecStackData* topElemData=precStackTop(stackForGen);
+	//hledame symbol neterminalu v tabulce
+	tTabSymElemData* elemData= tabSymListSearch(startTabSymListElem,tabSym, topElemData->id);
+	if(elemData){
+			/*
+			 * chyba nenalezeno, ale jedna se o interni chybu, protoze,
+			 * kontrola na definici, byla jiz provedena
+			 */
+			return ERR_INTERNAL;
+	}
+	//ziskame kod datoveho typu pro semantickou kontrolu
+	tTabSymVarDataType codeOfDataType;
+	ERR_CODES errCode=getDataTypeOfSymbol(elemData, codeOfDataType);
+	if(errCode!=ERR_OK){
+		return errCode;
+	}
+
+
+	/**
+	 * Provedeme semantickou kontrolu,
+	 * prijmame pouze int||double||boolean
+	 */
+	if(codeOfDataType!=TAB_SYM_VAR_INTEGER && codeOfDataType!=TAB_SYM_VAR_DOUBLE
+			&& codeOfDataType!=TAB_SYM_VAR_BOOLEAN){
+		return ERR_SEM_COM;
+	}
+
+	//ziskame pointery primo do tabulky symbolu
+	string* adr1=tabSymListGetPointerToKey(startTabSymListElem, tabSym, topElemData->id);
+
+	//vytvorime novy neterminal, ktery bude slouzit, jako cilova adresa(vysledkem je bool)
+	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, TAB_SYM_VAR_BOOLEAN, stack);
+
+	//vlozime instrukci na pasku
+	if(insTapeInsertLast(insTape, I_LOG_NOT, adr1, NULL, adr3)==0){
+		return ERR_INTERNAL;
+	}
+	return ERR_OK;
+}
+
+ERR_CODES genInsIncPre(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+	//E->++E
+	//TODO
+}
+
+ERR_CODES genInsDecPre(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+	//E->--E
+	//TODO
+}
+ERR_CODES genInsFunc(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+	//E->--E
+	//TODO
+}
+
+
+void manageRule(){
+	/**
+		 * Nasleduji koncove stavy, je nutne, aby byly takto za sebou se zacinajicim
+		 * S_F_MINUS_E. Protoze se porovnava na prislusnost do koncovych stavu dle:
+		 * x>=S_F_MINUS_E
+		 */
+		S_F_MINUS_E,                     //!< S_F_MINUS_E						E->-E
+		S_F_I,                           //!< S_F_I								E->i
+		S_F_NOT_E,               		 //!< S_F_NOT_E							E->!E
+		S_F_INC_E,                       //!< S_F_INC_E							E->++E
+		S_F_DEC_E,                       //!< S_F_DEC_E							E->--E
+		S_F_FUN,                         //!< S_F_FUN							E->funkce
+		S_F_OPEN_BRACKET_E_CLOSE_BRACKET,//!< S_F_OPEN_BRACKET_E_CLOSE_BRACKET	E->(E)
+		S_F_E_PLUS_E,                    //!< S_F_E_PLUS_E						E->E+E
+		S_F_E_MINUS_E,                   //!< S_F_E_MINUS_E						E->E-E
+		S_F_E_MUL_E,                     //!< S_F_E_MUL_E						E->E*E
+		S_F_E_DIV_E,                     //!< S_F_E_DIV_E						E->E/E
+		S_F_E_EQU_E,                     //!< S_F_E_EQU_E						E->E==E
+		S_F_E_NEQU_E,                    //!< S_F_E_NEQU_E						E->E!=E
+		S_F_E_LESS_E,                    //!< S_F_E_LESS_E						E->E<E
+		S_F_E_GREATER_E,                 //!< S_F_E_GREATER_E					E->E>E
+		S_F_E_LESSEQU_E,                 //!< S_F_E_LESSEQU_E					E->E<=E
+		S_F_E_GREATEREQU_E,              //!< S_F_E_GREATEREQU_E				E->E>=E
+		S_F_E_INC,                       //!< S_F_E_INC							E->E++
+		S_F_E_DEC,                       //!< S_F_E_DEC							E->E--
+		S_F_E_AND_E,                     //!< S_F_E_AND_E						E->E&&E
+		S_F_E_OR_E                       //!< S_F_E_OR_E						E->E||E
+}
+
+int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* tape,
 		tTabSymVarNoAutoDataType expDataType, FILE* scanFile) {
 	string* id; //pro vytvareni identifikatoru v tabulce symbolu
 
-	//vytvorime zasobnik
+	//vybereme si tabulku, do ktere se budou vkladat tmp symboly (pomocne promenne)
+	tTabSym* insertToTable=tableListElem->table;
+	if(insertToTable==NULL){
+		insertToTable=table;
+	}
+
+	//vytvorime zasobniky
 	tPrecStack stack;
 	precStackInit(stack);
+	tPrecStack* revertedTopStack;	//pouziva se pro vyber pravidla
 
 	//pridame ukoncujici znak
 	precStackPushElementOfKind(stack, PREC_STACK_ENDMARK, 0);
+
+	int rule; // vybrane pravidlo
 
 	tParExpTerminals a;	//nejvrchnejis terminal na zasobniku
 	tParExpTerminals b;	//aktualni druh tokenu na vstupu
@@ -658,7 +980,7 @@ int parseExpression(tTabSym* globTable, tTabSymListElemPtr tableListElem, tTabSy
 		switch (precGetRule(a, b)) {
 		case '=':
 			//dej na zasobnik prijaty token a precti dalsi ze vstupu
-			if(semHandleNewToken(globTable, table, b, &token, id)!=ERR_OK){
+			if(semHandleNewToken(insertToTable, table, b, &token, id)!=ERR_OK){
 				//TODO:ERROR
 			}
 			if(precStackPushElementOfKind(stack, PREC_STACK_TERMINAL, b, id)==0){
@@ -678,7 +1000,7 @@ int parseExpression(tTabSym* globTable, tTabSymListElemPtr tableListElem, tTabSy
 			 */
 			precStackPushElemBeforeTopTerm(stack, PREC_STACK_SIGN, '<', NULL);
 
-			if(semHandleNewToken(globTable, table, b, token, id)!=ERR_OK){
+			if(semHandleNewToken(insertToTable, table, b, token, id)!=ERR_OK){
 				//TODO:ERROR
 			}
 
@@ -697,6 +1019,31 @@ int parseExpression(tTabSym* globTable, tTabSymListElemPtr tableListElem, tTabSy
 			 *	then zaměň <y za A & vypiš r na výstup
 			 *	else chyba
 			 */
+
+			//pokusime se ziskat stack obsahujici <y a smazeme jej z vrcholu
+			revertedTopStack=precStackCreateRevertedTopReduc(stack);
+			if(revertedTopStack==NULL){
+				//TODO:ERROR
+			}
+			switch (chooseRule(revertedTopStack, &rule)) {
+				case 1:
+					// v poradku
+					manageRule(revertedTopStack, rule, tableListElem, table, tape);//zmeni <y za neterminal, provede semantickou kontrolu a vygeneruje instrukci.
+					break;
+				case 0:
+					// syntakticka chyba
+					//TODO:ERROR
+					break;
+				case -1:
+					// vnitrni chyba
+					//TODO:ERROR
+					break;
+				default:
+					// vnitrni chyba
+					//TODO:ERROR
+					break;
+			}
+
 			break;
 		default:
 			//chyba

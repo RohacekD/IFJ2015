@@ -15,9 +15,29 @@ int executeTape(tInsTapeInsPtr ins) {
 		}
 		SInit(frameStack);
 	}
-	while (*instruction) {
-		executeIns(instruction, frameStack);
-
+	tVariablePtr oper1;
+	while (*instruction && (*instruction)->type!=I_RETURN) {
+		if ((*instruction)->type == I_IFZERO) {
+			findVariable(frameStack, (string*)ins->adr1, &oper1);
+			if (getVarVal(oper1) == 0) {
+				instruction = (tInsTapeInsPtr)ins->adr2;
+			}
+			else {
+				instruction = (*instruction)->rptr;
+			}
+		}
+		else if ((*instruction)->type == I_IFNZERO) {
+			findVariable(frameStack, (string*)ins->adr1, &oper1);
+			if (getVarVal(oper1) != 0) {
+				instruction = (tInsTapeInsPtr)ins->adr2;
+			}
+			else {
+				instruction = (*instruction)->rptr;
+			}
+		}
+		else {
+			executeIns(instruction, frameStack);
+		}
 	}
 	tFrameContainer frame;
 	/* Top vraci 0 pri prazdnem framestacku */
@@ -38,7 +58,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 
 	tTabSym* tab;
 	tInsTapeInsPtr ins = *instruction;
-
+	tInsTapeInsPtr insToCall;
 	switch (ins->type)
 	{
 	case I_COUT:
@@ -47,7 +67,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			printf("%d", oper1->data.intVal);
 		}
 		else if (oper1->type == VAR_TYPE_DOUBLE) {
-			printf("%f", oper1->data.doubleVal);
+			printf("%g", oper1->data.doubleVal);
 		}
 		else if (oper1->type == VAR_TYPE_BOOL) {
 			//todo
@@ -89,7 +109,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (getVarVal(oper2)==0) {
-			//todo
+			FatalError(9, ERR_MESSAGES[ERR_RUNTIME_ZERO_DIV]);
 		}
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1) / (int)getVarVal(oper2);
@@ -261,9 +281,31 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		break;
 		//volani fce
 	case I_CF:
+		findVariable(stack, (string*)ins->adr3, &dest);
 		pushNewFrame(stack, false);
 		tab = (tTabSym*)ins->adr1;
+		insToCall = (tInsTapeInsPtr)ins->adr2;
 		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
+		executeTape(insToCall);
+		//string pro nalezeni promenne pro vraceni
+		string ret;
+		strInit(&ret);
+		strConConstString(&ret, "$ret");
+		findVariable(stack, &ret, &oper1);
+		strFree(&ret);
+		deleteFunctionsFrames(stack);
+		if (dest->type == VAR_TYPE_INT) {
+			dest->data.intVal = (int)getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_DOUBLE) {
+			dest->data.doubleVal = getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_BOOL) {
+			dest->data.boolVal = getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_STRING) {
+			strCopyString(&oper1->data.stringVal, &dest->data.stringVal);
+		}
 		break;
 	case I_ASSIGN:
 		findVariable(stack, (string*)ins->adr1, &oper1);
@@ -281,14 +323,21 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			strCopyString(&oper1->data.stringVal, &dest->data.stringVal);
 		}
 		break;
+	case I_SP:
+
+		break;
 	case I_DBF:
 		deleteTopFrame(stack);
 		break;
-	case I_RETURN://todo
-		deleteFunctionsFrames(stack);
+	case I_SORT:
 		break;
-	case I_IFZERO:
-		//todo
+	case I_FIND:
+		break;
+	case I_CONCAT:
+		break;
+	case I_SUBSTR:
+		break;
+	case I_LENGTH:
 		break;
 	default:
 		break;
