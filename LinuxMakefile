@@ -1,0 +1,128 @@
+## -*- Makefile -*-
+##
+## User: Dalibor Jelinek
+## Time: 3.12.2015 19:16:47
+## Makefile created by Oracle Solaris Studio.
+##
+## This file is generated automatically.
+##
+
+
+#### Compiler and tool definitions shared by all build targets #####
+CC = gcc -std=c99
+BASICOPTS = -g
+CFLAGS = $(BASICOPTS)
+
+
+# Define the target directories.
+TARGETDIR_IFJ2015=target
+
+
+all: $(TARGETDIR_IFJ2015)/IFJ2015
+
+## Target: IFJ2015
+OBJS_IFJ2015 =  \
+	$(TARGETDIR_IFJ2015)/error.o \
+	$(TARGETDIR_IFJ2015)/frameStack.o \
+	$(TARGETDIR_IFJ2015)/ial.o \
+	$(TARGETDIR_IFJ2015)/IFJ2015.o \
+	$(TARGETDIR_IFJ2015)/insTape.o \
+	$(TARGETDIR_IFJ2015)/interpret.o \
+	$(TARGETDIR_IFJ2015)/paramList.o \
+	$(TARGETDIR_IFJ2015)/parser.o \
+	$(TARGETDIR_IFJ2015)/parserExpr.o \
+	$(TARGETDIR_IFJ2015)/precStack.o \
+	$(TARGETDIR_IFJ2015)/precTab.o \
+	$(TARGETDIR_IFJ2015)/scanner.o \
+	$(TARGETDIR_IFJ2015)/str.o \
+	$(TARGETDIR_IFJ2015)/tabSym.o \
+	$(TARGETDIR_IFJ2015)/variable.o
+USERLIBS_IFJ2015 = $(SYSLIBS_IFJ2015) 
+DEPLIBS_IFJ2015 =  
+LDLIBS_IFJ2015 = $(USERLIBS_IFJ2015)
+
+
+# Link or archive
+$(TARGETDIR_IFJ2015)/IFJ2015: $(TARGETDIR_IFJ2015) $(OBJS_IFJ2015) $(DEPLIBS_IFJ2015)
+	$(LINK.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ $(OBJS_IFJ2015) $(LDLIBS_IFJ2015)
+
+
+# Compile source files into .o files
+$(TARGETDIR_IFJ2015)/error.o: $(TARGETDIR_IFJ2015) error.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ error.c
+
+$(TARGETDIR_IFJ2015)/frameStack.o: $(TARGETDIR_IFJ2015) frameStack.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ frameStack.c
+
+$(TARGETDIR_IFJ2015)/ial.o: $(TARGETDIR_IFJ2015) ial.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ ial.c
+
+$(TARGETDIR_IFJ2015)/IFJ2015.o: $(TARGETDIR_IFJ2015) IFJ2015.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ IFJ2015.c
+
+$(TARGETDIR_IFJ2015)/insTape.o: $(TARGETDIR_IFJ2015) insTape.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ insTape.c
+
+$(TARGETDIR_IFJ2015)/interpret.o: $(TARGETDIR_IFJ2015) interpret.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ interpret.c
+
+$(TARGETDIR_IFJ2015)/paramList.o: $(TARGETDIR_IFJ2015) paramList.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ paramList.c
+
+$(TARGETDIR_IFJ2015)/parser.o: $(TARGETDIR_IFJ2015) parser.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ parser.c
+
+$(TARGETDIR_IFJ2015)/parserExpr.o: $(TARGETDIR_IFJ2015) parserExpr.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ parserExpr.c
+
+$(TARGETDIR_IFJ2015)/precStack.o: $(TARGETDIR_IFJ2015) precStack.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ precStack.c
+
+$(TARGETDIR_IFJ2015)/precTab.o: $(TARGETDIR_IFJ2015) precTab.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ precTab.c
+
+$(TARGETDIR_IFJ2015)/scanner.o: $(TARGETDIR_IFJ2015) scanner.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ scanner.c
+
+$(TARGETDIR_IFJ2015)/str.o: $(TARGETDIR_IFJ2015) str.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ str.c
+
+$(TARGETDIR_IFJ2015)/tabSym.o: $(TARGETDIR_IFJ2015) tabSym.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ tabSym.c
+
+$(TARGETDIR_IFJ2015)/variable.o: $(TARGETDIR_IFJ2015) variable.c
+	$(COMPILE.c) $(CFLAGS_IFJ2015) $(CPPFLAGS_IFJ2015) -o $@ variable.c
+
+
+
+#### Clean target deletes all generated files ####
+clean:
+	rm -f \
+		$(TARGETDIR_IFJ2015)/IFJ2015 \
+		$(TARGETDIR_IFJ2015)/error.o \
+		$(TARGETDIR_IFJ2015)/frameStack.o \
+		$(TARGETDIR_IFJ2015)/ial.o \
+		$(TARGETDIR_IFJ2015)/IFJ2015.o \
+		$(TARGETDIR_IFJ2015)/insTape.o \
+		$(TARGETDIR_IFJ2015)/interpret.o \
+		$(TARGETDIR_IFJ2015)/paramList.o \
+		$(TARGETDIR_IFJ2015)/parser.o \
+		$(TARGETDIR_IFJ2015)/parserExpr.o \
+		$(TARGETDIR_IFJ2015)/precStack.o \
+		$(TARGETDIR_IFJ2015)/precTab.o \
+		$(TARGETDIR_IFJ2015)/scanner.o \
+		$(TARGETDIR_IFJ2015)/str.o \
+		$(TARGETDIR_IFJ2015)/tabSym.o \
+		$(TARGETDIR_IFJ2015)/variable.o
+	rm -f -r $(TARGETDIR_IFJ2015)
+
+
+# Create the target directory (if needed)
+$(TARGETDIR_IFJ2015):
+	mkdir -p $(TARGETDIR_IFJ2015)
+
+
+# Enable dependency checking
+.KEEP_STATE:
+.KEEP_STATE_FILE:.make.state.GNU-amd64-Linux
+
