@@ -281,30 +281,38 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		break;
 		//volani fce
 	case I_CF:
-		findVariable(stack, (string*)ins->adr3, &dest);
+		if (ins->adr3 != NULL) {//nejsme v main
+			findVariable(stack, (string*)ins->adr3, &dest);
+		}
 		pushNewFrame(stack, false);
 		tab = (tTabSym*)ins->adr1;
 		insToCall = (tInsTapeInsPtr)ins->adr2;
 		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
 		executeTape(insToCall);
 		//string pro nalezeni promenne pro vraceni
-		string ret;
-		strInit(&ret);
-		strConConstString(&ret, "$ret");
-		findVariable(stack, &ret, &oper1);
-		strFree(&ret);
+		if (ins->adr3 != NULL) {//nejsme v main
+			string ret;
+			strInit(&ret);
+			strConConstString(&ret, "$ret");
+			findVariable(stack, &ret, &oper1);
+			strFree(&ret);
+		}
+
 		deleteFunctionsFrames(stack);
-		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = (int)getVarVal(oper1);
-		}
-		else if (dest->type == VAR_TYPE_DOUBLE) {
-			dest->data.doubleVal = getVarVal(oper1);
-		}
-		else if (dest->type == VAR_TYPE_BOOL) {
-			dest->data.boolVal = getVarVal(oper1);
-		}
-		else if (dest->type == VAR_TYPE_STRING) {
-			strCopyString(&oper1->data.stringVal, &dest->data.stringVal);
+
+		if (ins->adr3 != NULL) {//nejsme v main
+			if (dest->type == VAR_TYPE_INT) {
+				dest->data.intVal = (int)getVarVal(oper1);
+			}
+			else if (dest->type == VAR_TYPE_DOUBLE) {
+				dest->data.doubleVal = getVarVal(oper1);
+			}
+			else if (dest->type == VAR_TYPE_BOOL) {
+				dest->data.boolVal = getVarVal(oper1);
+			}
+			else if (dest->type == VAR_TYPE_STRING) {
+				strCopyString(&oper1->data.stringVal, &dest->data.stringVal);
+			}
 		}
 		break;
 	case I_ASSIGN:
