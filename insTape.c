@@ -11,7 +11,6 @@
  * @brief  Implementace instrukcni pasky, pomoci obousmerne vazaneho seznamu.
  */
 
-#include <stdlib.h>
 #include "insTape.h"
 
 tInsTape* insTapeCreate() {

@@ -14,6 +14,15 @@
 
 #ifndef PARSEREXPR_H_
 #define PARSEREXPR_H_
+#include <stdlib.h>
+#include <stdbool.h>
+#include "precStack.h"
+#include "token.h"
+#include "precTab.h"
+#include "tabSym.h"
+#include "insTape.h"
+#include "error.h"
+#include "genInstructs.h"
 
 /**
  * Provede precedencni syntaktickou, semantickou analyzu a generovani tri adresneho kodu.

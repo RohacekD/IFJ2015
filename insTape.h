@@ -13,6 +13,8 @@
 #ifndef INSTAPE_H_
 #define INSTAPE_H_
 
+#include <stdlib.h>
+
 //todo: vsechny instrukce musi mit variantu 
 //pokud jde o operaci vyuzivajici 3 adresy tak oper1,oper2,vysledek
 typedef enum{

@@ -1,14 +1,5 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include "scanner.h"
-#include "tabSym.h"
-#include "error.h"
 #include "parser.h"
-#include "token.h"
-#include "parserExpr.h"
-#include <stdbool.h>
-#include <string.h>
-#include <limits.h>
+
 
 //ve funkcich muze dojit k ruznym typum chyb
 //chyba v lexikalni analyze(kdy ma vratit 1), nemuzu

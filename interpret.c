@@ -20,19 +20,19 @@ int executeTape(tInsTapeInsPtr ins) {
 		if ((*instruction)->type == I_IFZERO) {
 			findVariable(frameStack, (string*)ins->adr1, &oper1);
 			if (getVarVal(oper1) == 0) {
-				instruction = (tInsTapeInsPtr)ins->adr2;
+				instruction = (tInsTapeInsPtr*)ins->adr2;
 			}
 			else {
-				instruction = (*instruction)->rptr;
+				instruction = (&(*instruction)->rptr);
 			}
 		}
 		else if ((*instruction)->type == I_IFNZERO) {
 			findVariable(frameStack, (string*)ins->adr1, &oper1);
 			if (getVarVal(oper1) != 0) {
-				instruction = (tInsTapeInsPtr)ins->adr2;
+				instruction = (tInsTapeInsPtr*)ins->adr2;
 			}
 			else {
-				instruction = (*instruction)->rptr;
+				instruction = (&(*instruction)->rptr);
 			}
 		}
 		else {
