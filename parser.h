@@ -213,7 +213,7 @@ int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr 
  *35. <cout> -> << <term> <cout>
  * @return      pokud probehlo vse v poradku, tak 1
  */
-int parseCout();
+int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabSym *localTable);
 
 #endif	/* PARSER_H */
 

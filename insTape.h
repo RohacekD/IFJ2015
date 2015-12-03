@@ -36,7 +36,7 @@ typedef enum{
 	I_LOG_NOT,//adr1 operand adr3 vysledek
 	I_LOG_AND,//bezna konvence - 3. operand je bool
 	I_LOG_OR,//bezna konvence - 3. operand je bool
-	I_CBF, //create block frame
+	I_CBF, //create block frame - adr1 - locTab
 	I_CF, //call function adr1 - locTab adr2 - ins adr3 - adresa kam ulozit vysledek fce(u main NULL)
 	I_ASSIGN, //prirazeni = adr1(source) => adr3(dest)
 	I_SP, // adr1 -z volajici funkce, , adr3-z volane | set parametr - musis se podivat o jeden niz
