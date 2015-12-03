@@ -343,10 +343,10 @@ tTabSymElemData* tabSymListSearch(tTabSymListElemPtr startTabSymListElem, tTabSy
 }
 
 string* tabSymListGetPointerToKey(tTabSymListElemPtr startTabSymListElem, tTabSym* locTable, string* key){
-	tBSTNodePtr* store=NULL;	//pro ulozeni uzlu
+	tBSTNodePtr store=NULL;	//pro ulozeni uzlu
 	if(startTabSymListElem==NULL){
 		//koncovy, prohledame nakonec locTable
-		BSTSearchTree(locTable->root, key, store);
+		BSTSearchTree(locTable->root, key, &store);
 		if(store!=NULL){
 			//vratime ukazatel na klic
 			return store->key;
