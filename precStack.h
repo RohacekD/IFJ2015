@@ -13,6 +13,8 @@
 #ifndef PRECSTACK_H_
 #define PRECSTACK_H_
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdarg.h>
 
 typedef enum
 {

@@ -11,16 +11,8 @@
  * @brief 
  */
 
-#include <stdlib.h>
-#include <stdbool.h>
 #include "parserExpr.h"
-#include "precStack.h"
-#include "token.h"
-#include "precTab.h"
-#include "tabSym.h"
-#include "insTape.h"
-#include "error.h"
-#include "genInstructs.h"
+
 
 /**
  * Pripravi dalsi token v rade.

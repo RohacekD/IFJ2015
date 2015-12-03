@@ -7,6 +7,17 @@
 
 #ifndef PARSER_H
 #define	PARSER_H
+#include <stdbool.h>
+#include <string.h>
+#include <limits.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include "scanner.h"
+#include "tabSym.h"
+#include "error.h"
+#include "token.h"
+#include "parserExpr.h"
+
 
 /*
 #define SYNTAX_OK 1

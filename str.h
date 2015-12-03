@@ -2,6 +2,10 @@
 
 #ifndef STR_H_
 #define STR_H_
+
+#include <string.h>
+#include <malloc.h>
+
 typedef struct
 {
 	char* str;		// misto pro dany retezec ukonceny znakem '\0'

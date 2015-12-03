@@ -37,9 +37,7 @@ tTabSym* tabSymCreate(tTabSymTypes tabType) {
 
 tTabSymElemData* tabSymSearch(tTabSym* table, string* key) {
 	tBSTNodePtr storeElement=NULL;
-	if(table==NULL){
-		return NULL;
-	}
+
 	BSTSearchTree(table->root, key, &storeElement);
 	if (storeElement == NULL) {
 		//nenasel
@@ -123,6 +121,7 @@ int tabSymInsertVar(tTabSym* table, string* key, tVariableInfo* varInfo) {
 	tTabSymElemData* elemData = createElemData(TAB_SYM_VARIABLE, varInfo);
 	if (elemData == NULL) {
 		//chyba
+		printf("Nepovedlo se vytvorit element\n");
 		return 0;
 	}
 
@@ -325,15 +324,24 @@ tTabSymListElemPtr tabSymListInsertTable(tTabSymList* tabList, tTabSym* table, t
 	return newElement;
 }
 
-
+/**
+ * Vyhledava symbol key rekurzivne u rodicu daneho startTabSymListElem.
+ * Pokud nenajde prohledava nakonec table. Vraci prvni nalezeny.
+ * @param startTabSymListElem[in]	-	startovaci prvek
+ * @param locTable[in]				-	Tabulka, kterou prohleda jako posledni,
+ * 										tato tabulka je mimo hierarchii rodicu.
+ * 										Napriklad lokalni tabulka funkce.
+ * @param key[in]					-	Klic, ktery chceme vyhledat
+ * @return	Vraci ukazatel na tTabSymElemData. Nebo NULL, pokud nenajde.
+ */
 tTabSymElemData* tabSymListSearch(tTabSymListElemPtr startTabSymListElem, tTabSym* locTable, string* key){
 	if(startTabSymListElem==NULL){
-		//koncovy, prohledame nakonec locTable
+		//koncovy, porhledame nakonec locTable
 		return tabSymSearch(locTable, key);
 	}
 	//prohledame aktualni element
 	tTabSymElemData* searched=NULL;
-	searched=tabSymSearch(startTabSymListElem->table, key);
+	searched=tabSymSearch(locTable, key);
 	if(searched==NULL){
 		//prohledame rekurzivne
 		return tabSymListSearch(startTabSymListElem->parentElement, locTable, key);
@@ -341,27 +349,6 @@ tTabSymElemData* tabSymListSearch(tTabSymListElemPtr startTabSymListElem, tTabSy
 	//nalezeno na aktualni urovni
 	return searched;
 
-}
-
-string* tabSymListGetPointerToKey(tTabSymListElemPtr startTabSymListElem, tTabSym* locTable, string* key){
-	tBSTNodePtr* store=NULL;	//pro ulozeni uzlu
-	if(startTabSymListElem==NULL){
-		//koncovy, prohledame nakonec locTable
-		BSTSearchTree(locTable->root, key, store);
-		if(store!=NULL){
-			//vratime ukazatel na klic
-			return store->key;
-		}
-		return store;
-	}
-
-	store=BSTSearchTree(startTabSymListElem->table->root, key, store);
-	if(store==NULL){
-		//prohledame rekurzivne
-		return tabSymListSearch(startTabSymListElem->parentElement, locTable, key);
-	}
-	//nalezeno na aktualni urovni
-	return store->key;
 }
 
 void tabSymListFree(tTabSymList* tabList){
@@ -384,21 +371,18 @@ void tabSymListFree(tTabSymList* tabList){
 }
 
 /**
- * Secita countery od pocinajicico prvku az po posledniho rodice.
+ * Secita countery od pocinajicico prvku az po posledniho rodice + counter z locTable.
  * @param forStartElement[in]		-	zacinajici prvek
- * @param sum[out]					-	Soucet vsech counteru rodicu
+ * @param sum[out]					-	Soucet vsech counteru rodicu + zacinajiciho prveku
+ * @param locTable[in]				-	Ukazatel na lokalni tabulku.
  * @return	1 v poradku. 0 chyba(overflow).
  */
-int sumCounters(tTabSymListElemPtr forStartElement, unsigned int* sum){
-	if(forStartElement==NULL){
-		//konecny
-		*sum=0;
-		return 1;
-	}
+int sumCounters(tTabSymListElemPtr forStartElement, unsigned int* sum, tTabSym* locTable){
+	if(forStartElement==NULL) return 0; //konecny
 
 	unsigned int counterSum=0;
-	if(sumCounters(forStartElement->parentElement, &counterSum)==0){
-		//chyba overflow
+	if(sumCounters(forStartElement->parentElement, &counterSum, locTable)==0){
+		//chyba
 		return 0;
 	}
 	//zkontrolujeme overflow
@@ -408,6 +392,12 @@ int sumCounters(tTabSymListElemPtr forStartElement, unsigned int* sum){
 	}
 
 	*sum=counterSum+forStartElement->table->tmpCounter;
+	//zkontrolujeme overflow
+	if (locTable->tmpCounter > UINT_MAX - *sum){
+		//chyba overflow
+		return 0;
+	}
+	(*sum)+=locTable->tmpCounter;
 	return 1;
 }
 
@@ -416,19 +406,10 @@ string* tabSymListCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* locTa
 	int flag;
 	unsigned int index;
 
-	if(locTable==NULL) return NULL;	//chyba
-
-	if(sumCounters(generateFor, &index)==0){
+	if((1>(UINT_MAX-generateFor->table->tmpCounter)) || sumCounters(generateFor, &index, locTable)==0){
 		//chyba overflow
 		return NULL;
 	}
-
-	//zkontrolujeme overflow
-	if (locTable->tmpCounter > UINT_MAX - index){
-		//chyba overflow
-		return 0;
-	}
-	index+=locTable->tmpCounter;
 
 	//Notice that only when this returned value is non-negative and less than n, the string has been completely written.
 	flag = snprintf(buffer, BUFFER_SIZE, "$tmp%u", index);//vytvoreni nazvu docasne promenne
@@ -453,21 +434,12 @@ string* tabSymListCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* locTa
 }
 
 string* tabSymListLastCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* locTable){
-	if(locTable==NULL) return NULL;
-
-	unsigned int* chooseCounter;
-	//vybereme counter
-	if(generateFor==NULL){
-		chooseCounter=&locTable->tmpCounter;
-	}else{
-		chooseCounter=&generateFor->table->tmpCounter;
-	}
-	if((*chooseCounter)==0){
+	if(generateFor->table->tmpCounter==0){
 		//nebyl zatim zadny vygenerovany.
 		return NULL;
 	}
 	//snizime counter a vygenerujeme $tmp nazev
-	(*chooseCounter)--;
+	generateFor->table->tmpCounter--;
 	return tabSymListCreateTmpSymbol(generateFor, locTable);
 }
 /*** End of file: tabSym.c ***/

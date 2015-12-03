@@ -11,8 +11,6 @@
  * @brief Obsahuje implementaci zasobniku.
  */
 #include "precStack.h"
-#include <stdlib.h>
-#include <stdarg.h>
 
 
 void precStackInit(tPrecStack * stack){
