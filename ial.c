@@ -10,8 +10,6 @@
  * @author xdocek09
  * @brief Vestavene funkce pro IAL.
  */
-#include <stdlib.h>
-#include <stdio.h>
 #include "ial.h"
 
 int len(char* string) {

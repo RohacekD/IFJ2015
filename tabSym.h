@@ -13,7 +13,11 @@
 
 #ifndef TABSYM_H_
 #define TABSYM_H_
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
 #include <stdbool.h>
+#include "insTape.h"
 #include "ial.h"
 #include "insTape.h"
 /**

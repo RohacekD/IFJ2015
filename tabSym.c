@@ -200,7 +200,8 @@ void freeFunctionInfo(tFuncInfo * func) {
 	//uvolnime lokalni tabulku symbolu
 	tabSymFree(func->locTab);
 
-	//TODO: tabulky symbolu
+	//uvolnime tabulky symbolu
+	tabSymListFree(func->tabBlockList);
 
 	//uvolnime pasku instrukci
 	insTapeFree(func->instTape);
@@ -342,21 +343,21 @@ tTabSymElemData* tabSymListSearch(tTabSymListElemPtr startTabSymListElem, tTabSy
 }
 
 string* tabSymListGetPointerToKey(tTabSymListElemPtr startTabSymListElem, tTabSym* locTable, string* key){
-	tBSTNodePtr* store=NULL;	//pro ulozeni uzlu
+	tBSTNodePtr store=NULL;	//pro ulozeni uzlu
 	if(startTabSymListElem==NULL){
 		//koncovy, prohledame nakonec locTable
-		BSTSearchTree(locTable->root, key, store);
+		BSTSearchTree(locTable->root, key, &store);
 		if(store!=NULL){
 			//vratime ukazatel na klic
 			return store->key;
 		}
-		return store;
+		return NULL;
 	}
 
-	store=BSTSearchTree(startTabSymListElem->table->root, key, store);
+	BSTSearchTree(startTabSymListElem->table->root, key, &store);
 	if(store==NULL){
 		//prohledame rekurzivne
-		return tabSymListSearch(startTabSymListElem->parentElement, locTable, key);
+		return tabSymListGetPointerToKey(startTabSymListElem->parentElement, locTable, key);
 	}
 	//nalezeno na aktualni urovni
 	return store->key;

@@ -13,7 +13,8 @@
 
 #ifndef IAL_H_
 #define IAL_H_
-
+#include <stdlib.h>
+#include <stdio.h>
 #include "str.h"
 
 typedef struct tBSTNode {
