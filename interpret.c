@@ -533,6 +533,19 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		heapSort(oper1->data.stringVal.str);
 		break;
 	case I_FIND:
+		findVariable(stack, (string*)ins->adr1, &oper1);
+		findVariable(stack, (string*)ins->adr2, &oper2);
+		findVariable(stack, (string*)ins->adr3, &dest);
+
+		if (oper1->type != VAR_TYPE_STRING ||
+			oper2->type != VAR_TYPE_STRING ||
+			dest->type != VAR_TYPE_INT) {
+			return ERR_SEM_COM;
+		}
+		dest->data.intVal = find(oper1->data.stringVal.str, oper2->data.stringVal.str);
+		if (dest->data.intVal > oper1->data.stringVal.length) {
+			dest->data.intVal = -1;
+		}
 		break;
 	case I_CONCAT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
