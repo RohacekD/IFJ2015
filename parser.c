@@ -1170,10 +1170,14 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                     //funkci createConstantInfo musim predat union typu unionValue
                     //tudiz si musim tento union vyrobit, tento string neuvolnim
                    //TODO
-                    uval.boolVal = token->value.boolVal;
-                    uval.doubleVal = token->value.doubleVal;
-                    uval.intVal = token->value.intVal;
-                    uval.stringVal = copyIdName(&(token->value.stringVal));
+                    if(token->typ == TYPE_BOOL)
+                        uval.boolVal = token->value.boolVal;
+                    if(token->typ == TYPE_DOUBLE)
+                        uval.doubleVal = token->value.doubleVal;
+                    if(token->typ == TYPE_INTEGER)
+                        uval.intVal = token->value.intVal;
+                    if(token->typ == TYPE_STRING)
+                        uval.stringVal = copyIdName(&(token->value.stringVal));
 
                     freeTokenMem(token);
 
@@ -1259,6 +1263,11 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return result;
             }
             
+            //generuji instrukci pro navrat z funkce
+            if(insTapeInsertLast(instructionTape, I_RETURN, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
             if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
@@ -1271,7 +1280,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             break;
             
             
-            
+        //TODO - generovani instrukci
         //pravidlo 25 - while(expression)<block>
         case KEYW_WHILE:
             freeTokenMem(tokenOrig);
@@ -1307,7 +1316,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             break;
             
             
-            
+         //TODO - generovani instrukci
         //pravidlo 26 - <statement> -> do <block>while(expression);
         case KEYW_DO:
             freeTokenMem(tokenOrig);
@@ -1470,7 +1479,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 
                 freeIdName(idName);
                 
-                //chci ziskat nazev posledn idocasne vygenerovane promenne
+                //chci ziskat nazev posledn id docasne vygenerovane promenne
                 if((lastGeneratedTMP = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
                     return ERR_INTERNAL;
                 }
@@ -1671,12 +1680,13 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
     return ERR_INTERNAL;
 }
 
-//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
-//nejakym zpusobem musim prohledavat rozsah platnosti (lokalni tabulky bloku...)
+
+
+//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!!
 /**
  * zpracovava pravidla:
  * 40. <assignment> = ID<specID>
- * 41. <assignment> = <specID>ID
+ * 41. <assignment> = <inc_dec>ID
  * @param tokenType
  * @param localTable
  * @return          pokud probehlo vse v poradku, tak 1
@@ -1691,6 +1701,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
     string *key;
     tTabSymElemData *idUsable;
     tTabSymVarDataType idType;
+    tTabSymVarNoAutoDataType expType;
     
     switch(tokenOrig->typ) {
         case TYPE_IDENTIFICATOR:
@@ -1722,7 +1733,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 freeIdName(idName);
             }
             
-            //TODO semanticky akce a generovani vnitrniho kodu
+            //zpracovavam vetev ID++
             if(token->typ == INCREMENTATION) {
                 //u inkrementace nesmi byt operator string
                 if (idType == TAB_SYM_VAR_STRING) {
@@ -1748,6 +1759,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 freeTokenMem(token);
                 return 1;
             }
+            //zpracovavam vetev ID--
             else if(token->typ == DECREMENTATION) {
                  //u dekrementace nesmi byt operator string, ani bool
                 if (idType == TAB_SYM_VAR_STRING || idType == TAB_SYM_VAR_BOOLEAN) {
@@ -1773,6 +1785,35 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 freeTokenMem(token);
                 return 1;
             }
+            //zpracovavam vetev ID = expression;
+            else if (token->typ == EQUAL) {
+                
+                freeTokenMem(token);
+                
+                if((result = parseExpression(blockListElem, localTable, instructionTape, &expType, f)) != ERR_OK) {
+                    freeIdName(idName);
+                    return result;
+                }
+                //potrebuji ziskat vyhodnoceni vyrazu
+                string *lastCreatedTMP;
+                if ((lastCreatedTMP = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+                    freeIdName(idName);
+                    return ERR_INTERNAL;
+                }
+                
+                if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
+                    freeIdName(idName);
+                    return ERR_INTERNAL;
+                }
+                
+                freeIdName(idName);
+                //vlozeni instrukce
+                if(insTapeInsertLast(instructionTape, I_ASSIGN, (void *) lastCreatedTMP, NULL, (void *) key) == 0) {
+                    return ERR_INTERNAL;
+                }
+                
+                return 1;
+            }
             else {
                 freeTokenMem(token);
                 return ERR_SYNTAX;
@@ -1780,6 +1821,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             
             break;
             
+        //zpracovavam vetev ++ID
         case INCREMENTATION:
             
             freeTokenMem(tokenOrig);
@@ -1832,6 +1874,8 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             return 1;
             break;
             
+            
+        //zpracovavam vetev --ID
         case DECREMENTATION:
             
             freeTokenMem(tokenOrig);
@@ -1890,8 +1934,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
     }
 }
 
-//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
-//-----------   DODELAT GENEROVANI INSTRUKCI ---------
+//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!:
 /**
  * * zpracovava nasledujici pravidla:
  * 32.  <cin> -> epsilon
@@ -2040,11 +2083,15 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
 
                         //funkci createConstantInfo musim predat union typu unionValue
                         //tudiz si musim tento union vyrobit, tento string neuvolnim
-                       // s = copyIdName(&(token->value.stringVal));
-                        uval.boolVal = token->value.boolVal;
-                        uval.doubleVal = token->value.doubleVal;
-                        uval.intVal = token->value.intVal;
-                        uval.stringVal = copyIdName(&(token->value.stringVal));
+                       // TODO - predelat do funkce
+                        if(token->typ == TYPE_BOOL)
+                            uval.boolVal = token->value.boolVal;
+                        if(token->typ == TYPE_DOUBLE)
+                            uval.doubleVal = token->value.doubleVal;
+                        if(token->typ == TYPE_INTEGER)
+                            uval.intVal = token->value.intVal;
+                        if(token->typ == TYPE_STRING)
+                            uval.stringVal = copyIdName(&(token->value.stringVal));
                         
                         freeTokenMem(token);
                         

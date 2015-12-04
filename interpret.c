@@ -40,7 +40,9 @@ int executeTape(tInsTapeInsPtr ins) {
 		}
 	}
 
-	if ((*instruction)->type != I_RETURN) {//paska dosla na konec a nenarazil jsem na I_RETURN
+
+
+	if (*instruction==NULL) {//paska dosla na konec a nenarazil jsem na I_RETURN
 		FatalError(8, ERR_MESSAGES[ERR_RUNTIME_INIT_VAR]);
 	}
 
@@ -60,6 +62,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	if (stack == NULL) return 0;
 	tVariablePtr oper1;
 	tVariablePtr oper2;
+	tVariablePtr oper3;
 	tVariablePtr dest;
 
 	tTabSym* tab;
@@ -145,76 +148,167 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
-		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = (int)getVarVal(oper1) == (int)getVarVal(oper2);
+		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
+			if (dest->type == VAR_TYPE_INT) {
+				dest->data.intVal = (int)getVarVal(oper1) == (int)getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_DOUBLE) {
+				dest->data.doubleVal = getVarVal(oper1) == getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_BOOL) {
+				dest->data.boolVal = getVarVal(oper1) == getVarVal(oper2);
+			}
 		}
-		else if (dest->type == VAR_TYPE_DOUBLE) {
-			dest->data.doubleVal = getVarVal(oper1) == getVarVal(oper2);
-		}
-		else if (dest->type == VAR_TYPE_BOOL) {
-			dest->data.boolVal = getVarVal(oper1) == getVarVal(oper2);
+		else {
+			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
+				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+			}
+			else {
+				if (dest->type == VAR_TYPE_INT) {
+					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)==0) ? 1: 0;
+				}
+				else if (dest->type == VAR_TYPE_DOUBLE) {
+					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) == 0) ? 1: 0;
+				}
+				else if (dest->type == VAR_TYPE_BOOL) {
+					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) == 0) ? true : false;
+				}
+			}
 		}
 		break;
 	case I_NOTEQUAL:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
-		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = (int)getVarVal(oper1) != (int)getVarVal(oper2);
+		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
+			if (dest->type == VAR_TYPE_INT) {
+				dest->data.intVal = (int)getVarVal(oper1) == (int)getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_DOUBLE) {
+				dest->data.doubleVal = getVarVal(oper1) == getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_BOOL) {
+				dest->data.boolVal = getVarVal(oper1) == getVarVal(oper2);
+			}
 		}
-		else if (dest->type == VAR_TYPE_DOUBLE) {
-			dest->data.doubleVal = getVarVal(oper1) != getVarVal(oper2);
-		}
-		else if (dest->type == VAR_TYPE_BOOL) {
-			dest->data.boolVal = getVarVal(oper1) != getVarVal(oper2);
+		else {
+			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
+				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+			}
+			else {
+				if (dest->type == VAR_TYPE_INT) {
+					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)!=0) ? 1 : 0;
+				}
+				else if (dest->type == VAR_TYPE_DOUBLE) {
+					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) != 0) ? 1 : 0;
+				}
+				else if (dest->type == VAR_TYPE_BOOL) {
+					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) != 0) ? true : false;
+				}
+			}
 		}
 		break;
 	case I_GREATER:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
-		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = (int)getVarVal(oper1) > (int)getVarVal(oper2);
+		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
+			if (dest->type == VAR_TYPE_INT) {
+				dest->data.intVal = (int)getVarVal(oper1) > (int)getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_DOUBLE) {
+				dest->data.doubleVal = getVarVal(oper1) > getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_BOOL) {
+				dest->data.boolVal = getVarVal(oper1) > getVarVal(oper2);
+			}
 		}
-		else if (dest->type == VAR_TYPE_DOUBLE) {
-			dest->data.doubleVal = getVarVal(oper1) > getVarVal(oper2);
-		}
-		else if (dest->type == VAR_TYPE_BOOL) {
-			dest->data.boolVal = getVarVal(oper1) > getVarVal(oper2);
+		else {
+			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
+				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+			}
+			else {
+				if (dest->type == VAR_TYPE_INT) {
+					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)>0) ? 1: 0;
+				}
+				else if (dest->type == VAR_TYPE_DOUBLE) {
+					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)>0) ? 1: 0;
+				}
+				else if (dest->type == VAR_TYPE_BOOL) {
+					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)>0) ? true: false;
+				}
+			}
 		}
 		break;
 	case I_GEQUAL:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
-		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = (int)getVarVal(oper1) >= (int)getVarVal(oper2);
+		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
+			if (dest->type == VAR_TYPE_INT) {
+				dest->data.intVal = (int)getVarVal(oper1) >= (int)getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_DOUBLE) {
+				dest->data.doubleVal = getVarVal(oper1) >= getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_BOOL) {
+				dest->data.boolVal = getVarVal(oper1) >= getVarVal(oper2);
+			}
 		}
-		else if (dest->type == VAR_TYPE_DOUBLE) {
-			dest->data.doubleVal = getVarVal(oper1) >= getVarVal(oper2);
-		}
-		else if (dest->type == VAR_TYPE_BOOL) {
-			dest->data.boolVal = getVarVal(oper1) >= getVarVal(oper2);
+		else {
+			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
+				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+			}
+			else {
+				if (dest->type == VAR_TYPE_INT) {
+					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) >= 0) ? 1 : 0;
+				}
+				else if (dest->type == VAR_TYPE_DOUBLE) {
+					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) >= 0) ? 1 : 0;
+				}
+				else if (dest->type == VAR_TYPE_BOOL) {
+					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) >= 0) ? true : false;
+				}
+			}
 		}
 		break;
 	case I_LESSER:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
-		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = (int)getVarVal(oper1) <(int)getVarVal(oper2);
+		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
+			if (dest->type == VAR_TYPE_INT) {
+				dest->data.intVal = (int)getVarVal(oper1) < (int)getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_DOUBLE) {
+				dest->data.doubleVal = getVarVal(oper1) < getVarVal(oper2);
+			}
+			else if (dest->type == VAR_TYPE_BOOL) {
+				dest->data.boolVal = getVarVal(oper1) < getVarVal(oper2);
+			}
 		}
-		else if (dest->type == VAR_TYPE_DOUBLE) {
-			dest->data.doubleVal = getVarVal(oper1) < getVarVal(oper2);
-		}
-		else if (dest->type == VAR_TYPE_BOOL) {
-			dest->data.boolVal = getVarVal(oper1) < getVarVal(oper2);
+		else {
+			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
+				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+			}
+			else {
+				if (dest->type == VAR_TYPE_INT) {
+					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)<0) ? 1 : 0;
+				}
+				else if (dest->type == VAR_TYPE_DOUBLE) {
+					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)<0) ? 1 : 0;
+				}
+				else if (dest->type == VAR_TYPE_BOOL) {
+					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)<0) ? true : false;
+				}
+			}
 		}
 		break;
 	case I_LEQUAL:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
 				dest->data.intVal = (int)getVarVal(oper1) <= (int)getVarVal(oper2);
 			}
@@ -224,7 +318,24 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			else if (dest->type == VAR_TYPE_BOOL) {
 				dest->data.boolVal = getVarVal(oper1) <= getVarVal(oper2);
 			}
-			break;
+		}
+		else {
+			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
+				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+			}
+			else {
+				if (dest->type == VAR_TYPE_INT) {
+					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) <= 0) ? 1 : 0;
+				}
+				else if (dest->type == VAR_TYPE_DOUBLE) {
+					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) <= 0) ? 1 : 0;
+				}
+				else if (dest->type == VAR_TYPE_BOOL) {
+					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) <= 0) ? true : false;
+				}
+			}
+		}
+		break;
 	case I_UMINUS:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -359,9 +470,22 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			dest->data.stringVal = concat(oper1->data.stringVal, oper2->data.stringVal);
 		}
 		break;
-	case I_SUBSTR:
-		break;
-	case I_SUBSTR_DEST:
+	case I_SUBSTR://tato instrukce cte i nasledujici ktera musi byt typu I_SUBSTR_DEST
+		findVariable(stack, (string*)ins->adr1, &oper1);
+		findVariable(stack, (string*)ins->adr2, &oper2);
+		findVariable(stack, (string*)ins->adr3, &oper3);
+		*instruction = ins->rptr;
+		ins = *instruction;
+		if (ins->type != I_SUBSTR_DEST) {
+			FatalError(10, ERR_MESSAGES[ERR_RUNTIME_REST]);
+		}
+		findVariable(stack, (string*)ins->adr3, &dest);
+		if (dest->type != VAR_TYPE_STRING || oper1->type != VAR_TYPE_STRING ||
+			oper2->type != VAR_TYPE_INT || oper3->type != VAR_TYPE_INT) {
+			FatalError(10, ERR_MESSAGES[ERR_RUNTIME_REST]);
+		}
+		strFree(&dest->data.stringVal);
+		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal);
 		break;
 	case I_LENGTH:
 		findVariable(stack, (string*)ins->adr1, &oper1);
@@ -376,8 +500,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
 		}
 		break;
-        case I_LABEL:
-                break;
+        case I_LABEL://jen navesti nic nedelej
+            break;
 	default:
 		break;
 	}
