@@ -46,7 +46,7 @@ int isKeyWord(string*);
  * uvolni misto po tokenu
  * @param token[in] token pro vycisteni
  */
-void freeTokenMem(tToken);
+void freeTokenMem(tToken*);
 
 typedef struct tTQelem{
 	tToken token;
