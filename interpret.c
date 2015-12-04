@@ -38,7 +38,7 @@ int executeTape(tInsTapeInsPtr ins) {
 			}
 		}
 		else if ((*instruction)->type == I_GOTO) {
-			if (ins->adr1 == NULL) {
+			if (ins->adr1 != NULL) {
 				instruction = (tInsTapeInsPtr*)ins->adr1;
 			}
 		}
