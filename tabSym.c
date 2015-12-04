@@ -444,7 +444,7 @@ string* tabSymListCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* locTa
 		free(newString);
 		return NULL;
 	}
-	strCmpConstStr(newString, buffer);
+	strConConstString(newString, buffer);
 
 	//zvysime counter u tabulky symbolu
 	generateFor->table->tmpCounter++;
