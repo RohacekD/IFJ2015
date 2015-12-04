@@ -347,6 +347,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		break;
 	case I_LENGTH:
 		break;
+        case I_LABEL:
+                break;
 	default:
 		break;
 	}
