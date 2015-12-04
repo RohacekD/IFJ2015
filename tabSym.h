@@ -128,7 +128,7 @@ typedef struct tTabSymList{
  * Informace k funkci.
  */
 typedef struct {
-	tParamListPtr* params;		// parametry funkce
+	tParamListPtr params;		// parametry funkce
 	tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
 	tTabSym* locTab;			// lokalni tabulka symbolu
 	tTabSymList* tabBlockList;	// list tabulek bloku
@@ -182,7 +182,7 @@ tConstantInfo* tabSymCreateConstantInfo(tTabSymVarNoAutoDataType dataType, union
  * @param defined[in]		-	byla definovana
  * @return Vraci ukazatel na tFuncInfo. Pokud chyba vraci NULL.
  */
-tFuncInfo* tabSymCreateFuncInfo(tParamListPtr* params, tTabSymVarNoAutoDataType retType, tTabSym* locTab,
+tFuncInfo* tabSymCreateFuncInfo(tParamListPtr params, tTabSymVarNoAutoDataType retType, tTabSym* locTab,
 		tTabSymList* tabBlockList, tInsTape* instTape, bool defined);
 /**
  * Vytvori tabulku symbolu.
