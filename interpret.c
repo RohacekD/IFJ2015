@@ -45,8 +45,10 @@ int executeTape(tInsTapeInsPtr ins) {
 		else {
 			ret = executeIns(instruction, frameStack);
 			if (ret != ERR_OK) {
-				SDispose(frameStack);
+				if(frameStack)
+					SDispose(frameStack);
 				free(frameStack);
+				frameStack = NULL;
 				return ret;
 			}
 		}
@@ -74,6 +76,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	tVariablePtr oper2;
 	tVariablePtr oper3;
 	tVariablePtr dest;
+	ERR_CODES retErr;//pro pripad volani jine pasky
 
 	tTabSym* tab;
 	tInsTapeInsPtr ins = *instruction;
@@ -472,7 +475,9 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		tab = (tTabSym*)ins->adr1;
 		insToCall = (tInsTapeInsPtr)ins->adr2;
 		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
-		executeTape(insToCall);
+		retErr = executeTape(insToCall);
+		if (retErr != ERR_OK)
+			return retErr;
 		//string pro nalezeni promenne pro vraceni
 		if (ins->adr3 != NULL) {//nejsme v main
 			string ret;
