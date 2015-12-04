@@ -18,7 +18,7 @@
  * Kody pro chybove hlasky
  */
 typedef enum{
-	ERR_ALLOC,//!< ERR_ALLOC	Chyba alokace
+	ERR_OK,    //!< ERR_OK	Vse v poradku
 
 	ERR_LEX,//!< ERR_LEX Chyba lexikalni analyzy
 
@@ -41,7 +41,7 @@ typedef enum{
 	ERR_RUNTIME_REST,//!< ERR_RUNTIME_REST Ostatni behove chyby
 
 	ERR_INTERNAL=99,
-	ERR_OK    //!< ERR_OK	Vse v poradku
+	ERR_ALLOC=99		//!< ERR_ALLOC	Chyba alokace
 }ERR_CODES;
 
 /**
