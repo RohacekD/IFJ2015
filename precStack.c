@@ -105,10 +105,10 @@ void precStackPop(tPrecStack * stack){
 	}
 
 	tPrecStackElemPtr nextElem=stack->top->next;
-	if(stack->top.data.id!=NULL){
+	if(stack->top->data.id!=NULL){
 		//mazeme id
-		strFree(stack->top.data.id);
-		free(stack->top.data.id);
+		strFree(stack->top->data.id);
+		free(stack->top->data.id);
 	}
 	free(stack->top);
 	stack->top=nextElem;
@@ -150,13 +150,13 @@ tPrecStack * precStackCreateRevertedTopReduc(tPrecStack * stack){
 	if(newStack!=NULL){
 
 		precStackInit(newStack);
-		tPrecStackData actData = precStackTop(stack);
+		tPrecStackData* actData = precStackTop(stack);
 
 		//naplnime zasobnikem <y
-		while(!precStackEmpty(stack) &&  actData.type!=PREC_STACK_ENDMARK){
-			precStackPush(newStack,actData);
+		while(!precStackEmpty(stack) &&  actData->type!=PREC_STACK_ENDMARK){
+			precStackPush(newStack,*actData);
 			precStackPop(stack);
-			if(actData.type!=PREC_STACK_SIGN){
+			if(actData->type!=PREC_STACK_SIGN){
 				precStackPop(newStack);	//sign nechceme
 				//koncime
 				break;
