@@ -401,20 +401,20 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			dest->data.doubleVal = getVarVal(oper1)+1;
 		}
 		else if (dest->type == VAR_TYPE_BOOL) {
-			dest->data.boolVal = -getVarVal(oper1)+1;
+			dest->data.boolVal = getVarVal(oper1)+1;
 		}
 		break;
 	case I_DEC:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = -(int)getVarVal(oper1)-1;
+			dest->data.intVal = (int)getVarVal(oper1)-1;
 		}
 		else if (dest->type == VAR_TYPE_DOUBLE) {
-			dest->data.doubleVal = -getVarVal(oper1)-1;
+			dest->data.doubleVal = getVarVal(oper1)-1;
 		}
 		else if (dest->type == VAR_TYPE_BOOL) {
-			dest->data.boolVal = -getVarVal(oper1)-1;
+			dest->data.boolVal = getVarVal(oper1)-1;
 		}
 		break;
 	case I_LOG_NOT:
