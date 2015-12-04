@@ -71,8 +71,9 @@ int prepareGlobalTable() {
     tFuncInfo *lengthInfo, *subsInfo, *concatInfo, *findInfo, *sortInfo;
     
     //inicializace seznamu parametru
-    if ((initList(lengthParam) ==0 ) || (initList(subsParam) == 0) || (initList(concatParam) == 0) ||
-        (initList(findParam) == 0) || (initList(sortParam) == 0))   return 0;
+    if ((lengthParam = (initList()) == NULL ) || ((subsParam = initList()) == NULL) || 
+            ((concatParam =initList()) == NULL) ||
+        ((findParam = initList()) == 0) || ((sortParam = initList()) == 0))   return 0;
     
     //vlozeni predpisu pro funkci:  int length (string s)
     char *lengthID = "length";
@@ -1026,7 +1027,46 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 freeTokenMem(&token);
                 return ERR_SYNTAX;
             }
+            
+            //ulozeni nazvu identifikatoru v prvni casti for cyklu
+            if ((idName = copyIdName(&(token->value.stringVal))) == NULL) {
+                freeTokenMem(&token);
+                return ERR_INTERNAL;
+            }
+             
             freeTokenMem(&token);
+            
+            //provedu kontrolu, zda uz identifikator neni pouzity
+            //TODO - kam s timto identifikatorem???
+            tTabSymElemData *varDefined1, *varDefined2;
+            if (((varDefined1 = tabSymSearch(localTable, idName)) != NULL) ||
+                    ((varDefined2 = tabSymSearch(globalTable, idName)) != NULL)) {
+                freeIdName(idName);
+                return ERR_SEM_DEF;
+            }
+            
+            //vytvoreni informace o promenne
+            tVariableInfo *forVarInfo;
+            if((forVarInfo = tabSymCreateVariableInfo(dataType)) == NULL) {
+                freeIdName(idName);
+                return ERR_INTERNAL;
+            }
+            
+            //vlozeni do lokalni tabulky symbolu
+            //TODO - popremyslet kam s timto identifikatorem
+            if(tabSymInsertVar(localTable, idName, forVarInfo) == 0){
+                freeIdName(idName);
+                return ERR_INTERNAL;
+            }
+            
+            string *keyFor;
+            //ziskani odkazu na ni
+            if ((keyFor = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
+                freeIdName(idName);
+                return ERR_INTERNAL;
+            }
+            
+            freeIdName(idName);
             
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -1041,11 +1081,27 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(&token);
             
             //TODO - volat parser  pro zpracovani vyrazu
-            //TODO - zpracovat vystup parseru
             if ((result = parseExpression( blockListElem , localTable, instructionTape, &expressionType, f)) != ERR_OK) {
                 return result;
             }
             
+            string *lastGeneratedTMPfor;
+            if ((lastGeneratedTMPfor = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+                return ERR_INTERNAL;
+            }
+            
+            string *keyFor1;
+            if ((keyFor1 = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMPfor)) == NULL) {
+                freeIdName(lastGeneratedTMPfor);
+                return ERR_INTERNAL;
+            }
+            freeIdName(lastGeneratedTMPfor);
+            
+            //vygeneruji instrukci prirazeni
+            if (insTapeInsertLast(instructionTape, I_ASSIGN, (void *)keyFor1, NULL, (void *)keyFor) == 0) {
+                return ERR_INTERNAL;
+            }
+                        
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
@@ -1056,11 +1112,37 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeTokenMem(&token);
             
-            //TODO - zpracovat dalsi cast vyrazu
-            //TODO - zpracovat vystup parseru
+            //VYHODNOTIT, ZNEGOVAT, NA ZAKLADE TOHO SKOCIT
+            if (insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            //uchovavam adresu navesti
+            tInsTapeInsPtr labelCondition = insTapeGetLast(instructionTape);
+            
             if ((result = parseExpression( blockListElem , localTable, instructionTape, &expressionType, f)) != ERR_OK) {
                 return result;
             }
+            
+            string *lastGeneratedTMPfor2;
+            if ((lastGeneratedTMPfor2 = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+                return ERR_INTERNAL;
+            }
+            
+            string *keyFor2;
+            if ((keyFor2 = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMPfor2)) == NULL) {
+                freeIdName(lastGeneratedTMPfor2);
+                return ERR_INTERNAL;
+            }
+            freeIdName(lastGeneratedTMPfor2);
+            
+            //zneguji hodnotu keyFor2
+            if (insTapeInsertLast(instructionTape, I_LOG_NOT, (void *) keyFor2, NULL, (void *) keyFor2) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //skakam v pripade pravdy
+            if(insTapeInsertLast(instructionTape, I_IFNZERO, (void *) keyFor2, NULL, NULL) == 0) return ERR_INTERNAL;
+            tInsTapeInsPtr goBehindFor = insTapeGetLast(instructionTape);
             
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -1071,9 +1153,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return ERR_SYNTAX;
             }
             freeTokenMem(&token);
-            
-            //TODO - funkce pro parseAssingment
-            //TODO - asi ji budu chtit predavat rovnou typ tokenu
+            //TODO
             //for(<Kdata_types>ID=expression; expression; <assignment>
             
             if((result = getToken(&token, f)) != 1) {
@@ -1086,10 +1166,29 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return ERR_SYNTAX;
             }
             
-            //TODO - co predavat 
+            //TODO - co predavat
+            
+            string *idForAssign;
+            if (token->typ == TYPE_IDENTIFICATOR) {
+                if ((idForAssign = copyIdName(&(token->value.stringVal))) == NULL) {
+                    freeTokenMem(&token);
+                    return ERR_INTERNAL;
+                }
+            }
+            
+            //SEM SKOCIM PO PROVEDENI TELA FUNKCE
             if((result = parseAssignment(token, localTable, instructionTape, blockListElem)) != ERR_OK) {
                 return result;
             }
+            
+            string *keyAssign;
+            if ((keyAssign = tabSymListGetPointerToKey(blockListElem, localTable, idForAssign)) == NULL) {
+                freeIdName(idForAssign);
+                return ERR_INTERNAL;
+            }
+            
+            freeIdName(idForAssign);
+            //SKOCIM NA NAVESTI PRED VYHODNOCENIM PODMINKY
             
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -1102,9 +1201,21 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeTokenMem(&token);
             
+            //NAVESTI - SKOCIM SEM, vzdy kdyz je splnena podminka
             //TODO
-            return parseBlock(localTable, blockList, blockListElem, instructionTape);
-
+            if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
+                return result;
+            }
+            //ODSUD SKOCIM k provedeni 3. casti vyrazu ve for cyklu
+            
+            //NAVESTI - SKOCIM SEM, kdyz neni splnena podminka
+            insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL);
+            tInsTapeInsPtr  labelEndFor= insTapeGetLast(instructionTape);
+            
+            insTapeGoto(instructionTape, goBehindFor);
+            insTapeActualize(instructionTape, I_IFNZERO, (void *) keyFor2, NULL, (void *) labelEndFor);
+            return 1;
+            
             break;
             
             
