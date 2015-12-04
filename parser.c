@@ -71,7 +71,7 @@ int prepareGlobalTable() {
     tFuncInfo *lengthInfo, *subsInfo, *concatInfo, *findInfo, *sortInfo;
     
     //inicializace seznamu parametru
-    if ((lengthParam = (initList()) == NULL ) || ((subsParam = initList()) == NULL) || 
+    if (((lengthParam = initList()) == NULL ) || ((subsParam = initList()) == NULL) || 
             ((concatParam =initList()) == NULL) ||
         ((findParam = initList()) == 0) || ((sortParam = initList()) == 0))   return 0;
     
@@ -263,6 +263,38 @@ void parse() {
     }
     //TODO - syntakticka a semanticka kontrola probehla v poradku
     else {
+        tTabSymElemData *findMain;
+        char *mainId = "main";
+        string *mainString;
+        
+        if (((mainString = malloc(sizeof(string))) == NULL) || (strInit(mainString) == 1) ||
+            (strConConstString(mainString, mainId)) == 1) {
+            tabSymFree(globalTable);
+            FatalError(ERR_INTERNAL, ERR_MESSAGES[ERR_ALLOC]);
+        }
+        
+        if((findMain = tabSymSearch(globalTable, mainString)) == NULL) {
+            tabSymFree(globalTable);
+            FatalError(ERR_SEM_DEF, ERR_MESSAGES[ERR_SEM_DEF]);
+        }
+        
+        //volani interpretu - generuju nejaky instrukce, ktery po me chce Dominik
+        //ani nevim, jestli dobre
+        tTabSym *localTable;
+        tInsTapeInsPtr firstIns; 
+        tInsTape *insTape;
+                
+        insTape = findMain->info.func->instTape;
+        localTable = findMain->info.func->locTab; 
+        firstIns = insTape->first;
+        
+        insTapeInsertFirst(insTape, I_CF ,(void *) localTable, (void *) firstIns, NULL);
+        insTapeFirst(insTape);
+        
+        insTapePostInsert(insTape, I_RETURN, NULL, NULL, NULL);
+        
+        result = executeTape(findMain->info.func->instTape->first);
+        
         //TODO;
     }
     
