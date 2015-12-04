@@ -40,7 +40,9 @@ int executeTape(tInsTapeInsPtr ins) {
 		}
 	}
 
-	if ((*instruction)->type != I_RETURN) {//paska dosla na konec a nenarazil jsem na I_RETURN
+
+
+	if (*instruction==NULL) {//paska dosla na konec a nenarazil jsem na I_RETURN
 		FatalError(8, ERR_MESSAGES[ERR_RUNTIME_INIT_VAR]);
 	}
 
