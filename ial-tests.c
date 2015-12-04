@@ -394,7 +394,6 @@ void printBST(tBSTNodePtr originalRoot){
 
 int main() {
 	int errNum = 0;
-
 	//hledani podretezce v retezci
 	printf("Hledani podretezce v retezci:\n");
 	printf("\tPodretezec: ipsum\n");

@@ -1125,7 +1125,7 @@ void TQDequeue(tToken* token) {
 		TQueue->First->lptr = NULL;
 	}
 	//uvolnime po sobe pamet
-	freeTokenMem(elm->token);
+	freeTokenMem(&elm->token);
 }
 
 void ungetToken(tToken* token) {
@@ -1148,7 +1148,7 @@ void ungetToken(tToken* token) {
 	else {
 		newTok->value = (*token)->value;
 	}
-	freeTokenMem(*token);
+	freeTokenMem(token);
 	elm->token = newTok;
 	elm->rptr = elm->lptr= NULL;
 	if (!TQueue->First) {//ve fronte nikdo neni
@@ -1167,7 +1167,7 @@ void freeTokenQueue() {
 	if (TQueue == NULL) return;
 	tTokenQueueElem elem = TQueue->First;
 	while (elem!=NULL) {
-		freeTokenMem(elem->token);
+		freeTokenMem(&elem->token);
 		free(elem);
 	}
 	free(TQueue);

@@ -73,7 +73,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	tInsTapeInsPtr insToCall;
 	switch (ins->type)
 	{
-	/*case I_CIN:
+	case I_CIN:
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (dest->type == VAR_TYPE_INT) {
 			
@@ -85,8 +85,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			
 		}
 		else if (dest->type == VAR_TYPE_STRING) {
-			strFree(&dest);
-			strInit(&dest);
+			strFree(&dest->data.stringVal);
+			strInit(&dest->data.stringVal);
 			int c = getchar();
 			if (isspace(c)) {
 				while (isspace(c))
@@ -94,13 +94,13 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			}
 			if (c != EOF) {
 				while (!isspace(c) && c != EOF) {
-					if (strAddChar(&dest, c)) {
+					if (strAddChar(&dest->data.stringVal, c)) {
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
 				}
 			}
 		}
-		break;*/
+		break;
 	case I_COUT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		if (oper1->type == VAR_TYPE_INT) {

@@ -1,9 +1,9 @@
 #include "test-fw.h"
-#include "../token.h"
+
 /*
- *Pro hezci vypis hlavicek testu
- *
- */
+*Pro hezci vypis hlavicek testu
+*
+*/
 void printDescription(const char* text) {
 	int l = strlen(text);
 	int num = (60 - l) / 2;
@@ -11,7 +11,7 @@ void printDescription(const char* text) {
 		printf("-");
 	}
 	printf("%s", text);
-	(l % 2) ? num++:num;
+	(l % 2) ? num++ : num;
 	for (int i = 0; i < num; i++) {
 		printf("-");
 	}
@@ -30,7 +30,7 @@ void printTestData(const char* filename) {
 			if (c == '\n') {
 				line++;
 				printf("%d\t|", line);
-			} 
+			}
 		}
 		fclose(file);
 	}
@@ -87,25 +87,25 @@ void printToken(tToken *token) {
 		"konec souboru"
 	};
 	printf("***Token => ");
-	switch (token->typ)
+	switch ((*token)->typ)
 	{
 	case TYPE_INTEGER:
-		printf("%s = %i\n", tokenNames[token->typ], token->value.intVal);
+		printf("%s = %i\n", tokenNames[(*token)->typ], (*token)->value.intVal);
 		break;
 	case TYPE_DOUBLE:
-		printf("%s = %f\n", tokenNames[token->typ], token->value.doubleVal);
+		printf("%s = %f\n", tokenNames[(*token)->typ], (*token)->value.doubleVal);
 		break;
 	case TYPE_STRING:
-		printf("%s = %s\n", tokenNames[token->typ], token->value.stringVal.str);
+		printf("%s = %s\n", tokenNames[(*token)->typ], (*token)->value.stringVal.str);
 		break;
 	case TYPE_BOOL:
-		printf("%s = %s\n", tokenNames[token->typ], token->value.boolVal ? "true" : "false");
+		printf("%s = %s\n", tokenNames[(*token)->typ], (*token)->value.boolVal ? "true" : "false");
 		break;
 	case TYPE_IDENTIFICATOR:
-		printf("%s = %s\n", tokenNames[token->typ], token->value.stringVal.str);
+		printf("%s = %s\n", tokenNames[(*token)->typ], (*token)->value.stringVal.str);
 		break;
 	default:
-		printf("%s\n", tokenNames[token->typ]);
+		printf("%s\n", tokenNames[(*token)->typ]);
 		break;
 	}
 }

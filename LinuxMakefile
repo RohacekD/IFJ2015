@@ -125,4 +125,3 @@ $(TARGETDIR_IFJ215):
 # Enable dependency checking
 .KEEP_STATE:
 .KEEP_STATE_FILE:.make.state.GNU-amd64-Linux
-
