@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "interpret.h"
 
 
 //ve funkcich muze dojit k ruznym typum chyb
@@ -837,6 +838,34 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return result;
             }
             
+            string *lastGeneratedTMPif, *keyIF;
+            
+            //ziskam posledni vygenerovany identifikator
+            if((lastGeneratedTMPif = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+                return ERR_INTERNAL;
+            }
+            
+            //vyhledam ho v tabulce symbolu
+            if ((keyIF = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMPif)) == NULL) {
+                freeIdName(lastGeneratedTMPif);
+                return ERR_INTERNAL;
+            }
+            
+            freeIdName(lastGeneratedTMPif);
+            
+            //vygeneruji instrukci pro znegovani hodnoty
+            if((insTapeInsertLast(instructionTape, I_LOG_NOT, (void *) keyIF, NULL, keyIF)) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //vygeneruji instrukci podmineneho skoku
+            if((insTapeInsertLast(instructionTape, I_IFNZERO, (void *) keyIF), NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //zapamatuji si instrukci
+            tInsTapeInsPtr ifSkip1 = insTapeGetLast(instructionTape);
+            
             if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
@@ -852,12 +881,39 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return result;
             }
             
+            if (insTapeInsertLast(instructionTape, I_GOTO, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //preskakuju else vetev
+            tInstructTypes skipElse1 = insTapeGetLast(instructionTape);
+         
             //TODO - zpracovani else vetve
             if((result = getToken(&token, f)) != 1) {
                 return ERR_SYNTAX;
             }
             
             switch(token->typ) {
+                //pravidlo 31 <else> -> else <block>
+                case KEYW_ELSE:
+                    //TODO - co poslu bloku
+                    //vygeneruji instrukci s navestim
+                    if(insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                        return ERR_INTERNAL;
+                    }
+
+                    //zapamatuji si instrukci navesti
+                    tInsTapeInsPtr elseLabel1 = insTapeGetLast(instructionTape);
+
+                    //nastavim aktivitu na instrukci ifSkip1, protoze ji chci upravit
+                    insTapeGoto(instructionTape, ifSkip1);
+                    //aktualizuji danou instrukci
+                    insTapeActualize(instructionTape, I_IFNZERO, (void *) keyIF, (void *) elseLabel1, NULL);
+                    freeTokenMem(token);
+                    return parseBlock(localTable, blockList, blockListElem, instructionTape);
+                    break;
+                    
+                    
                 //pravidlo 30 - <else> -> epsilon
                 case KEYW_IF:
                 case KEYW_FOR:
@@ -876,18 +932,27 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 case KEYW_AUTO:
                 case BRACES_CLOSING:
                 case BRACES_OPENING:
+                    
+                    //vygeneruji instrukci s navestim
+                    if(insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                        return ERR_INTERNAL;
+                    }
+
+                    //zapamatuji si instrukci navesti
+                    tInsTapeInsPtr ifLabel1 = insTapeGetLast(instructionTape);
+
+                    //nastavim aktivitu na instrukci ifSkip1, protoze ji chci upravit
+                    insTapeGoto(instructionTape, ifSkip1);
+                    //aktualizuji danou instrukci
+                    insTapeActualize(instructionTape, I_IFNZERO, (void *) keyIF, (void *) ifLabel1, NULL);
                     //navratim token, dalsi funkce pocitaji s tim, ze ho prectou
+                    
+                    //pokud jsem provedl prvni blok, tak neprovadim else
+                    insTapeGoto(instructionTape, skipElse1);
+                    insTapeActualize(instructionTape, I_GOTO, (void *) ifLabel1, NULL, NULL);
                     ungetToken(&token);
                     return 1;
                     break;
-                    
-                //pravidlo 31 <else> -> else <block>
-                case KEYW_ELSE:
-                    //TODO - co poslu bloku
-                    freeTokenMem(token);
-                    return parseBlock(localTable, blockList, blockListElem, instructionTape);
-                    break;
-                    
                 default:
                     return ERR_SYNTAX;
             }
@@ -1519,8 +1584,11 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 
                 //vyhledam klic korespondujici k posledni vygenerovane promenne
                 if ((key2 = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMP)) == NULL) {
+                    freeIdName(lastGeneratedTMP);
                     return ERR_INTERNAL;
                 }
+                
+                freeIdName(lastGeneratedTMP);
                 
                 //TODO GENEROVANI INSTRUKCE
                 if ((result = insTapeInsertLast(instructionTape, I_ASSIGN, (void*) key2, NULL, (void*) key)) == 0) {
@@ -1627,8 +1695,10 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             
             //vyhledam klic korespondujici k posledni vygenerovane promenne
             if((key2 = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMP)) == NULL) {
+                freeIdName(lastGeneratedTMP);
                 return ERR_INTERNAL;
             }
+            freeIdName(lastGeneratedTMP);
             
             //TODO GENEROVANI INSTRUKCE
             if ((result = insTapeInsertLast(instructionTape, I_ASSIGN, (void*) key2, NULL, (void*) key)) == 0) {
@@ -1687,18 +1757,6 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
                 return result;
             }
             
-            //nasledujici prikazy asi nechci, protoze parseStatement list zpracuje uzaviraci zavorku
-            /*
-            if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
-            }
-            
-            if (token->typ != BRACES_CLOSING) {
-                freeTokenMem(token);
-                return ERR_SYNTAX;
-            }
-            freeTokenMem(token);*/
-            //pokud jsem dosel az sem, tak je vse v poradku
             return 1;
             break;
             
@@ -1846,6 +1904,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 
                 //chci ziskat klic, ktery koresponduje k danemu identifikatoru
                 if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
+                    freeIdName(lastCreatedTMP);
                     freeIdName(idName);
                     return ERR_INTERNAL;
                 }
@@ -1854,8 +1913,11 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 
                 //chci ziskat klic, ktery koresponduje k posledni vygenerovane promenne
                 if((key2 = tabSymListGetPointerToKey(blockListElem, localTable, lastCreatedTMP)) == NULL) {
+                    freeIdName(lastCreatedTMP);
                     return ERR_INTERNAL;
                 }
+                
+                freeIdName(lastCreatedTMP);
                 
                 //vlozeni instrukce
                 if(insTapeInsertLast(instructionTape, I_ASSIGN, (void *) key2, NULL, (void *) key) == 0) {
