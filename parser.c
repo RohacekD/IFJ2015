@@ -849,7 +849,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
         //pravidlo 23 - if(expression)<block><else>
         case KEYW_IF:
             //uvolnim pamet tokenu
-            freeTokenMem(tokenOrig);
+            freeTokenMem(&tokenOrig);
             
             //nactu dalsi token - mel by byt '('
             if((result = getToken(&token, f)) != 1) {
@@ -992,7 +992,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
         //TODO - lokalni tabulka u funkce for?
         case KEYW_FOR:
             //uvolnim pamet tokenu
-            freeTokenMem(tokenOrig);
+            freeTokenMem(&tokenOrig);
             
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -1112,7 +1112,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
         //pravidlo 20 - cin >> ID <cin>;
         case KEYW_CIN:
             //uvolneni predaneho tokenu
-            freeTokenMem(tokenOrig);
+            freeTokenMem(&tokenOrig);
             
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -1198,7 +1198,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             
         //pravidlo 21 - <statement> -> cout << <term><cout>;
         case KEYW_COUT:
-            freeTokenMem(tokenOrig);
+            freeTokenMem(&tokenOrig);
             
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -1335,7 +1335,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             
         //pravidlo 22 - <statement> -> return expression;
         case KEYW_RETURN:
-            freeTokenMem(tokenOrig);
+            freeTokenMem(&tokenOrig);
             //TODO - zpracovani vyrazu
             if ((result = parseExpression( blockListElem, localTable, instructionTape, &expressionType, f)) != ERR_OK) {
                 return result;
@@ -1361,7 +1361,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
         //TODO - generovani instrukci
         //pravidlo 25 - while(expression)<block>
         case KEYW_WHILE:
-            freeTokenMem(tokenOrig);
+            freeTokenMem(&tokenOrig);
             
             //vygeneruji si instrukci noveho navesti a uchovam si na ni ukazatel
             if (insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
@@ -1446,7 +1446,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
          //TODO - generovani instrukci
         //pravidlo 26 - <statement> -> do <block>while(expression);
         case KEYW_DO:
-            freeTokenMem(tokenOrig);
+            freeTokenMem(&tokenOrig);
             
             //TODO - zpracovani bloku
             if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
@@ -1836,10 +1836,10 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
         case TYPE_IDENTIFICATOR:
             //TODO
             if ((idName = copyIdName(&(tokenOrig->value.stringVal))) == NULL ) {
-                freeTokenMem(tokenOrig);
+                freeTokenMem(&tokenOrig);
                 return ERR_INTERNAL;
             }
-            freeTokenMem(tokenOrig);
+            freeTokenMem(&tokenOrig);
             
             //semanticka kontrala, zda je promenna definovana v danem rozsahu platnosti
             if ((idUsable = tabSymListSearch(blockListElem, localTable, idName)) == NULL) {
@@ -1964,7 +1964,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
         //zpracovavam vetev ++ID
         case INCREMENTATION:
             
-            freeTokenMem(tokenOrig);
+            freeTokenMem(&tokenOrig);
             //TODO - semanticke akce a generovani kodu
             if((result = getToken(&token, f))) {
                 return LEXICAL_ERR;
@@ -2014,7 +2014,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
         //zpracovavam vetev --ID
         case DECREMENTATION:
             
-            freeTokenMem(tokenOrig);
+            freeTokenMem(&tokenOrig);
             //TODO - semanticke akce a generovani kodu
             if((result = getToken(&token, f))) {
                 return LEXICAL_ERR;
@@ -2061,7 +2061,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             break;
             
         default:
-            freeTokenMem(tokenOrig);
+            freeTokenMem(&tokenOrig);
             return ERR_SYNTAX;
     }
 }
