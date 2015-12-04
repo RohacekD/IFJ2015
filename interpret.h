@@ -4,10 +4,6 @@
 #include "frameStack.h"
 #include "error.h"
 #include "tabSym.h"
-<<<<<<< HEAD
-#include <string.h>
-=======
->>>>>>> branch 'master' of https://github.com/Irimitenkan/IFJ2015.git
 #include <ctype.h>
 /*
  * Dostane instrukci a od te zacne vykonavat program.
