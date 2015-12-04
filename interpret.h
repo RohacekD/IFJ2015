@@ -5,6 +5,7 @@
 #include "error.h"
 #include "tabSym.h"
 #include <string.h>
+#include <ctype.h>
 /*
  * Dostane instrukci a od te zacne vykonavat program.
  * Vykonava skokove instrukce ve svem tele
