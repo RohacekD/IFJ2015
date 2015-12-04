@@ -528,9 +528,11 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		break;
 	case I_SORT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
-		if (oper1->type != VAR_TYPE_STRING)
+		findVariable(stack, (string*)ins->adr3, &dest);
+		if (oper1->type != VAR_TYPE_STRING || dest->type != VAR_TYPE_STRING)
 			return ERR_SEM_COM;
-		heapSort(oper1->data.stringVal.str);
+		strCopyString(&dest->data.stringVal, &oper1->data.stringVal);
+		heapSort(dest->data.stringVal.str);
 		break;
 	case I_FIND:
 		findVariable(stack, (string*)ins->adr1, &oper1);
