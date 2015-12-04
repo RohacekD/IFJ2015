@@ -1,6 +1,5 @@
 #include "scanner.h"
 
-
 tTokenQueue *TQueue = NULL;
 
 /*
@@ -784,7 +783,6 @@ int getToken(tToken *Token, FILE* source) {
 		case IDENTIFICATOR:
 			//ctu cislice, pismena nebo podtrzitka
 			if (isalnum(c) || c == '_') {
-				state = state;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
 					freeTokenMem(&tok);

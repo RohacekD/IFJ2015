@@ -44,7 +44,7 @@ typedef enum{
 	I_RETURN, //nepotrebuje nic
 	I_IFZERO,//jmp if adr1 == 0 to adr2 (ins)
 	I_IFNZERO,//jmp if adr1 != 0 to adr2 (ins)
-        I_GOTO, //adr1 - ins
+    I_GOTO, //adr1 - ins
 	I_SORT,//adr1 string(argument 1), adr2,adr3 variable INT (argument 2 a 3)
 	I_SORT_DEST, //adr3 kam ulozit vysledek
 	I_FIND,//
