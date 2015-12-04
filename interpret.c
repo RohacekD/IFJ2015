@@ -575,6 +575,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		}
 		strFree(&dest->data.stringVal);
 		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal);
+
 		break;
 	case I_LENGTH:
 		findVariable(stack, (string*)ins->adr1, &oper1);
