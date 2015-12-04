@@ -83,7 +83,7 @@ int prepareGlobalTable() {
     if ((insertEl(lengthParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0) {
         return 0;
     }
-    if ((lengthInfo = tabSymCreateFuncInfo(&lengthParam, TAB_SYM_VAR_NO_AUTO_INTEGER, NULL, NULL, NULL, true)) == NULL) {
+    if ((lengthInfo = tabSymCreateFuncInfo(lengthParam, TAB_SYM_VAR_NO_AUTO_INTEGER, NULL, NULL, NULL, true)) == NULL) {
         return 0;
     }
     if (tabSymInsertFunc(globalTable, length, lengthInfo) == 0)
@@ -101,7 +101,7 @@ int prepareGlobalTable() {
              (insertEl(subsParam, NULL, TAB_SYM_VAR_NO_AUTO_INTEGER)) == 0) {
         return 0;
     }
-    if ((subsInfo = tabSymCreateFuncInfo(&subsParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+    if ((subsInfo = tabSymCreateFuncInfo(subsParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
         return 0;
     }
     if (tabSymInsertFunc(globalTable, substr, subsInfo) == 0)
@@ -118,7 +118,7 @@ int prepareGlobalTable() {
          (insertEl(concatParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 ) {
         return 0;
     }
-    if ((concatInfo = tabSymCreateFuncInfo(&concatParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+    if ((concatInfo = tabSymCreateFuncInfo(concatParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
         return 0;
     }
     if (tabSymInsertFunc(globalTable, concat, concatInfo) == 0)
@@ -135,7 +135,7 @@ int prepareGlobalTable() {
          (insertEl(findParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 ) {
         return 0;
     }
-    if ((findInfo = tabSymCreateFuncInfo(&findParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+    if ((findInfo = tabSymCreateFuncInfo(findParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
         return 0;
     }
     if (tabSymInsertFunc(globalTable, find, findInfo) == 0)
@@ -151,7 +151,7 @@ int prepareGlobalTable() {
     if ((insertEl(sortParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0) {
         return 0;
     }
-    if ((sortInfo = tabSymCreateFuncInfo(&sortParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+    if ((sortInfo = tabSymCreateFuncInfo(sortParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
         return 0;
     }
     if (tabSymInsertFunc(globalTable, sort, sortInfo) == 0)
@@ -358,7 +358,7 @@ int parseFunction() {
                 freeTokenMem(token);
                 
                 //vytvoreni informaci o funkci pro globalni tabulku symbolu
-                if((funcInfo = tabSymCreateFuncInfo(&paramList, (tTabSymVarNoAutoDataType)returnType, 
+                if((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType, 
                         localTabSym, NULL, NULL, false)) == NULL) {
                     freeIdName(idName);
                     return ERR_INTERNAL;
@@ -411,7 +411,7 @@ int parseFunction() {
                 }
                 
                 //telo funkce probehlo v poradku, doplnim informace do globalni tabulky symbolu
-                if ((funcInfo = tabSymCreateFuncInfo(&paramList, (tTabSymVarNoAutoDataType)returnType,
+                if ((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType,
                         localTabSym, blockList, instructionTape, defined)) == NULL) {
                     freeIdName(idName);
                     return ERR_INTERNAL;
@@ -506,7 +506,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
         //pokud je dany ID v globalni tabulce, provadime semantickou kontrolu hlavicky
         if(data != NULL) {
             //list argumentu neni prazdny, chyba
-            if((*data->info.func->params)->first != NULL) {
+            if(data->info.func->params->first != NULL) {
                 freeTokenMem(token);
                 return ERR_SEM_COM;
             }
@@ -526,7 +526,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
     //token je klicove slovo pro datovy typ
     freeTokenMem(token);
     //seznam parametru neni prazdny, nastavime aktivitu prvni prvek seznamu parametru
-    first(*(data->info.func->params));
+    first(data->info.func->params);
     
     //volam funkci pro zpracovani argumentu
     return parseArgument(paramList, data, paramType, localTable);
@@ -593,8 +593,8 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
     }
     //porovnavam parametry
     else {
-        if (((tTabSymVarNoAutoDataType)paramType != (*data->info.func->params)->act->dataType) ||
-                (strcmp(idName->str, (*data->info.func->params)->act->idName->str) != 0)) {
+        if (((tTabSymVarNoAutoDataType)paramType != data->info.func->params->act->dataType) ||
+                (strcmp(idName->str, data->info.func->params->act->idName->str) != 0)) {
             freeIdName(idName);
             return ERR_SEM_COM;
         }
@@ -626,7 +626,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
     if (token->typ == PARENTHESIS_CLOSING) {
         freeTokenMem(token);
         //zkontroluji, zda neni dana funkce uz deklarovana s vice parametry
-        if ((*data->info.func->params)->act->next != NULL) {
+        if (data->info.func->params->act->next != NULL) {
             return ERR_SEM_COM;
         }
         return 1;
@@ -647,7 +647,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
         }
         freeTokenMem(token);
         //posunu se v seznamu argumentu na dalsi prvek
-        succ((*data->info.func->params));
+        succ(data->info.func->params);
         return parseArgument(paramList, data, paramType, localTable);
     }
     //neocekavany token
@@ -859,7 +859,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             //vygeneruji instrukci podmineneho skoku
-            if((insTapeInsertLast(instructionTape, I_IFNZERO, (void *) keyIF), NULL, NULL) == 0) {
+            if(insTapeInsertLast(instructionTape, I_IFNZERO, (void *) keyIF, NULL, NULL) == 0) {
                 return ERR_INTERNAL;
             }
             
@@ -886,7 +886,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             //preskakuju else vetev
-            tInstructTypes skipElse1 = insTapeGetLast(instructionTape);
+            tInsTapeInsPtr skipElse1 = insTapeGetLast(instructionTape);
          
             //TODO - zpracovani else vetve
             if((result = getToken(&token, f)) != 1) {
