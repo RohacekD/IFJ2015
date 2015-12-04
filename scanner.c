@@ -97,7 +97,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = IDENTIFICATOR;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -106,7 +106,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = FLOAT_OR_INT;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -114,7 +114,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -147,7 +147,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = TWO_CHAR_OPER;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -186,7 +186,7 @@ int getToken(tToken *Token, FILE* source) {
 				tok->typ = END_OF_FILE;
 				strFree(&s);
 				if (errorFlag) {
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(errorFlag, ERR_MESSAGES[ERR_LEX]);
 				}
 				return 1;
@@ -195,7 +195,7 @@ int getToken(tToken *Token, FILE* source) {
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Unknown symbol.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;
 			}
 			break;
@@ -204,7 +204,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -212,7 +212,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -220,14 +220,14 @@ int getToken(tToken *Token, FILE* source) {
 				state = FLOAT_PART;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
 			else {
 				int val = 42;
 				if (!strToInt(&s, &val)) {
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					strFree(&s);
 					FatalError(99, "%s-%d: Chyba pri nacteni celeho cisla.", ERR_MESSAGES[ERR_ALLOC], line);
 					return 42;
@@ -248,7 +248,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -256,7 +256,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = FLOAT_PART;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -264,7 +264,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -274,7 +274,7 @@ int getToken(tToken *Token, FILE* source) {
 					errorFlag = 1;
 					Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n",ERR_MESSAGES[ERR_LEX], line, character);
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					return 42;
 				}
 				tok->typ = TYPE_INTEGER;
@@ -289,7 +289,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = FLOAT_PART;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -297,7 +297,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -307,7 +307,7 @@ int getToken(tToken *Token, FILE* source) {
 					errorFlag = 1;
 					Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n",ERR_MESSAGES[ERR_LEX], line, character);
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					return 42;
 				}
 				tok->typ = TYPE_DOUBLE;
@@ -322,7 +322,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -330,7 +330,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = EXPONENT_PLUS_MINUS_CHECK;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -340,7 +340,7 @@ int getToken(tToken *Token, FILE* source) {
 				Warning("%sLine - %d:%d\t-  Exponent musi obsahovat validni cislici.\n",ERR_MESSAGES[ERR_LEX], line, character);
 				pom = c;
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;
 			}
 			break;
@@ -349,7 +349,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -358,7 +358,7 @@ int getToken(tToken *Token, FILE* source) {
 				Warning("%sLine - %d:%d\t-  Exponent musi obsahovat validni cislici.\n",ERR_MESSAGES[ERR_LEX], line, character);
 				pom = c;
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;
 			}
 			break;
@@ -367,7 +367,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -377,7 +377,7 @@ int getToken(tToken *Token, FILE* source) {
 					errorFlag = 1;
 					Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n",ERR_MESSAGES[ERR_LEX], line, character);
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					return 42;
 				}
 				tok->typ = TYPE_DOUBLE;
@@ -404,7 +404,7 @@ int getToken(tToken *Token, FILE* source) {
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Ocekavan symbol pro ciselnou soustavu.\n",ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;
 				break;
 			}
@@ -415,7 +415,7 @@ int getToken(tToken *Token, FILE* source) {
 				if (!(c == '0' && strGetLength(&s) == 0)) {
 					if (strAddChar(&s, c)) {
 						strFree(&s);
-						freeTokenMem(&tok);
+						freeTokenMem(tok);
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
 				}
@@ -425,7 +425,7 @@ int getToken(tToken *Token, FILE* source) {
 				int val = 0;
 				if (!strBinToInt(&s, &val)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					return 42;
 				}
 				tok->typ = TYPE_INTEGER;
@@ -440,7 +440,7 @@ int getToken(tToken *Token, FILE* source) {
 				if (!(c == '0' && strGetLength(&s) == 0)) {
 					if (strAddChar(&s, c)) {
 						strFree(&s);
-						freeTokenMem(&tok);
+						freeTokenMem(tok);
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
 				}
@@ -450,7 +450,7 @@ int getToken(tToken *Token, FILE* source) {
 				int val = 0;
 				if (!strOctToInt(&s, &val)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					return 42;
 				}
 				tok->typ = TYPE_INTEGER;
@@ -465,7 +465,7 @@ int getToken(tToken *Token, FILE* source) {
 				if (!(c == '0' && strGetLength(&s)==0)) {
 					if (strAddChar(&s, c)) {
 						strFree(&s);
-						freeTokenMem(&tok);
+						freeTokenMem(tok);
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
 				}
@@ -475,7 +475,7 @@ int getToken(tToken *Token, FILE* source) {
 				int val = 0;
 				if (!strHexToInt(&s, &val)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					return 42;
 				}
 				tok->typ = TYPE_INTEGER;
@@ -495,7 +495,7 @@ int getToken(tToken *Token, FILE* source) {
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Binarni and neni podporovan v IFJ2015.\n",ERR_MESSAGES[ERR_LEX], line, character-1);
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;//tady leak neni
 			}
 			break;
@@ -511,7 +511,7 @@ int getToken(tToken *Token, FILE* source) {
 				Warning("%sLine - %d:%d\t-  Binarni or neni podporovan v IFJ2015.\n",ERR_MESSAGES[ERR_LEX], line, character - 1);
 				pom = c;
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;
 			}
 			break;
@@ -520,7 +520,7 @@ int getToken(tToken *Token, FILE* source) {
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n",ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;
 			}
 			else if (c == '\\') {
@@ -547,7 +547,7 @@ int getToken(tToken *Token, FILE* source) {
 			else {//uloz si znak
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -558,7 +558,7 @@ int getToken(tToken *Token, FILE* source) {
 			case 'B':
 				if (strInit(&escape)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 				state = STRING_BINARY_NUMBER;
@@ -566,7 +566,7 @@ int getToken(tToken *Token, FILE* source) {
 			case '0':
 				if (strInit(&escape)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 				state = STRING_OCTAL_NUMBER;
@@ -575,7 +575,7 @@ int getToken(tToken *Token, FILE* source) {
 			case 'X':
 				if (strInit(&escape)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 				state = STRING_HEX_DEC_NUMBER;
@@ -583,7 +583,7 @@ int getToken(tToken *Token, FILE* source) {
 			case '\\':
 				if (strAddChar(&s, '\\')) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 				state = STRING;
@@ -591,7 +591,7 @@ int getToken(tToken *Token, FILE* source) {
 			case '\n':
 				if (strAddChar(&s, '\n')) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 				state = STRING;
@@ -599,7 +599,7 @@ int getToken(tToken *Token, FILE* source) {
 			case '\t':
 				if (strAddChar(&s, '\t')) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 				state = STRING;
@@ -607,7 +607,7 @@ int getToken(tToken *Token, FILE* source) {
 			case '\"':
 				if (strAddChar(&s, '\"')) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 				state = STRING;
@@ -616,7 +616,7 @@ int getToken(tToken *Token, FILE* source) {
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Ocekavan symbol pro ciselnou soustavu.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;
 				break;
 			}
@@ -625,7 +625,7 @@ int getToken(tToken *Token, FILE* source) {
 			if ((c == '0' || c == '1')) {//ctu validni vstup
 				if (strGetLength(&escape) < 8) {//jeste nemam 8 cislic tak ctu dal
 					if (strAddChar(&escape, c)) {
-						freeTokenMem(&tok);
+						freeTokenMem(tok);
 						strFree(&escape);
 						strFree(&s);
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
@@ -635,7 +635,7 @@ int getToken(tToken *Token, FILE* source) {
 					int val;
 					if (strBinToInt(&escape, &val) && val >= 1 && val <= 255) {
 						if (strAddChar(&s, (char)val)) {//precteny znak pridam do stringu
-							freeTokenMem(&tok);
+							freeTokenMem(tok);
 							strFree(&escape);
 							strFree(&s);
 							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
@@ -658,7 +658,7 @@ int getToken(tToken *Token, FILE* source) {
 					int val;
 					if (strBinToInt(&escape, &val) && val >= 1 && val <= 255) {
 						if (strAddChar(&s, (char)val)) {
-							freeTokenMem(&tok);
+							freeTokenMem(tok);
 							strFree(&escape);
 							strFree(&s);
 							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
@@ -678,7 +678,7 @@ int getToken(tToken *Token, FILE* source) {
 			if ((c >= '0' && c <= '7')) {//ctu validni vstup
 				if (strGetLength(&escape) < 3) {
 					if (strAddChar(&escape, c)) {
-						freeTokenMem(&tok);
+						freeTokenMem(tok);
 						strFree(&escape);
 						strFree(&s);
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
@@ -688,7 +688,7 @@ int getToken(tToken *Token, FILE* source) {
 					int val;
 					if (strOctToInt(&escape, &val) && val >= 1 && val <= 255) {
 						if (strAddChar(&s, (char)val)) {
-							freeTokenMem(&tok);
+							freeTokenMem(tok);
 							strFree(&escape);
 							strFree(&s);
 							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
@@ -711,7 +711,7 @@ int getToken(tToken *Token, FILE* source) {
 					int val;
 					if (strOctToInt(&escape, &val) && val >= 1 && val <= 255) {
 						if (strAddChar(&s, (char)val)) {
-							freeTokenMem(&tok);
+							freeTokenMem(tok);
 							strFree(&escape);
 							strFree(&s);
 							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
@@ -731,7 +731,7 @@ int getToken(tToken *Token, FILE* source) {
 			if ((c >= '0' && c <= '9')||(c >= 'a' && c <= 'f')|| (c >= 'A' && c <= 'F')) {//ctu validni vstup
 				if (strGetLength(&escape) < 2) {
 					if (strAddChar(&escape, c)) {
-						freeTokenMem(&tok);
+						freeTokenMem(tok);
 						strFree(&escape);
 						strFree(&s);
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
@@ -741,7 +741,7 @@ int getToken(tToken *Token, FILE* source) {
 					int val;
 					if (strHexToInt(&escape, &val) && val >= 1 && val <= 255) {
 						if (strAddChar(&s, (char)val)) {
-							freeTokenMem(&tok);
+							freeTokenMem(tok);
 							strFree(&escape);
 							strFree(&s);
 							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
@@ -764,7 +764,7 @@ int getToken(tToken *Token, FILE* source) {
 					int val;
 					if (strHexToInt(&escape, &val) && val >= 1 && val <= 255) {
 						if (strAddChar(&s, (char)val)) {
-							freeTokenMem(&tok);
+							freeTokenMem(tok);
 							strFree(&escape);
 							strFree(&s);
 							FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
@@ -785,7 +785,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (isalnum(c) || c == '_') {
 				if (strAddChar(&s, c)) {
 					strFree(&s);
-					freeTokenMem(&tok);
+					freeTokenMem(tok);
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -797,12 +797,12 @@ int getToken(tToken *Token, FILE* source) {
 				if (isIdent == TYPE_IDENTIFICATOR) {
 					if (strInit(&(tok->value.stringVal))) {
 						strFree(&s);
-						freeTokenMem(&tok);
+						freeTokenMem(tok);
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
 					if (strCopyString(&(tok->value.stringVal), &s)) {
 						strFree(&s);
-						freeTokenMem(&tok);
+						freeTokenMem(tok);
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
 				}
@@ -848,7 +848,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (c == EOF) {
 				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;
 			}
 			/*else if (c=='/') {
@@ -865,7 +865,7 @@ int getToken(tToken *Token, FILE* source) {
 			else if (c == EOF) {
 				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;
 			}
 			else if (c == '/') {//konec blokového komentáře jdeme hledat další lexém
@@ -878,13 +878,13 @@ int getToken(tToken *Token, FILE* source) {
 		/*case NESTED_BLOCK_COMMENT_CHECK:
 			if (c == '*') {
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;//TODO: error 
 			}
 			else if (c == EOF) {
 				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
-				freeTokenMem(&tok);
+				freeTokenMem(tok);
 				return 42;
 			}
 			else {
@@ -1125,7 +1125,7 @@ void TQDequeue(tToken* token) {
 		TQueue->First->lptr = NULL;
 	}
 	//uvolnime po sobe pamet
-	freeTokenMem(elm->token);
+	freeTokenMem(&elm->token);
 }
 
 void ungetToken(tToken* token) {
@@ -1148,7 +1148,7 @@ void ungetToken(tToken* token) {
 	else {
 		newTok->value = (*token)->value;
 	}
-	freeTokenMem(*token);
+	freeTokenMem(token);
 	elm->token = newTok;
 	elm->rptr = elm->lptr= NULL;
 	if (!TQueue->First) {//ve fronte nikdo neni
@@ -1167,7 +1167,7 @@ void freeTokenQueue() {
 	if (TQueue == NULL) return;
 	tTokenQueueElem elem = TQueue->First;
 	while (elem!=NULL) {
-		freeTokenMem(elem->token);
+		freeTokenMem(&elem->token);
 		free(elem);
 	}
 	free(TQueue);

@@ -73,7 +73,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	tInsTapeInsPtr insToCall;
 	switch (ins->type)
 	{
-	/*case I_CIN:
+	case I_CIN:
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (dest->type == VAR_TYPE_INT) {
 			
@@ -100,7 +100,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				}
 			}
 		}
-		break;*/
+		break;
 	case I_COUT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		if (oper1->type == VAR_TYPE_INT) {
