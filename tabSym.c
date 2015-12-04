@@ -15,8 +15,6 @@
 #include <stdio.h>
 #include <limits.h>
 #include "tabSym.h"
-#include "insTape.h"
-#include "ial.h"
 
 #define BUFFER_SIZE 100
 
@@ -67,7 +65,7 @@ tConstantInfo* tabSymCreateConstantInfo(tTabSymVarNoAutoDataType dataType,
 	return constData;
 }
 
-tFuncInfo* tabSymCreateFuncInfo(tParamListPtr* params,
+tFuncInfo* tabSymCreateFuncInfo(tParamListPtr params,
 		tTabSymVarNoAutoDataType retType, tTabSym* locTab,
 		tTabSymList* tabBlockList, tInsTape* instTape, bool defined) {
 	tFuncInfo* funcData = malloc(sizeof(tFuncInfo));
@@ -182,20 +180,8 @@ void freeConstantInfo(tConstantInfo * constant) {
  */
 void freeFunctionInfo(tFuncInfo * func) {
 
-	/**
-	 * Informace k funkci.
-	 */
-	/*typedef struct {
-	 tParamListPtr* params;		// parametry funkce
-	 tTabSymVarNoAutoDataType retType;	// navratovy typ funkce
-	 tTabSym* locTab;			// lokalni tabulka symbolu
-	 tInsTape* instTape;			// instrukcni paska
-	 bool defined;				// byla definovana
-
-	 } tFuncInfo;*/
-
 	//uvolnime list parametru
-	paramListFree((*func->params)); //UPRAVENO
+	paramListFree(func->params);
 
 	//uvolnime lokalni tabulku symbolu
 	tabSymFree(func->locTab);
