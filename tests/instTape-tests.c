@@ -12,11 +12,13 @@
  
 int main() {
         tTabSym* tab = tabSymCreate(TAB_SYM_LOC);
+        tTabSym* tab2 = tabSymCreate(TAB_SYM_LOC);
  
  
         tVariableInfo* infIV1 = tabSymCreateVariableInfo(TAB_SYM_VAR_INTEGER);
         tVariableInfo* infIV2 = tabSymCreateVariableInfo(TAB_SYM_VAR_INTEGER);
         tVariableInfo* infIV3 = tabSymCreateVariableInfo(TAB_SYM_VAR_INTEGER);
+        tVariableInfo* infIV4 = tabSymCreateVariableInfo(TAB_SYM_VAR_INTEGER);
  
         tVariableInfo* infSV1 = tabSymCreateVariableInfo(TAB_SYM_VAR_STRING);
         tVariableInfo* infSV2 = tabSymCreateVariableInfo(TAB_SYM_VAR_STRING);
@@ -34,7 +36,7 @@ int main() {
         string oddelovac, pivo, rum, odd2;
         strCharToString(&oddelovac, "\n-------------------\n");
         strCharToString(&odd2, "\n----Dalsi operace----\n");
-        strCharToString(&pivo, "PIVICKO");
+        strCharToString(&pivo, "micek");
         strCharToString(&rum, "rumicek");
  
         unionValue valInt1, valInt2, valStr1, valStr2, valStr3, valStr4, valBol1, valBol2, valDub1, valDub2;
@@ -70,7 +72,7 @@ int main() {
         tConstantInfo* infDC2 = tabSymCreateConstantInfo(TAB_SYM_VAR_DOUBLE, valDub2);
  
  
-        string intC1, intC2, intV1, intV2, intV3, strC1, strC2, strC3, strC4, strV1, strV2, strV3,
+        string intC1, intC2, intV1, intV2, intV3, intV4, strC1, strC2, strC3, strC4, strV1, strV2, strV3,
                 bolC1, bolC2, bolV1, bolV2, bolV3, dubC1, dubC2, dubV1, dubV2, dubV3;
  
         strCharToString(&intC1, "intC1");
@@ -78,6 +80,7 @@ int main() {
         strCharToString(&intV1, "intV1");
         strCharToString(&intV2, "intV2");
         strCharToString(&intV3, "intV3");
+        strCharToString(&intV4, "$ret");
  
         strCharToString(&strC1, "strC1");
         strCharToString(&strC2, "strC2");
@@ -99,7 +102,10 @@ int main() {
         strCharToString(&dubV2, "dubV2");
         strCharToString(&dubV3, "dubV3");
  
- 
+        tabSymInsertVar(tab2, &intV4, infIV4);
+        tabSymInsertConst(tab2, &intC1, infIC1);
+        tabSymInsertConst(tab2, &intC2, infIC2);
+        
         tabSymInsertConst(tab, &intC1, infIC1);
         tabSymInsertConst(tab, &intC2, infIC2);
         tabSymInsertVar(tab, &intV1, infIV1);
@@ -134,7 +140,22 @@ int main() {
         //priprava instape
         tInsTape* mainTape = insTapeCreate();
         tInsTape* sexTape = insTapeCreate();
- 
+        tInsTape* second = insTapeCreate();
+        
+        insTapeInsertLast(second, I_COUT, &strC1, NULL, NULL);
+        insTapeInsertLast(second, I_COUT, &strC1, NULL, NULL);
+        insTapeInsertLast(second, I_COUT, &strC1, NULL, NULL);
+        insTapeInsertLast(second, I_COUT, &strC1, NULL, NULL);
+        
+        insTapeInsertLast(second, I_PLUS, &intC1, &intC2, &intV4);
+        insTapeInsertLast(second, I_COUT, &intV4, NULL, NULL);
+        insTapeInsertLast(second, I_COUT, &strC1, NULL, NULL);
+        insTapeInsertLast(second, I_RETURN, NULL, NULL, NULL);
+        
+        insTapeInsertLast(second, I_COUT, &strC1, NULL, NULL);
+        insTapeInsertLast(second, I_COUT, &strC1, NULL, NULL);
+        insTapeInsertLast(second, I_COUT, &strC1, NULL, NULL);
+        
  
         //-----------------------INT-----------------------------------------
  
@@ -221,7 +242,10 @@ int main() {
         //nefunguje prirazeni do promenne --- nemuzu otestovat substring
         // insTapeInsertLast(sexTape, I_ASSIGN, &strC3, NULL, &strV1);
         //insTapeInsertLast(sexTape, I_ASSIGN, &strC4, NULL, &strV2);
- 
+        insTapeInsertLast(sexTape, I_FIND, &strC3, &strC4, &intV1);
+        insTapeInsertLast(sexTape, I_COUT, &intV1, NULL, NULL);
+        insTapeInsertLast(sexTape, I_COUT, &strC1, NULL, NULL);
+        
         insTapeInsertLast(sexTape, I_CONCAT, &strC3, &strC4, &strV1);
         insTapeInsertLast(sexTape, I_COUT, &strV1, NULL, NULL);
         insTapeInsertLast(sexTape, I_COUT, &strC1, NULL, NULL);
@@ -240,6 +264,8 @@ int main() {
  
         //-----------------------Great Less Equal---------------------------------------
        
+        insTapeInsertLast(sexTape,I_CF,tab2,second->first,&intV4);
+        
         insTapeInsertLast(sexTape, I_GREATER, &intC1, &intC2, &bolV1);
         insTapeInsertLast(sexTape, I_COUT, &bolV1, NULL, NULL);
         insTapeInsertLast(sexTape, I_COUT, &strC1, NULL, NULL);
@@ -247,14 +273,14 @@ int main() {
         insTapeInsertLast(sexTape, I_LESSER, &intC1, &intC2, &bolV1);
         insTapeInsertLast(sexTape, I_COUT, &bolV1, NULL, NULL);
         insTapeInsertLast(sexTape, I_COUT, &strC1, NULL, NULL);
- 
+
         insTapeInsertLast(sexTape, I_EQUAL, &intC1, &intC2, &bolV1);
         insTapeInsertLast(sexTape, I_COUT, &bolV1, NULL, NULL);
          
-        tInsTapeInsPtr point = insTapeGetLast(sexTape);
+        //tInsTapeInsPtr point = insTapeGetLast(sexTape);
         
-        insTapeInsertLast(sexTape, I_COUT, &strC2, NULL, NULL);
-        insTapeInsertLast(sexTape, I_GOTO, &point, NULL, NULL);
+        //insTapeInsertLast(sexTape, I_COUT, &strC2, NULL, NULL);
+        //insTapeInsertLast(sexTape, I_GOTO, &point, NULL, NULL);
         //insTapeInsertLast(sexTape, I_IFZERO, &bolV1,&point, NULL);
  
  
