@@ -1,6 +1,5 @@
 // IFJ2015.cpp : Defines the entry point for the console application.
 //
-/*
 #include <stdlib.h>
 #include <stdio.h>
 #include "error.h"
@@ -25,4 +24,3 @@ int main(int argc, char **argv)
     
     return 0;
 }
-*/

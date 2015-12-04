@@ -130,7 +130,6 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 				//chyba
 				return 0;
 			}
-
 		}
 
 		break;
