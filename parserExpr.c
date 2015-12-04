@@ -13,6 +13,7 @@
 
 #include "parserExpr.h"
 
+extern tTabSym *globalTable;
 
 /**
  * Pripravi dalsi token v rade.
@@ -25,7 +26,7 @@
  * @return 1 OK, 0 chyba
  */
 int prepareNextToken(tPrecStack* stack, FILE* scanFile,
-		tParExpTerminals* terminalCode, tToken* token) {
+		tParExpTerminals* terminalCode, tToken token) {
 	tPrecStackData* precStackdata;
 	tToken nextToken;
 
@@ -116,14 +117,14 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 			*terminalCode = TERMINAL_INCREMENT_POSTFIX;
 		} else {
 			// prefix ++
-			if (prepareNextToken(stack, scanFile, terminalCode, &nextToken)
+			if (prepareNextToken(stack, scanFile, terminalCode, nextToken)
 					== 0) {
 				//chyba
 				return 0;
 			}
 
 			if (terminalCode == TYPE_IDENTIFICATOR) {
-				ungetToken(&nextToken);	//vratime
+				ungetToken(nextToken);	//vratime
 				*terminalCode = TERMINAL_INCREMENT_PREFIX;
 			} else {
 				//chyba
@@ -142,13 +143,13 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 			*terminalCode = TERMINAL_DECREMENT_POSTFIX;
 		} else {
 			// prefix --
-			if (prepareNextToken(stack, scanFile, terminalCode, &nextToken)
+			if (prepareNextToken(stack, scanFile, terminalCode, nextToken)
 					== 0) {
 				//chyba
 				return 0;
 			}
 			if (terminalCode == TYPE_IDENTIFICATOR) {
-				ungetToken(&nextToken);	//vratime
+				ungetToken(nextToken);	//vratime
 				*terminalCode = TERMINAL_DECREMENT_PREFIX;
 			} else {
 				//chyba
@@ -185,13 +186,13 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 
 		//musime zjistit, zda-li se nejedna o identifikator funkce
 		*terminalCode = TERMINAL_IDENTIFICATOR;
-		if (getToken(&nextToken, scanFile) != 1)
+		if (getToken(nextToken, scanFile) != 1)
 			return 0;
-		if (nextToken.typ == PARENTHESIS_OPENING) {
+		if (nextToken->typ == PARENTHESIS_OPENING) {
 			// jmeno funkce
 			*terminalCode = TERMINAL_FUNCTION_IDENTIFICATOR;
 		}
-		ungetToken(&nextToken);	//vratime
+		ungetToken(nextToken);	//vratime
 
 		break;
 	case END_OF_FILE:
@@ -215,7 +216,7 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
  * @param tableListElem[in]	-	element listu tabulek v aktualnim zanoreni
  * @param termKind[in]	-	druh terminalu
  * @param token[in]		-	ukazatel na token
- * @param id[out]		-	ukazatel na string, kde da ukazatel na alkovany string s id
+ * @param id[out]		-	ukazatel na string, kde da ukazatel na alokovany string s id
  * @return Pokud vse v poradku vraci ERR_OK. Pri chybe vraci error kody (ERR_INTERNAL, ERR_SEM_DEF).
  */
 int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr tableListElem, tParExpTerminals termKind, tToken token,
@@ -237,8 +238,8 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 		case TYPE_STRING:
 			dataType = TAB_SYM_VAR_NO_AUTO_STRING;
 			string* stringForValue=malloc(sizeof(string));
-			stringForValue=token->value.stringVal;
-			value->stringVal=stringForValue;
+			stringForValue=&(token->value.stringVal);
+			value.stringVal=stringForValue;
 
 			goto CONSTANT_HANDLE;
 		case TYPE_BOOL:
@@ -257,7 +258,7 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 			if (id == NULL) {
 				return ERR_INTERNAL;	//chyba
 			}
-			if(tConstantInfo == NULL){
+			if(constInfo == NULL){
 				strFree(id);
 				free(id);
 				return ERR_INTERNAL;	//chyba
@@ -276,7 +277,7 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 			 * nedefinovana promenna.
 			 */
 
-			if(tabSymListSearch(tableListElem, table, token->value->stringVal) ==NULL){
+			if(tabSymListSearch(tableListElem, table, &(token->value.stringVal)) ==NULL){
 				//nenalezeno semanticka chyba
 				return ERR_SEM_DEF;
 			}
@@ -289,7 +290,7 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 				free(newString);
 				return ERR_INTERNAL;
 			}
-			if(strCopyString(newString, token->value->stringVal)){
+			if(strCopyString(newString, &(token->value.stringVal))){
 				strFree(newString);
 				free(newString);
 				return ERR_INTERNAL;
@@ -302,8 +303,8 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 		 * Jedna se o funkcni identifikator, zkontrolujeme jestli se nachazi v tabulce
 		 * symbolu a jestli je definovana.
 		 */
-		tTabSymElemData functionData;
-		if(((functionData=tabSymSearch(globalTable, token->value->stringVal))==NULL) ||
+		tTabSymElemData* functionData;
+		if(((functionData=tabSymSearch(globalTable, &(token->value.stringVal)))==NULL) ||
 				functionData->info.func->defined==true){
 			//nenalezeno/nedefinovano semanticka chyba
 			return ERR_SEM_DEF;
@@ -317,7 +318,7 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 			free(newString);
 			return ERR_INTERNAL;
 		}
-		if(strCopyString(newString, token->value->stringVal)){
+		if(strCopyString(newString, &(token->value.stringVal))){
 			strFree(newString);
 			free(newString);
 			return ERR_INTERNAL;
@@ -708,8 +709,8 @@ tBuildInFunctions compareBuildInFunctions(string* toCompare){
  * @param stack[in]					-	Na vrchol tohoto zasobniku vlozi novy neterminal. Pokud NULL, tak nevklada.
  * @return	Ukzatel na symbol primo v tabulce symbolu. NULL pri chybe.
  */
-string* createNewNoterminal(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tTabSymVarDataType dataType,
-		tPrecStack stack){
+string* createNewNoterminal(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tTabSymVarDataType dataType,
+		tPrecStack* stack){
 	//vytvorime novy tmp
 	string* newTmp=tabSymListCreateTmpSymbol(startTabSymListElem, tabSym);
 	if(newTmp==NULL){
@@ -717,7 +718,7 @@ string* createNewNoterminal(tTabSymListElemPtr* startTabSymListElem, tTabSym* ta
 		return NULL;
 	}
 	//vytvorime variableinfo pro novy tmp
-	tVariableInfo* varInfo = tabSymCreateVariableInfo();
+	tVariableInfo* varInfo = tabSymCreateVariableInfo(dataType);
 	if(varInfo==NULL){
 		goto INTERNAL_ERROR;
 	}
@@ -756,28 +757,28 @@ INTERNAL_ERROR:
  * @param dataType[out]	-	Zde bude ulozen datovy typ. Pokud chyba nemanipuluje.
  * @return	Vraci dle ERR_CODES.
  */
-ERR_CODES getDataTypeOfSymbol(tTabSymElemData* elemData, tTabSymVarDataType dataType){
+ERR_CODES getDataTypeOfSymbol(tTabSymElemData* elemData, tTabSymVarDataType* dataType){
 	//vybereme informaci o typu
 	switch (elemData->type) {
 		case TAB_SYM_VARIABLE:
 			if(elemData->info.var->dataType==TAB_SYM_VAR_AUTO){
 				return ERR_SEM_COM;
 			}
-			dataType=elemData->info.var->dataType;
+			*dataType=elemData->info.var->dataType;
 			break;
 		case TAB_SYM_CONSTANT:
 			switch (elemData->info.constant->dataType) {
 				case TAB_SYM_VAR_NO_AUTO_INTEGER:
-					dataType=TAB_SYM_VAR_INTEGER;
+					*dataType=TAB_SYM_VAR_INTEGER;
 					break;
 				case TAB_SYM_VAR_NO_AUTO_DOUBLE:
-					dataType=TAB_SYM_VAR_DOUBLE;
+					*dataType=TAB_SYM_VAR_DOUBLE;
 					break;
 				case TAB_SYM_VAR_NO_AUTO_STRING:
-					dataType=TAB_SYM_VAR_STRING;
+					*dataType=TAB_SYM_VAR_STRING;
 					break;
 				case TAB_SYM_VAR_NO_AUTO_BOOLEAN:
-					dataType=TAB_SYM_VAR_BOOLEAN;
+					*dataType=TAB_SYM_VAR_BOOLEAN;
 					break;
 				default:
 					//chyba
@@ -790,7 +791,7 @@ ERR_CODES getDataTypeOfSymbol(tTabSymElemData* elemData, tTabSymVarDataType data
 			return ERR_INTERNAL;
 			break;
 	}
-	return 1;
+	return ERR_OK;
 }
 
 /**
@@ -803,7 +804,7 @@ ERR_CODES getDataTypeOfSymbol(tTabSymElemData* elemData, tTabSymVarDataType data
  * @param insTape[in]				-	Paska instrukci, na kterou vlozi nove instrukce.
  * @return	Vraci ERR_CODES
  */
-ERR_CODES genInsTermToNoterm(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+ERR_CODES genInsTermToNoterm(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
 	//ziskame data o terminalu(promenne konstante)
 	tPrecStackData* topElemData=precStackTop(stackForGen);
 
@@ -822,7 +823,7 @@ ERR_CODES genInsTermToNoterm(tTabSymListElemPtr* startTabSymListElem, tTabSym* t
 
 	//ziskame kod datoveho typu pro vytvoreni noveho neterminalu
 	tTabSymVarDataType codeOfDataType;
-	ERR_CODES errCode=getDataTypeOfSymbol(elemData, codeOfDataType);
+	ERR_CODES errCode=getDataTypeOfSymbol(elemData, &codeOfDataType);
 	if(errCode!=ERR_OK){
 		return errCode;
 	}
@@ -841,16 +842,6 @@ ERR_CODES genInsTermToNoterm(tTabSymListElemPtr* startTabSymListElem, tTabSym* t
 	if(insTapeInsertLast(insTape, I_ASSIGN, adr1, NULL, adr3)==0){
 		return ERR_INTERNAL;
 	}
-	//vlozim novy neterminal na precedencni stack
-	/**
-		 * Vlozi element typu type s klicem key na vrchol zasobniku stack,
-		 * @param[in] stack		-	Zasobnik, do ktereho vklada.
-		 * @param[in] type		-	Typ elementu(tStackElemType).
-		 * @param[in] key		-	Klic elementu.
-		 * @return 0 pri chybe, jinak 1.
-		 */
-		int precStackPushElementOfKind(stack, , int key, string* id);
-
 	return ERR_OK;
 }
 
@@ -864,7 +855,7 @@ ERR_CODES genInsTermToNoterm(tTabSymListElemPtr* startTabSymListElem, tTabSym* t
  * @param insTape[in]				-	Paska instrukci, na kterou vlozi nove instrukce.
  * @return	Vraci ERR_CODES
  */
-ERR_CODES genInsUnaryMinus(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+ERR_CODES genInsUnaryMinus(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
 	//prvni je minus dame jej pryc
 	precStackPop(stackForGen);
 
@@ -882,7 +873,7 @@ ERR_CODES genInsUnaryMinus(tTabSymListElemPtr* startTabSymListElem, tTabSym* tab
 
 	//ziskame kod datoveho typu pro semantickou kontrolu a vytvoreni noveho neterminalu
 	tTabSymVarDataType codeOfDataType;
-	ERR_CODES errCode=getDataTypeOfSymbol(elemData, codeOfDataType);
+	ERR_CODES errCode=getDataTypeOfSymbol(elemData, &codeOfDataType);
 	if(errCode!=ERR_OK){
 		return errCode;
 	}
@@ -924,7 +915,7 @@ ERR_CODES genInsUnaryMinus(tTabSymListElemPtr* startTabSymListElem, tTabSym* tab
  * @param insTape[in]				-	Paska instrukci, na kterou vlozi nove instrukce.
  * @return	Vraci ERR_CODES
  */
-ERR_CODES genInsNot(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+ERR_CODES genInsNot(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
 
 	//prvni je vykricnik dame jej pryc
 	precStackPop(stackForGen);
@@ -941,7 +932,7 @@ ERR_CODES genInsNot(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tT
 	}
 	//ziskame kod datoveho typu pro semantickou kontrolu
 	tTabSymVarDataType codeOfDataType;
-	ERR_CODES errCode=getDataTypeOfSymbol(elemData, codeOfDataType);
+	ERR_CODES errCode=getDataTypeOfSymbol(elemData, &codeOfDataType);
 	if(errCode!=ERR_OK){
 		return errCode;
 	}
@@ -980,7 +971,7 @@ ERR_CODES genInsNot(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tT
  * @param insTape[in]				-	Paska instrukci, na kterou vlozi nove instrukce.
  * @return	Vraci ERR_CODES
  */
-ERR_CODES genInsPrefix(ruleAutomateStates rule, tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+ERR_CODES genInsPrefix(ruleAutomateStates rule, tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
 	//prvni prefix dame jej pryc
 	precStackPop(stackForGen);
 	//ziskame data o terminalu
@@ -1001,7 +992,7 @@ ERR_CODES genInsPrefix(ruleAutomateStates rule, tTabSymListElemPtr* startTabSymL
 
 	//ziskame kod datoveho typu pro semantickou kontrolu
 	tTabSymVarDataType codeOfDataType;
-	ERR_CODES errCode=getDataTypeOfSymbol(elemData, codeOfDataType);
+	ERR_CODES errCode=getDataTypeOfSymbol(elemData, &codeOfDataType);
 	if(errCode!=ERR_OK){
 		return errCode;
 	}
@@ -1053,7 +1044,7 @@ ERR_CODES genInsPrefix(ruleAutomateStates rule, tTabSymListElemPtr* startTabSymL
  * @param insTape[in]				-	Paska instrukci, na kterou vlozi nove instrukce.
  * @return	Vraci ERR_CODES
  */
-ERR_CODES genInsPostfix(ruleAutomateStates rule, tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+ERR_CODES genInsPostfix(ruleAutomateStates rule, tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
 	//ziskame data o terminalu
 	tPrecStackData* topElemData=precStackTop(stackForGen);
 	//hledame symbol neterminalu v tabulce
@@ -1072,7 +1063,7 @@ ERR_CODES genInsPostfix(ruleAutomateStates rule, tTabSymListElemPtr* startTabSym
 
 	//ziskame kod datoveho typu pro semantickou kontrolu
 	tTabSymVarDataType codeOfDataType;
-	ERR_CODES errCode=getDataTypeOfSymbol(elemData, codeOfDataType);
+	ERR_CODES errCode=getDataTypeOfSymbol(elemData, &codeOfDataType);
 	if(errCode!=ERR_OK){
 		return errCode;
 	}
@@ -1128,7 +1119,7 @@ ERR_CODES genInsPostfix(ruleAutomateStates rule, tTabSymListElemPtr* startTabSym
  * @param insTape[in]				-	Paska instrukci, na kterou vlozi nove instrukce.
  * @return Vraci ERR_CODES
  */
-ERR_CODES genInsFuncParams(tParamListPtr params, tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tPrecStack* stackForGen, tInsTape* insTape){
+ERR_CODES genInsFuncParams(tParamListPtr params, tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tPrecStack* stackForGen, tInsTape* insTape){
 	//budeme prochazet paramlist a parovat s neterminaly na stacku
 	//nastavime aktivitu na prvni prvek
 	first(params);
@@ -1147,12 +1138,12 @@ ERR_CODES genInsFuncParams(tParamListPtr params, tTabSymListElemPtr* startTabSym
 			 */
 			return ERR_INTERNAL;
 		}
-		ERR_CODES errCode=getDataTypeOfSymbol(actParam, codeOfDataType);
+		ERR_CODES errCode=getDataTypeOfSymbol(actParam, &codeOfDataType);
 		if(errCode!=ERR_OK){
 			return errCode;
 		}
 		//semanticka kontrola typu
-		if(params->act->dataType!=codeOfDataType){
+		if((tTabSymVarDataType)params->act->dataType!=codeOfDataType){
 			return ERR_SEM_COM;
 		}
 		//ziskame pointery primo do tabulky symbolu
@@ -1175,38 +1166,6 @@ ERR_CODES genInsFuncParams(tParamListPtr params, tTabSymListElemPtr* startTabSym
 		return ERR_SEM_COM;
 	}
 	return ERR_OK;
-/*
-	//vytvorime novy neterminal, ktery bude slouzit, jako return pro funkci (vysledkem je string)
-	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, TAB_SYM_VAR_STRING, stack);
-
-	//dalsi by mela byt ( proto ji pulneme pryc
-	precStackPop(stackForGen);
-
-	//dalsi nasleduje neterminal. ziskame data o neterminalu
-	tPrecStackData* topElemData=precStackTop(stackForGen);
-	//hledame symbol neterminalu v tabulce
-	tTabSymElemData* elemData= tabSymListSearch(startTabSymListElem,tabSym, topElemData->id);
-	if(elemData == NULL){
-		/*
-		 * chyba nenalezeno, ale jedna se o interni chybu, protoze,
-		 * kontrola na definici, byla jiz provedena
-		 */
-/*		return ERR_INTERNAL;
-	}
-	//ziskame kod datoveho typu pro semantickou kontrolu
-	tTabSymVarDataType codeOfDataType;
-	ERR_CODES errCode=getDataTypeOfSymbol(elemData, codeOfDataType);
-	if(errCode!=ERR_OK){
-		return errCode;
-	}
-
-	/**
-	 * Provedeme semantickou kontrolu,
-	 * prijmame pouze string
-	 *//*
-	if(codeOfDataType!=TAB_SYM_VAR_STRING){
-		return ERR_SEM_COM;
-	}*/
 }
 
 
@@ -1220,7 +1179,7 @@ ERR_CODES genInsFuncParams(tParamListPtr params, tTabSymListElemPtr* startTabSym
  * @param insTape[in]				-	Paska instrukci, na kterou vlozi nove instrukce.
  * @return	Vraci ERR_CODES
  */
-ERR_CODES genInsFunc(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
 	//E->f(E...)	...-seznam parametru oddelenych carkou
 	static const unsigned int POOL_SIZE=4;	//velikost poolu adres
 
@@ -1233,16 +1192,16 @@ ERR_CODES genInsFunc(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, t
 	tTabSymVarDataType dataTypeOfResult;	//datovy typ vysledku
 
 	tBuildInFunctions buildInKind=compareBuildInFunctions(topElemData->id);
-	tTabSymElemData funcData;
-	tFuncInfo funcInfo;
+	tTabSymElemData* funcData;
+	tFuncInfo* funcInfo;
 	//jedna se o vestavenou funkci?
 	if(buildInKind!=BUILD_IN_FUNC_NO_MATCH){
-		tTabSymElemData funcData=tabSymSearch(globalTable, topElemData->id);
-		tFuncInfo funcInfo=funcData->info.func;
+		funcData=tabSymSearch(globalTable, topElemData->id);
+		funcInfo=funcData->info.func;
 
 		dataTypeOfResult=funcInfo->retType;	// datovy typ pro ulozeni hodnoty funkce
 
-		string* adrPool[4]=NULL;
+		string* adrPool[4]={NULL};
 
 		//budeme prochazet paramlist a parovat s neterminaly na stacku
 		tParamListPtr params=funcInfo->params;
@@ -1262,7 +1221,7 @@ ERR_CODES genInsFunc(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, t
 
 
 
-		for(int i=0; i<POOL_SIZE && params->act!=NULL && actParam!=NULL;i++){
+		for(unsigned int i=0; i<POOL_SIZE && params->act!=NULL && actParam!=NULL;i++){
 			//hledame symbol neterminalu v tabulce
 			actParam= tabSymListSearch(startTabSymListElem,tabSym, actParamData->id);
 			if(actParam == NULL){
@@ -1272,12 +1231,12 @@ ERR_CODES genInsFunc(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, t
 				*/
 				return ERR_INTERNAL;
 			}
-			ERR_CODES errCode=getDataTypeOfSymbol(actParam, codeOfDataType);
+			ERR_CODES errCode=getDataTypeOfSymbol(actParam, &codeOfDataType);
 			if(errCode!=ERR_OK){
 				return errCode;
 			}
 			//semanticka kontrola typu
-			if(params->act->dataType!=codeOfDataType){
+			if((tTabSymVarDataType)params->act->dataType!=codeOfDataType){
 				return ERR_SEM_COM;
 			}
 			//ziskame pointery primo do tabulky symbolu a ulozime do pool
@@ -1338,7 +1297,7 @@ ERR_CODES genInsFunc(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, t
 	//nejedna se o vestavenou funkci
 
 	//hledame symbol funkce v globalni tabulce
-	tTabSymElemData funcData=tabSymSearch(globalTable, topElemData->id);
+	funcData=tabSymSearch(globalTable, topElemData->id);
 	if(funcData == NULL){
 		/*
 		 * chyba nenalezeno, ale jedna se o interni chybu, protoze,
@@ -1347,7 +1306,7 @@ ERR_CODES genInsFunc(tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, t
 		return ERR_INTERNAL;
 	}
 
-	tFuncInfo funcInfo=funcData->info.func;
+	funcInfo=funcData->info.func;
 	dataTypeOfResult=funcInfo->retType;	// datovy typ pro ulozeni hodnoty funkce
 	//vytvorime novy neterminal, ktery bude slouzit, jako return pro funkci (vysledkem je string)
 	string* saveTo=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, dataTypeOfResult, stack);
@@ -1375,12 +1334,12 @@ ERR_CODES genInsEInBrackets(tPrecStack* stack, tPrecStack* stackForGen){
 	//prvni je ( odstranime
 	precStackPop(stackForGen);
 	//ziskame neterminal E
-	tPrecStackData actData = *precStackTop(stack);
+	tPrecStackData* actData = precStackTop(stack);
 	if(actData==NULL){
 		return ERR_INTERNAL;
 	}
 	//vlozime jej na vrchol zasobniku stack
-	if(precStackPush(stack,actData)){
+	if(precStackPush(stack,*actData)){
 		return ERR_INTERNAL;
 	}
 	return ERR_OK;
@@ -1398,7 +1357,8 @@ ERR_CODES genInsEInBrackets(tPrecStack* stack, tPrecStack* stackForGen){
  * @param insTape[in]				-	Paska instrukci, na kterou vlozi nove instrukce.
  * @return	Vraci ERR_CODES
  */
-ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+	ERR_CODES errCode;
 	//prvni je neterminal
 	//ziskame data o neterminalu/levem operandu
 	tPrecStackData* topElemData=precStackTop(stackForGen);
@@ -1420,7 +1380,7 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr* startTa
 
 	//ziskame kod datoveho typu pro semantickou kontrolu
 	tTabSymVarDataType leftOperCodeOfDataType;
-	ERR_CODES errCode=getDataTypeOfSymbol(leftOperandData, leftOperCodeOfDataType);
+	errCode=getDataTypeOfSymbol(leftOperandData, &leftOperCodeOfDataType);
 	if(errCode!=ERR_OK){
 		return errCode;
 	}
@@ -1447,7 +1407,7 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr* startTa
 	}
 	//ziskame kod datoveho typu pro semantickou kontrolu
 	tTabSymVarDataType rightOperCodeOfDataType;
-	ERR_CODES errCode=getDataTypeOfSymbol(rightOperandData, rightOperCodeOfDataType);
+	errCode=getDataTypeOfSymbol(rightOperandData, &rightOperCodeOfDataType);
 	if(errCode!=ERR_OK){
 		return errCode;
 	}
@@ -1570,7 +1530,18 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr* startTa
 	return ERR_OK;
 }
 
-ERR_CODES manageRule(ruleAutomateStates rule, tTabSymListElemPtr* startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+/**
+ * Obhospodarovava pravidla. Vola prislusne funkce pro jejich zpracovani.
+ * @param rule[in]					-	Na zaklade tohoto vybira o ktere pravidlo se jedna.
+ * @param startTabSymListElem[in]	-	Slouzi pro vyhledavani symbolu.
+ * @param tabSym[in]				-	Slouzi pro vyhledavani symbolu.
+ * @param insertToTable[in]			-	Do teto tabulky vklada nove pomocne soubory.
+ * @param stack[in]					-	Na vrchol tohoto zasobniku vklada novy neterminal.
+ * @param stackForGen[in]			-	Stack, ktery je pomocny pro generovani (<y).
+ * @param insTape[in]				-	Paska instrukci, na kterou vlozi nove instrukce.
+ * @return	Vraci ERR_CODES
+ */
+ERR_CODES manageRule(ruleAutomateStates rule, tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
 
 	//na zaklade koncoveho stavu automatu vybere funkce pro zpracovani
 	switch (rule) {
@@ -1598,7 +1569,7 @@ ERR_CODES manageRule(ruleAutomateStates rule, tTabSymListElemPtr* startTabSymLis
 			break;
 
 		case S_F_OPEN_BRACKET_E_CLOSE_BRACKET:
-			return genInsEInBrackets(startTabSymListElem, tabSym, insertToTable, stack, stackForGen, insTape);
+			return genInsEInBrackets(stack, stackForGen);
 			break;
 
 		case S_F_E_PLUS_E:
@@ -1623,7 +1594,7 @@ ERR_CODES manageRule(ruleAutomateStates rule, tTabSymListElemPtr* startTabSymLis
 }
 
 int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* tape,
-		tTabSymVarNoAutoDataType expDataType, FILE* scanFile) {
+		tTabSymVarNoAutoDataType* expDataType, FILE* scanFile) {
 	string* id; //pro vytvareni identifikatoru v tabulce symbolu
 	ERR_CODES errRet;	//chybovy kod
 	//vybereme si tabulku, do ktere se budou vkladat tmp symboly (pomocne promenne)
@@ -1634,11 +1605,11 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 
 	//vytvorime zasobniky
 	tPrecStack stack;
-	precStackInit(stack);
+	precStackInit(&stack);
 	tPrecStack* revertedTopStack;	//pouziva se pro vyber pravidla
 
 	//pridame ukoncujici znak
-	precStackPushElementOfKind(stack, PREC_STACK_ENDMARK, 0);
+	precStackPushElementOfKind(&stack, PREC_STACK_ENDMARK, 0, NULL);
 
 	int rule; // vybrane pravidlo
 
@@ -1646,7 +1617,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 	tParExpTerminals b;	//aktualni druh tokenu na vstupu
 	tToken token;	//aktualni token na vstupu
 
-	if(prepareNextToken(&stack, scanFile, &b, &token)==0){	//ziskame pocatecni token
+	if(prepareNextToken(&stack, scanFile, &b, token)==0){	//ziskame pocatecni token
 		//chyba lexikalni
 		return ERR_LEX;
 	}
@@ -1659,18 +1630,18 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 		switch (precGetRule(a, b)) {
 		case '=':
 			//dej na zasobnik prijaty token a precti dalsi ze vstupu
-			if((errRet=semHandleNewToken(insertToTable, table, b, &token, id))!=ERR_OK){
+			if((errRet=semHandleNewToken(table, insertToTable, tableListElem, b, token, id))!=ERR_OK){
 				goto ERROR_HANDLER;
 			}
-			if(precStackPushElementOfKind(stack, PREC_STACK_TERMINAL, b, id)==0){
+			if(precStackPushElementOfKind(&stack, PREC_STACK_TERMINAL, b, id)==0){
 				errRet=ERR_INTERNAL;
 				goto ERROR_HANDLER;
 			}
 
 			//vycistime aktualni token
-			freeTokenMem(token);
+			freeTokenMem(&token);
 
-			if(prepareNextToken(&stack, scanFile, &b, &token)==0){
+			if(prepareNextToken(&stack, scanFile, &b, token)==0){
 				errRet=ERR_LEX;
 				goto ERROR_HANDLER;
 			}
@@ -1680,21 +1651,21 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 			 * zaměň a za a< na zásobníku
 			 * a dej na zasobnik prijaty token a precti dalsi ze vstupu
 			 */
-			precStackPushElemBeforeTopTerm(stack, PREC_STACK_SIGN, '<', NULL);
+			precStackPushElemBeforeTopTerm(&stack, PREC_STACK_SIGN, '<', NULL);
 
-			if((errRet=semHandleNewToken(insertToTable, table, b, token, id))!=ERR_OK){
+			if((errRet=semHandleNewToken(table, insertToTable, tableListElem, b, token, id))!=ERR_OK){
 				goto ERROR_HANDLER;
 			}
 
-			if(precStackPushElementOfKind(stack, PREC_STACK_TERMINAL, b, id)==0){
+			if(precStackPushElementOfKind(&stack, PREC_STACK_TERMINAL, b, id)==0){
 				errRet=ERR_INTERNAL;
 				goto ERROR_HANDLER;
 			}
 
 			//vycistime aktualni token
-			freeTokenMem(token);
+			freeTokenMem(&token);
 
-			if(prepareNextToken(&stack, scanFile, &b, &token)==0){
+			if(prepareNextToken(&stack, scanFile, &b, token)==0){
 				errRet=ERR_LEX;
 				goto ERROR_HANDLER;
 			}
@@ -1707,7 +1678,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 			 */
 
 			//pokusime se ziskat stack obsahujici <y a smazeme jej z vrcholu
-			revertedTopStack=precStackCreateRevertedTopReduc(stack);
+			revertedTopStack=precStackCreateRevertedTopReduc(&stack);
 			if(revertedTopStack==NULL){
 				errRet=ERR_INTERNAL;
 				goto ERROR_HANDLER;
@@ -1717,7 +1688,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 					// v poradku
 
 					//zmeni <y za neterminal, provede semantickou kontrolu a vygeneruje instrukci.
-					errRet=manageRule(rule, tableListElem, table, insertToTable, stack, revertedTopStack, tape);
+					errRet=manageRule(rule, tableListElem, table, insertToTable, &stack, revertedTopStack, tape);
 					precStackFree(&revertedTopStack);	//vymazem obsah
 					if(errRet!=ERR_OK){
 						//chyba
@@ -1757,13 +1728,33 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 	} while (b!=TERMINAL_ENDMARK || a!=TERMINAL_ENDMARK);//b = $ and top = $
 
 	ungetToken(token);	//pro dalsi zpracovani
-	precStackDispose(stack);
+	precStackDispose(&stack);
 	precStackFree(&revertedTopStack);
+
+	//vratime datovy typ vyrazu
+	string* lastGeneratedTMP;
+	tTabSymElemData* dataOfLast;
+	if((lastGeneratedTMP = tabSymListLastCreateTmpSymbol(tableListElem, table)) == NULL) {
+		return ERR_INTERNAL;
+	}
+
+	if((dataOfLast = tabSymListSearch(tableListElem, table, lastGeneratedTMP)) == NULL) {
+			return ERR_INTERNAL;
+	}
+	tTabSymVarDataType expDataTypeFor;
+	errRet=getDataTypeOfSymbol(dataOfLast, &expDataTypeFor);
+	if(errRet!=ERR_OK){
+		return errRet;
+	}
+	*expDataType=expDataTypeFor;
+	strFree(lastGeneratedTMP);
+	free(lastGeneratedTMP);
+
 	return ERR_OK;
 
 ERROR_HANDLER:
-	freeTokenMem(token);
-	precStackDispose(stack);
+	freeTokenMem(&token);
+	precStackDispose(&stack);
 	precStackFree(&revertedTopStack);
 	return errRet;
 
