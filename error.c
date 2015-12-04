@@ -23,8 +23,8 @@
 const char* ERR_MESSAGES[]={
 		[ERR_ALLOC]="Chyba pri alokaci pameti.\n",
 		[ERR_LEX]="Error lexikalni analyzy.\n",
-		[ERR_SYNTAX] = "Syntaktick· chyba.\n",
-		[ERR_SEM_DEF] = "Prace s nedefinouvanou promennou/funkcÌ.\n",
+		[ERR_SYNTAX] = "Syntaktick√° chyba.\n",
+		[ERR_SEM_DEF] = "Prace s nedefinouvanou promennou/funkc√≠.\n",
 		[ERR_SEM_COM] = "Chyba kompatibilty datoveho typu.\n",
 		[ERR_SEM_AUTO] = "chyba v odvozeni datoveho typu.\n",
 		[ERR_SEM_REST] = "Ostatni semanticke chyby.\n",

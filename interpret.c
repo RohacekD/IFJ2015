@@ -40,8 +40,6 @@ int executeTape(tInsTapeInsPtr ins) {
 		}
 	}
 
-
-
 	if (*instruction==NULL) {//paska dosla na konec a nenarazil jsem na I_RETURN
 		FatalError(8, ERR_MESSAGES[ERR_RUNTIME_INIT_VAR]);
 	}
@@ -70,6 +68,34 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	tInsTapeInsPtr insToCall;
 	switch (ins->type)
 	{
+	case I_CIN:
+		findVariable(stack, (string*)ins->adr3, &dest);
+		if (dest->type == VAR_TYPE_INT) {
+			
+		}
+		else if (dest->type == VAR_TYPE_DOUBLE) {
+			
+		}
+		else if (dest->type == VAR_TYPE_BOOL) {
+			
+		}
+		else if (dest->type == VAR_TYPE_STRING) {
+			strFree(&dest);
+			strInit(&dest);
+			int c = getchar();
+			if (isspace(c)) {
+				while (isspace(c))
+					c = getchar();
+			}
+			if (c != EOF) {
+				while (!isspace(c) && c != EOF) {
+					if (strAddChar(&dest, c)) {
+						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+					}
+				}
+			}
+		}
+		break;
 	case I_COUT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		if (oper1->type == VAR_TYPE_INT) {
@@ -402,6 +428,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		if (ins->adr3 != NULL) {//nejsme v main
 			findVariable(stack, (string*)ins->adr3, &dest);
 		}
+		oper1 = NULL;
+		dest = NULL;
 		pushNewFrame(stack, false);
 		tab = (tTabSym*)ins->adr1;
 		insToCall = (tInsTapeInsPtr)ins->adr2;

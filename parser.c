@@ -1470,7 +1470,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                  }
                  
                 string *lastGeneratedTMP;
-                string *key;
+                string *key, *key2;
                 //vyhledame klic v existujici tabulce symbolu
                 if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
                     freeIdName(idName);
@@ -1484,8 +1484,12 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                     return ERR_INTERNAL;
                 }
                 
+                if ((key2 = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMP)) == NULL) {
+                    return ERR_INTERNAL;
+                }
+                
                 //TODO GENEROVANI INSTRUKCE
-                if ((result = insTapeInsertLast(instructionTape, I_ASSIGN, (void*) lastGeneratedTMP, NULL, (void*) key)) == 0) {
+                if ((result = insTapeInsertLast(instructionTape, I_ASSIGN, (void*) key2, NULL, (void*) key)) == 0) {
                     return ERR_INTERNAL;
                 }
                 
@@ -1573,7 +1577,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             
             //TODO - GENEROVANI INSTRUKCE
             string *lastGeneratedTMP;
-            string *key;
+            string *key, *key2;
             //vyhledame klic v existujici tabulce symbolu
             if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
                 freeIdName(idNameAuto);
@@ -1586,9 +1590,13 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             if((lastGeneratedTMP = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
                 return ERR_INTERNAL;
             }
-
+            
+            if((key2 = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMP)) == NULL) {
+                return ERR_INTERNAL;
+            }
+            
             //TODO GENEROVANI INSTRUKCE
-            if ((result = insTapeInsertLast(instructionTape, I_ASSIGN, (void*) lastGeneratedTMP, NULL, (void*) key)) == 0) {
+            if ((result = insTapeInsertLast(instructionTape, I_ASSIGN, (void*) key2, NULL, (void*) key)) == 0) {
                 return ERR_INTERNAL;
             }
             
@@ -1698,7 +1706,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
     int result; 
     tToken token;
     string *idName;
-    string *key;
+    string *key, *key2;
     tTabSymElemData *idUsable;
     tTabSymVarDataType idType;
     tTabSymVarNoAutoDataType expType;
@@ -1807,8 +1815,13 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 }
                 
                 freeIdName(idName);
+                
+                if((key2 = tabSymListGetPointerToKey(blockListElem, localTable, lastCreatedTMP)) == NULL) {
+                    return ERR_INTERNAL;
+                }
+                
                 //vlozeni instrukce
-                if(insTapeInsertLast(instructionTape, I_ASSIGN, (void *) lastCreatedTMP, NULL, (void *) key) == 0) {
+                if(insTapeInsertLast(instructionTape, I_ASSIGN, (void *) key2, NULL, (void *) key) == 0) {
                     return ERR_INTERNAL;
                 }
                 
@@ -1833,10 +1846,6 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             if(token->typ != TYPE_IDENTIFICATOR) {
                 freeTokenMem(token);
                 return ERR_SYNTAX;
-            }
-            
-            if ((key = tabSymListGetPointerToKey(blockListElem, localTable, &(token->value.stringVal))) == NULL) {
-                freeTokenMem(token);
             }
             
             //semanticka kontrala, zda je promenna definovana v danem rozsahu platnosti
@@ -1887,10 +1896,6 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             if(token->typ != TYPE_IDENTIFICATOR) {
                 freeTokenMem(token);
                 return ERR_SYNTAX;
-            }
-            
-            if ((key = tabSymListGetPointerToKey(blockListElem, localTable, &(token->value.stringVal))) == NULL) {
-                freeTokenMem(token);
             }
             
             //semanticka kontrala, zda je promenna definovana v danem rozsahu platnosti
