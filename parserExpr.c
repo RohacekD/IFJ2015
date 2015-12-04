@@ -1256,10 +1256,7 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 				}
 				break;
 			case BUILD_IN_FUNC_ID_SORT:
-				if(insTapeInsertLast(insTape, I_SORT, adrPool[0], NULL, NULL)==0){
-					return ERR_INTERNAL;
-				}
-				if(insTapeInsertLast(insTape, I_SORT_DEST, NULL, NULL, saveTo)==0){
+				if(insTapeInsertLast(insTape, I_SORT, adrPool[0], NULL, saveTo)==0){
 					return ERR_INTERNAL;
 				}
 				break;
