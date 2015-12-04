@@ -85,8 +85,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			
 		}
 		else if (dest->type == VAR_TYPE_STRING) {
-			strFree(&dest);
-			strInit(&dest);
+			strFree(&dest->data.stringVal);
+			strInit(&dest->data.stringVal);
 			int c = getchar();
 			if (isspace(c)) {
 				while (isspace(c))
@@ -94,7 +94,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			}
 			if (c != EOF) {
 				while (!isspace(c) && c != EOF) {
-					if (strAddChar(&dest, c)) {
+					if (strAddChar(&dest->data.stringVal, c)) {
 						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 					}
 				}
