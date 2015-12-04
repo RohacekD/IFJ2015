@@ -527,6 +527,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		deleteTopFrame(stack);
 		break;
 	case I_SORT:
+		findVariable(stack, (string*)ins->adr1, &oper1);
+		if (oper1->type != VAR_TYPE_STRING)
+			return ERR_SEM_COM;
+		heapSort(oper1->data.stringVal.str);
 		break;
 	case I_FIND:
 		break;
