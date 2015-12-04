@@ -45,6 +45,26 @@ tTabSymVarDataType tokenTypeToVarType(TokenTypes ttype);
 int isTerm(TokenTypes ttype);
 
 /**
+ * vlozi do globalni tabulky predpis pro vnorene funkce
+ * @return      funkce vraci 1, pokud probehla bez chyby, jinak 0
+ */
+int prepareGlobalTable();
+
+/**
+ * funkce vytvori na halde misto pro novy string a skopiruje do nej hodnotu
+ * predaneho stringu
+ * @param identificator         -   string ke zkopirovani
+ * @return      funkce vraci ukazatel na novy string, pokud probehlo vse v poradku, jinak NULL
+ */
+string* copyIdName(string *identificator);
+
+/**
+ * funkce dealokuje pamet alokovanou pro vytvoreny string
+ * @param identificator         -   string, jez je uvolnovan
+ */
+void freeIdName(string *identificator);
+
+/**
  * Uvodni funkce parseru
  * zpracovava chyby a uvolnuje pamet
  */

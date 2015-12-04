@@ -1911,7 +1911,7 @@ int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr 
 }
 
 
-//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!!
 
 /**
  * zpracovava nasledujici pravidla
@@ -1926,20 +1926,28 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
     tToken token;
     int result;
     TokenTypes ttype;
+    //udrzuje informace o promenne
     tConstantInfo *constInfo;
+    //udzuje hodnoty, kterych muze konstanta nabyvat
+    unionValue uval;
+    //tmp je string pro novy identifikator, key je string, ktery ukazuje na prvek v
+    //tabulce symbolu
+    string *tmp, *key;
+    //informace o promenne
+    tTabSymElemData *idData;
     
     if ((result = getToken(&token, f)) != 1) {
         return LEXICAL_ERR;
     }
     
-    //pravidlo 34
+    //pravidlo 34 - <cout> -> epsilon
     if(token->typ == SEMICOLON) {
         //volajici funkce s timto tokenem pocita
         ungetToken(&token);
         return 1;
     }
     
-    //pravidlo 35
+    //pravidlo 35 - <cout> -> << <term> <cout>
     if(token->typ == LESS) {
         freeTokenMem(token);
         
@@ -1958,32 +1966,82 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
             ttype = token->typ;
             //freeTokenMem(token);
             
-            
+            //jedna se o term: hodnota int, string, bool, double, nebo ID
             if((result = isTerm(ttype)) == 1) {
-                unionValue uval;
-                string *s, *tmp, *key;
+                
+                switch(ttype){
+                    case TYPE_BOOL:
+                    case TYPE_INTEGER:
+                    case TYPE_DOUBLE:
+                    case TYPE_STRING:
 
-                //funkci createConstantInfo musim predat union typu unionValue
-                //tudiz si musim tento union vyrobit, tento string neuvolnim
-                s = copyIdName(&(token->value.stringVal));
-                uval.boolVal = token->value.boolVal;
-                uval.doubleVal = token->value.doubleVal;
-                uval.intVal = token->value.intVal;
-                uval.stringVal = s;
-                
-                //TODO - kontroly 
-               constInfo = tabSymCreateConstantInfo(ttype, uval);
-                tmp = tabSymListCreateTmpSymbol(blockListElem, localTable);
-                
-                tabSymInsertConst(localTable, tmp, constInfo);
-                
-                key = tabSymListGetPointerToKey(blockListElem, localTable, tmp);
-                
-                insTapeInsertLast(instructionTape, I_COUT, (void *) key, NULL, NULL);
-                
-                return parseCout(instructionTape, blockListElem, localTable);
+                        //funkci createConstantInfo musim predat union typu unionValue
+                        //tudiz si musim tento union vyrobit, tento string neuvolnim
+                       // s = copyIdName(&(token->value.stringVal));
+                        uval.boolVal = token->value.boolVal;
+                        uval.doubleVal = token->value.doubleVal;
+                        uval.intVal = token->value.intVal;
+                        uval.stringVal = copyIdName(&(token->value.stringVal));
+                        
+                        freeTokenMem(token);
+                        
+                        //vytvorim informace o konstante
+                        if ((constInfo = tabSymCreateConstantInfo(ttype, uval)) == NULL) {
+                            return ERR_INTERNAL;
+                        }
+                        //vytvorim si novy identifikator, ktery priradim konstante
+                        if ((tmp = tabSymListCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+                            return ERR_INTERNAL;
+                        }
+                        //vlozim konstantu do tabulky symbolu
+                        if (tabSymInsertConst(localTable, tmp, constInfo) == 0) {
+                            return ERR_INTERNAL;
+                        }
+                        
+                        //vzdy bych mel dany klic najit, jelikoz jsem ho prave vlozil
+                        key = tabSymListGetPointerToKey(blockListElem, localTable, tmp);
+                        
+                        //vlozim instrukci do instrukcni pasky
+                        if (insTapeInsertLast(instructionTape, I_COUT, (void *) key, NULL, NULL) == 0) {
+                            return ERR_INTERNAL;
+                        }
+                        
+                        //muzu opet volat tuto funkci
+                        return parseCout(instructionTape, blockListElem, localTable);
+                    
+                    //vypisujeme identifikator
+                    case TYPE_IDENTIFICATOR:
+                        
+                        //zkusim dany identifikator najit
+                        if ((idData = tabSymListSearch(blockListElem, localTable, &(token->value.stringVal))) == NULL) {
+                            freeTokenMem(token);
+                            return ERR_SEM_DEF;
+                        }
+                        
+                        //identifikator se nasel, chci ziskat klic do tabulky symbolu
+                        if ((key = tabSymListGetPointerToKey(blockListElem, localTable, &(token->value.stringVal))) == NULL) {
+                            freeTokenMem(token);
+                            return ERR_INTERNAL;
+                        }
+                        
+                        freeTokenMem(token);
+                        
+                        //vlozim instrukci do instrukcni pasky
+                        if (insTapeInsertLast(instructionTape, I_COUT, (void *) key, NULL, NULL) == 0) {
+                            return ERR_INTERNAL;
+                        }
+                        
+                        //muzu opet volat tuto funkci
+                        return parseCout(instructionTape, blockListElem, localTable);
+                        
+                    //nikdy bych se sem nemel dostat
+                    default:
+                        freeTokenMem(token);
+                        return ERR_INTERNAL;
+                }
+   
             }
-            
+            freeTokenMem(token);
             return ERR_SYNTAX;
         }
         
