@@ -4,10 +4,14 @@
 #include "tabSym.h"
 
 
-void initList(tParamListPtr list) 
+int initList(tParamListPtr list) 
 {
+    if ((list = malloc(sizeof(struct tParamList))) == NULL) {
+        return 0;
+    }
     list->first = NULL;
     list->act = NULL;
+    return 1;
 }
 
 int createParamListElem(string *idName, tParamListElemPtr elem,
@@ -122,5 +126,6 @@ void paramListFree(tParamListPtr list)
         strFree(UkPomEl->idName);
         free(UkPomEl); //uvolnim pamet
     }
+    free(list);
 }
 

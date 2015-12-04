@@ -88,7 +88,7 @@ typedef struct tParamListElem {
 /**
  * List parametru.
  */
-typedef struct {
+typedef struct tParamList{
 	tParamListElemPtr first;
     tParamListElemPtr act;
 }*tParamListPtr;
@@ -241,10 +241,11 @@ void tabSymFree(tTabSym* table);
 string* tabSymCreateTmpSymbol(tTabSym* table);
 
 /**
- * Funkce pro inicializaci seznamu parametru
- * @param list      seznam parametru
+ *  funkce inicializuje strukturu pro seznam parametru
+ * @param list[in]      -   seznam parametru 
+ * @return      -   vraci 1, pokud probehla funkce v poradku, jinak 0
  */
-void initList(tParamListPtr list);
+int initList(tParamListPtr list);
 
 /**
  * Funkce odstrani seznam parametru a uvolni pamet

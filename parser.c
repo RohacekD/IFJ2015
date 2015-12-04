@@ -71,16 +71,16 @@ int prepareGlobalTable() {
     tFuncInfo *lengthInfo, *subsInfo, *concatInfo, *findInfo, *sortInfo;
     
     //inicializace seznamu parametru
-    initList(lengthParam); initList(subsParam); initList(concatParam);
-    initList(findParam); initList(sortParam);
+    if ((initList(lengthParam) ==0 ) || (initList(subsParam) == 0) || (initList(concatParam) == 0) ||
+        (initList(findParam) == 0) || (initList(sortParam) == 0))   return 0;
     
     //vlozeni predpisu pro funkci:  int length (string s)
     char *lengthID = "length";
     string *length = NULL;
-    strInit(length);
-    if (strConConstString(length, lengthID) == 1) {
-        return 0;
-    }
+    if ((length = malloc(sizeof(string))) == NULL) return 0;
+    if (strInit(length) == 1) return 0;
+    
+    if (strConConstString(length, lengthID) == 1) return 0;
     if ((insertEl(lengthParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0) {
         return 0;
     }
@@ -89,11 +89,14 @@ int prepareGlobalTable() {
     }
     if (tabSymInsertFunc(globalTable, length, lengthInfo) == 0)
         return 0;
-    
+    freeIdName(length);
     //-------------------------------------------------------------------
     //vlozeni predpisu pro funkci: string substr(string s, int i, int n)
     char *substrID = "substr";
-    string *substr;
+    string *substr = NULL;
+    if ((substr = malloc(sizeof(string))) == NULL) return 0;
+    if (strInit(substr) == 1) return 0;
+    
     if (strConConstString(substr, substrID) == 1) {
         return 0;
     }
@@ -107,11 +110,14 @@ int prepareGlobalTable() {
     }
     if (tabSymInsertFunc(globalTable, substr, subsInfo) == 0)
         return 0;
-    
+    freeIdName(substr);
     //-------------------------------------------------------------------
     //vlozeni predpisu pro funkci: string concat(string s1, string s2)
     char *concatID = "concat";
     string *concat;
+    if ((concat = malloc(sizeof(string))) == NULL) return 0;
+    if (strInit(concat) == 1) return 0;
+    
     if (strConConstString(concat, concatID) == 1) {
         return 0;
     }
@@ -124,11 +130,14 @@ int prepareGlobalTable() {
     }
     if (tabSymInsertFunc(globalTable, concat, concatInfo) == 0)
         return 0;
-    
+    freeIdName(concat);
     //-------------------------------------------------------------------
     //vlozeni predpisu pro funkci: string find(string s, string search)
     char *findID = "find";
     string *find;
+    if ((find = malloc(sizeof(string))) == NULL) return 0;
+    if (strInit(find) == 1) return 0;
+    
     if (strConConstString(find, findID) == 1) {
         return 0;
     }
@@ -141,11 +150,14 @@ int prepareGlobalTable() {
     }
     if (tabSymInsertFunc(globalTable, find, findInfo) == 0)
         return 0;
-    
+    freeIdName(find);
      //-------------------------------------------------------------------
     //vlozeni predpisu pro funkci: string sort(string s)
     char *sortID = "sort";
     string *sort;
+    if ((sort = malloc(sizeof(string))) == NULL) return 0;
+    if (strInit(sort) == 1) return 0;
+    
     if (strConConstString(sort, sortID) == 1) {
         return 0;
     }
@@ -157,6 +169,7 @@ int prepareGlobalTable() {
     }
     if (tabSymInsertFunc(globalTable, sort, sortInfo) == 0)
         return 0;
+    freeIdName(sort);
     //cela funkce probehla uspesne
     return 1;
 }
@@ -260,8 +273,8 @@ int parseFunction() {
     //promenna do ktere ukladam vytvorene informace o funkci
     tFuncInfo *funcInfo;
     //pro kazdou funkci tvorim novy seznam parametru
-    tParamListPtr paramList;
-    initList(paramList);
+    tParamListPtr paramList = NULL;
+    if (initList(paramList) == 0) return ERR_INTERNAL;
     
     
     //nactu prvni token, prisel chybny token
