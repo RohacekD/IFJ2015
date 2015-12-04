@@ -73,7 +73,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	case I_COUT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		if (oper1->type == VAR_TYPE_INT) {
-			printf("%d", oper1->data.intVal);
+			printf("%df", oper1->data.intVal);
 		}
 		else if (oper1->type == VAR_TYPE_DOUBLE) {
 			printf("%g", oper1->data.doubleVal);
@@ -84,6 +84,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (oper1->type == VAR_TYPE_STRING) {
 			printf("%s", oper1->data.stringVal.str);
 		}
+                fflush(stdout);
 		break;
 	case I_PLUS:
 		findVariable(stack, (string*)ins->adr1, &oper1);
