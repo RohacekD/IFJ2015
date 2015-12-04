@@ -61,7 +61,7 @@ int BMA(char* string, char* searchString, int charJump[]) {
 int find(char* string, char* searchString) {
 	int jumps[256];
 	computeJumps(string, jumps);
-	return BMA(string, searchString);
+	return BMA(string, searchString, jumps);
 }
 
 /**
