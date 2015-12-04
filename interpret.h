@@ -9,7 +9,7 @@
  * Dostane instrukci a od te zacne vykonavat program.
  * Vykonava skokove instrukce ve svem tele
  * @param ins[in]	-	instrukce od ktere zacit vykonavat
- * @return Vraci 0 pokud nastane chyba, jinak 1;
+ * @return Vraci ERR_OK pokud nastane OK, prislusny error kod;
  */
 int executeTape(tInsTapeInsPtr);
 /*

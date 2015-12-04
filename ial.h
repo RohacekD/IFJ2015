@@ -44,6 +44,8 @@ void computeJumps(char* string, int charJump[]);
  */
 int BMA(char* string, char* searchString, int charJump[]);
 
+int find(char* string, char* searchString);
+
 /**
  * Razeni pomoci heap sort
  * @param string	-	razeny retezec

@@ -241,11 +241,10 @@ void tabSymFree(tTabSym* table);
 string* tabSymCreateTmpSymbol(tTabSym* table);
 
 /**
- *  funkce inicializuje strukturu pro seznam parametru
- * @param list[in]      -   seznam parametru 
- * @return      -   vraci 1, pokud probehla funkce v poradku, jinak 0
+ *  funkce vytvori a inicializuje strukturu pro seznam parametru
+ * @return      -   vraci ukazatel na strukturu, v pripade chyby NULL
  */
-int initList(tParamListPtr list);
+tParamListPtr initList();
 
 /**
  * Funkce odstrani seznam parametru a uvolni pamet

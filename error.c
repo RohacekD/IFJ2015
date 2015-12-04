@@ -50,7 +50,6 @@ void FatalError(const int status, const char *fmt, ...){
 	va_start(ap, fmt);
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
-	getchar();
 	exit(status);
 }
 

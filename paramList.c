@@ -4,14 +4,15 @@
 #include "tabSym.h"
 
 
-int initList(tParamListPtr list) 
+tParamListPtr initList() 
 {
+    tParamListPtr list;
     if ((list = malloc(sizeof(struct tParamList))) == NULL) {
-        return 0;
+        return NULL;
     }
     list->first = NULL;
     list->act = NULL;
-    return 1;
+    return list;
 }
 
 int createParamListElem(string *idName, tParamListElemPtr elem,

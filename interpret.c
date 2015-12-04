@@ -8,10 +8,12 @@ int executeTape(tInsTapeInsPtr ins) {
 
 	tInsTapeInsPtr* instruction = &ins;
 
+	ERR_CODES ret;
+
 	/*Prvotni inicializace stacku*/
 	if (!frameStack) {
 		if (!(frameStack = (tStack *)malloc(sizeof(tStack)))) {
-			FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+			return ERR_ALLOC;
 		}
 		SInit(frameStack);
 	}
@@ -36,17 +38,24 @@ int executeTape(tInsTapeInsPtr ins) {
 			}
 		}
 		else if ((*instruction)->type == I_GOTO) {
-			if (ins->adr1 == NULL) {
+			if (ins->adr1 != NULL) {
 				instruction = (tInsTapeInsPtr*)ins->adr1;
 			}
 		}
 		else {
-			executeIns(instruction, frameStack);
+			ret = executeIns(instruction, frameStack);
+			if (ret != ERR_OK) {
+				if(frameStack)
+					SDispose(frameStack);
+				free(frameStack);
+				frameStack = NULL;
+				return ret;
+			}
 		}
 	}
 
 	if (*instruction==NULL) {//paska dosla na konec a nenarazil jsem na I_RETURN
-		FatalError(8, ERR_MESSAGES[ERR_RUNTIME_INIT_VAR]);
+		return ERR_RUNTIME_INIT_VAR;
 	}
 
 
@@ -57,7 +66,7 @@ int executeTape(tInsTapeInsPtr ins) {
 		SDispose(frameStack);//redundantni ale vyhneme se mem. leaku
 		free(frameStack);
 	}
-	return 1;//todo
+	return ERR_OK;
 }
 
 
@@ -67,6 +76,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	tVariablePtr oper2;
 	tVariablePtr oper3;
 	tVariablePtr dest;
+	ERR_CODES retErr;//pro pripad volani jine pasky
 
 	tTabSym* tab;
 	tInsTapeInsPtr ins = *instruction;
@@ -95,7 +105,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			if (c != EOF) {
 				while (!isspace(c) && c != EOF) {
 					if (strAddChar(&dest->data.stringVal, c)) {
-						FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+						return ERR_ALLOC;
 					}
 				}
 			}
@@ -150,7 +160,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (getVarVal(oper2)==0) {
-			FatalError(9, ERR_MESSAGES[ERR_RUNTIME_ZERO_DIV]);
+			return ERR_RUNTIME_ZERO_DIV;
 		}
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1) / (int)getVarVal(oper2);
@@ -193,7 +203,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		}
 		else {
 			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
-				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+				return ERR_SEM_COM;
 			}
 			else {
 				if (dest->type == VAR_TYPE_INT) {
@@ -225,7 +235,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		}
 		else {
 			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
-				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+				return ERR_SEM_COM;
 			}
 			else {
 				if (dest->type == VAR_TYPE_INT) {
@@ -257,7 +267,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		}
 		else {
 			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
-				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+				return ERR_SEM_COM;
 			}
 			else {
 				if (dest->type == VAR_TYPE_INT) {
@@ -289,7 +299,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		}
 		else {
 			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
-				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+				return ERR_SEM_COM;
 			}
 			else {
 				if (dest->type == VAR_TYPE_INT) {
@@ -321,7 +331,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		}
 		else {
 			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
-				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+				return ERR_SEM_COM;
 			}
 			else {
 				if (dest->type == VAR_TYPE_INT) {
@@ -353,7 +363,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		}
 		else {
 			if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type == VAR_TYPE_STRING) {
-				FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+				return ERR_SEM_COM;
 			}
 			else {
 				if (dest->type == VAR_TYPE_INT) {
@@ -391,20 +401,20 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			dest->data.doubleVal = getVarVal(oper1)+1;
 		}
 		else if (dest->type == VAR_TYPE_BOOL) {
-			dest->data.boolVal = -getVarVal(oper1)+1;
+			dest->data.boolVal = getVarVal(oper1)+1;
 		}
 		break;
 	case I_DEC:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = -(int)getVarVal(oper1)-1;
+			dest->data.intVal = (int)getVarVal(oper1)-1;
 		}
 		else if (dest->type == VAR_TYPE_DOUBLE) {
-			dest->data.doubleVal = -getVarVal(oper1)-1;
+			dest->data.doubleVal = getVarVal(oper1)-1;
 		}
 		else if (dest->type == VAR_TYPE_BOOL) {
-			dest->data.boolVal = -getVarVal(oper1)-1;
+			dest->data.boolVal = getVarVal(oper1)-1;
 		}
 		break;
 	case I_LOG_NOT:
@@ -465,7 +475,9 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		tab = (tTabSym*)ins->adr1;
 		insToCall = (tInsTapeInsPtr)ins->adr2;
 		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
-		executeTape(insToCall);
+		retErr = executeTape(insToCall);
+		if (retErr != ERR_OK)
+			return retErr;
 		//string pro nalezeni promenne pro vraceni
 		if (ins->adr3 != NULL) {//nejsme v main
 			string ret;
@@ -515,15 +527,34 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		deleteTopFrame(stack);
 		break;
 	case I_SORT:
+		findVariable(stack, (string*)ins->adr1, &oper1);
+		findVariable(stack, (string*)ins->adr3, &dest);
+		if (oper1->type != VAR_TYPE_STRING || dest->type != VAR_TYPE_STRING)
+			return ERR_SEM_COM;
+		strCopyString(&dest->data.stringVal, &oper1->data.stringVal);
+		heapSort(dest->data.stringVal.str);
 		break;
 	case I_FIND:
+		findVariable(stack, (string*)ins->adr1, &oper1);
+		findVariable(stack, (string*)ins->adr2, &oper2);
+		findVariable(stack, (string*)ins->adr3, &dest);
+
+		if (oper1->type != VAR_TYPE_STRING ||
+			oper2->type != VAR_TYPE_STRING ||
+			dest->type != VAR_TYPE_INT) {
+			return ERR_SEM_COM;
+		}
+		dest->data.intVal = find(oper1->data.stringVal.str, oper2->data.stringVal.str);
+		if (dest->data.intVal > oper1->data.stringVal.length) {
+			dest->data.intVal = -1;
+		}
 		break;
 	case I_CONCAT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type != VAR_TYPE_STRING){
-			FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+			return ERR_SEM_COM;
 		}
 		else {
 			strFree(&dest->data.stringVal);
@@ -537,15 +568,16 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		*instruction = ins->rptr;
 		ins = *instruction;
 		if (ins->type != I_SUBSTR_DEST) {
-			FatalError(10, ERR_MESSAGES[ERR_RUNTIME_REST]);
+			return ERR_RUNTIME_REST;
 		}
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (dest->type != VAR_TYPE_STRING || oper1->type != VAR_TYPE_STRING ||
 			oper2->type != VAR_TYPE_INT || oper3->type != VAR_TYPE_INT) {
-			FatalError(10, ERR_MESSAGES[ERR_RUNTIME_REST]);
+			return ERR_RUNTIME_REST;
 		}
 		strFree(&dest->data.stringVal);
 		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal);
+
 		break;
 	case I_LENGTH:
 		findVariable(stack, (string*)ins->adr1, &oper1);
@@ -557,7 +589,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			dest->data.doubleVal = length(oper1->data.stringVal);
 		}
 		else {
-			FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
+			return ERR_SEM_COM;
 		}
 		break;
         case I_LABEL://jen navesti nic nedelej
@@ -566,7 +598,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		break;
 	}
 	*instruction = ins->rptr;
-	return 1;
+	return ERR_OK;
 }
 
 /*
