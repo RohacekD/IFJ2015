@@ -67,7 +67,7 @@ int isTerm(TokenTypes ttype) {
  * @return      funkce vraci 1, pokud probehla bez chyby, jinak 0
  */
 int prepareGlobalTable() {
-    tParamListPtr lengthParam, subsParam, concatParam, findParam, sortParam;
+    tParamListPtr lengthParam = NULL, subsParam = NULL, concatParam = NULL, findParam = NULL, sortParam = NULL;
     tFuncInfo *lengthInfo, *subsInfo, *concatInfo, *findInfo, *sortInfo;
     
     //inicializace seznamu parametru
@@ -76,7 +76,8 @@ int prepareGlobalTable() {
     
     //vlozeni predpisu pro funkci:  int length (string s)
     char *lengthID = "length";
-    string *length;
+    string *length = NULL;
+    strInit(length);
     if (strConConstString(length, lengthID) == 1) {
         return 0;
     }
@@ -1672,7 +1673,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             }
             
             //vlozeni promenne do lokalni tabulky symbolu
-            if ((tabSymInsertVar(localTable, idName, variableInfo)) == 0) {
+            if ((tabSymInsertVar(localTable, idNameAuto, variableInfo)) == 0) {
                 freeIdName(idNameAuto);
                 return ERR_INTERNAL;
             }
@@ -1681,7 +1682,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             string *lastGeneratedTMP;
             string *key, *key2;
             //vyhledame klic v existujici tabulce symbolu
-            if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
+            if((key = tabSymListGetPointerToKey(blockListElem, localTable, idNameAuto)) == NULL) {
                 freeIdName(idNameAuto);
                 return ERR_INTERNAL;
             }
