@@ -302,4 +302,12 @@ void insTapePred(tInsTape* tape){
 int insTapeActive(tInsTape* tape){
 	return (tape->act==NULL) ? 0:1;
 }
+
+void insTapeGoto(tInsTape *tape, tInsTapeInsPtr gotoInstr)
+// nastavime aktivni instrukci podle zadaneho ukazatele
+// POZOR, z hlediska predmetu IAL tato funkce narusuje strukturu
+// abstraktniho datoveho typu
+{
+  tape->act = gotoInstr;
+}
 /*** End of file: insTape.c ***/

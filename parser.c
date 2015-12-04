@@ -657,7 +657,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
 }
 
 
-//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
+//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 15. <st_list> -> epsilon
@@ -753,21 +753,6 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             if ((result = parseStatementList(blockLocalTable, newElement->childList, newElement, instructionTape)) != 1) {
                 return result;
             }
-            
-            //TODO - nasledujici blok je nejspis spatne
-            // BRACES_CLOSING uz jsem totiz musel precist, abych mohl pokracovat az sem
-            /*
-            if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
-            }
-            
-            //dalsi token by mel byt uzaviraci slozena zavorka
-            if(token->typ != BRACES_CLOSING) {
-                freeTokenMem(token);
-                return ERR_SYNTAX;
-            }
-            freeTokenMem(token);
-             */
             
             //volam rekurzivne parseStatementList po vynoreni
             return parseStatementList(localTable, blockList, parent, instructionTape);
@@ -1158,7 +1143,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             tConstantInfo *constInfo;
             //udzuje hodnoty, kterych muze konstanta nabyvat
             unionValue uval;
-            // vygenerovany
+            // vygenerovany identifikator pro konstantu
             string *tmp;
             
             switch (token->typ) {
@@ -1233,7 +1218,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             
-            //TODO - zpracovani dalsich vstupu
+            //zpracovani dalsich vstupu
             if((result = parseCout(instructionTape, blockListElem, localTable)) != 1) {
                 return result;
             }
@@ -1285,6 +1270,13 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
         case KEYW_WHILE:
             freeTokenMem(tokenOrig);
             
+            //vygeneruji si instrukci noveho navesti a uchovam si na ni ukazatel
+            if (insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            //uchovam si ukazatel na tuto instrukci
+            tInsTapeInsPtr whileBegin = insTapeGetLast(instructionTape);
+            
             if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
@@ -1295,10 +1287,32 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeTokenMem(token);
             
-            //TODO - zpracovani vyrazu
+            //zpracovani vyrazu
             if ((result = parseExpression( blockListElem ,localTable, instructionTape , &expressionType, f)) != ERR_OK) {
                 return result;
             }
+            
+            string *lastGeneratedTMP, *keyOfLastTMP;
+            //zjistim ID posledniho vygenerovaneho identifikatoru
+            if((lastGeneratedTMP = tabSymListCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+                return ERR_INTERNAL;
+            }
+            
+            //vyhledam v tabulce symbolu klic korespondujici k danemu ID
+            if((keyOfLastTMP = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMP)) == NULL) {
+                return ERR_INTERNAL;
+            }
+            
+            //vygeneruji instrukci, ktera zneguje vyslednou promennou vyrazu
+            if (insTapeInsertLast(instructionTape, I_LOG_NOT, (void*)keyOfLastTMP , NULL, (void *) keyOfLastTMP) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //vygeneruji instrukci podmineneho skoku a ulozim si jeji adresu
+            if (insTapeInsertLast(instructionTape, I_IFNZERO, (void *) keyOfLastTMP, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            tInsTapeInsPtr whileGoToEnd = insTapeGetLast(instructionTape);
             
             if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -1311,8 +1325,28 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(token);
             
             //TODO - zpracovani bloku
-            return parseBlock(localTable, blockList, blockListElem, instructionTape);
+            if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != 1) {
+                return result;
+            }
             
+            //vytvorim instrukci skoku, ktera skoci vzdy na zacatek whilu
+            if (insTapeInsertLast(instructionTape, I_GOTO, (void *) whileBegin, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //vygeneruji instrukci druheho navesti
+            if (insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            //ulozim si adresu navesti
+            tInsTapeInsPtr whileEnd = insTapeGetLast(instructionTape);
+            
+            //nastavim aktivitu na adresu, kterou chci prepsat
+            insTapeGoto(instructionTape, whileGoToEnd);
+            //prepisu danou instrukci
+            insTapeActualize(instructionTape, I_IFNZERO, (void *) keyOfLastTMP, (void *) whileEnd, NULL);
+            
+            return 1;
             break;
             
             
@@ -1382,8 +1416,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
 }
 
 
-//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
-//-----------   DODELAT GENEROVANI INSTRUKCI ---------
+//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 36. <declaration> -> <Kdata_types> ID<dec_init>
@@ -1471,7 +1504,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                  
                 string *lastGeneratedTMP;
                 string *key, *key2;
-                //vyhledame klic v existujici tabulce symbolu
+                //vyhledame klic korespondujici k danemu identifikatoru tabulce symbolu
                 if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
                     freeIdName(idName);
                     return ERR_INTERNAL;
@@ -1484,6 +1517,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                     return ERR_INTERNAL;
                 }
                 
+                //vyhledam klic korespondujici k posledni vygenerovane promenne
                 if ((key2 = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMP)) == NULL) {
                     return ERR_INTERNAL;
                 }
@@ -1591,6 +1625,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 return ERR_INTERNAL;
             }
             
+            //vyhledam klic korespondujici k posledni vygenerovane promenne
             if((key2 = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMP)) == NULL) {
                 return ERR_INTERNAL;
             }
@@ -1621,7 +1656,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
 }
 
 
-
+//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 27.  <block> -> {<st_list>}
@@ -1809,6 +1844,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                     return ERR_INTERNAL;
                 }
                 
+                //chci ziskat klic, ktery koresponduje k danemu identifikatoru
                 if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
                     freeIdName(idName);
                     return ERR_INTERNAL;
@@ -1816,6 +1852,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 
                 freeIdName(idName);
                 
+                //chci ziskat klic, ktery koresponduje k posledni vygenerovane promenne
                 if((key2 = tabSymListGetPointerToKey(blockListElem, localTable, lastCreatedTMP)) == NULL) {
                     return ERR_INTERNAL;
                 }
