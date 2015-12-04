@@ -44,6 +44,7 @@ typedef enum{
 	I_RETURN, //nepotrebuje nic
 	I_IFZERO,//jmp if adr1 == 0 to adr2 (ins)
 	I_IFNZERO,//jmp if adr1 != 0 to adr2 (ins)
+        I_GOTO, //adr1 - ins
 	I_SORT,//adr1 string(argument 1), adr2,adr3 variable INT (argument 2 a 3)
 	I_SORT_DEST, //adr3 kam ulozit vysledek
 	I_FIND,//
@@ -224,6 +225,14 @@ void insTapePred (tInsTape* tape);
  * @return	1 pri aktivite, jinak 0;
  */
 int insTapeActive (tInsTape* tape);
+
+/**
+ * nastavi aktivitu na prvek dany ukazatelem gotoInstr
+ * zdroj: jednoduchy interpret - ilist.c
+ * @param tape[in]          -   ukazatel na instrukcni pasku
+ * @param gotoInstr[in]     -   instrukce, na kterou se ma nastavit aktivita
+ */
+void insTapeGoto(tInsTape *tape, tInsTapeInsPtr gotoInstr);
 
 #endif /* INSTAPE_H_ */
 /*** End of file: insTape.h ***/
