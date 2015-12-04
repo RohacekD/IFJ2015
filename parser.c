@@ -227,20 +227,20 @@ void parse() {
     }
     
     //TODO - osetreni chyb a uvolneni pameti
-    if ((result = parseFunction()) != 1) {
+    if ((result = parseFunction()) != ERR_OK) {
         //TODO
         //uvolneni pameti - globalni tabulky symbolu
         tabSymFree(globalTable);
         //vraceni chyboveho kodu na zaklade chyby v parseru
         switch(result) {
             case LEXICAL_ERR:
-                //TODO
+                FatalError(ERR_LEX, ERR_MESSAGES[ERR_LEX]);
             case ERR_SYNTAX:
-                //TODO
+                FatalError(ERR_SYNTAX, ERR_MESSAGES[ERR_SYNTAX]);
             case ERR_SEM_DEF:
-                //TODO
+                FatalError(ERR_SEM_DEF, ERR_MESSAGES[ERR_SEM_DEF]);
             case ERR_SEM_COM:
-                //TODO
+                FatalError(ERR_SEM_COM, ERR_MESSAGES[ERR_SEM_COM]);
             case ERR_INTERNAL:
                 //TODO
             default:
@@ -285,7 +285,7 @@ int parseFunction() {
     //program muze byt i prazdny
     if (token->typ == EOF) {
         freeTokenMem(token);
-        return 1;
+        return ERR_OK;
     }
        
     //volani funkce pro zpracovani <Kdata_types> - kontrola, zda mi prisel datovy typ
@@ -353,7 +353,7 @@ int parseFunction() {
             tTabSym *localTabSym = tabSymCreate(TAB_SYM_LOC);
             
             //volani funkce pro zpracovani <arguments>
-            if((result = parseArguments(paramList, funcID_info, localTabSym)) != 1) {
+            if((result = parseArguments(paramList, funcID_info, localTabSym)) != ERR_OK) {
                 freeIdName(idName);
                 //navratim chybovy kod
                 return result;
@@ -419,7 +419,7 @@ int parseFunction() {
                 }
                 
                 //pripravu jsem dokoncil, muzu provadet telo funkce
-                if ((result = parseStatementList(localTabSym, blockList, NULL, instructionTape)) != 1) {
+                if ((result = parseStatementList(localTabSym, blockList, NULL, instructionTape)) != ERR_OK) {
                     freeIdName(idName);
                     return result;
                 }
@@ -526,7 +526,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
             }
         }
         freeTokenMem(token);
-        return 1;
+        return ERR_OK;
     }
     
     //upravene pravidlo 9: <arguments> -> <argument>
@@ -643,7 +643,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
         if (data->info.func->params->act->next != NULL) {
             return ERR_SEM_COM;
         }
-        return 1;
+        return ERR_OK;
     }
     //token je ,
     else if(token->typ == COMMA) {
@@ -715,7 +715,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             
             //volam funkci pro zpracovani deklarace
             // parent je v tomto pripade aktualni element z listu tabulek symbolu bloku
-            if ((result = parseDeclaration(dataType, localTable, instructionTape, parent)) != 1) {
+            if ((result = parseDeclaration(dataType, localTable, instructionTape, parent)) != ERR_OK) {
                 return result;
             }
             
@@ -735,7 +735,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
                     return ERR_INTERNAL;
                 }
             }
-            return 1;
+            return ERR_OK;
             break;
         
         //pravidlo 18 - <st_list> -> {<st_list>}<st_list>
@@ -765,7 +765,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             
             //rodicem se stane novy element, budeme pracovat s novou lokalni tabulkou
             //a novym listem, instrukcni paska je stejna
-            if ((result = parseStatementList(blockLocalTable, newElement->childList, newElement, instructionTape)) != 1) {
+            if ((result = parseStatementList(blockLocalTable, newElement->childList, newElement, instructionTape)) != ERR_OK) {
                 return result;
             }
             
@@ -787,7 +787,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             
             
             //TODO - jeste nevim, co vse musim predat funkci parseStatement
-            if((result = parseStatement(localTable, token, instructionTape, blockList, parent)) != 1) {
+            if((result = parseStatement(localTable, token, instructionTape, blockList, parent)) != ERR_OK) {
                 return result;
             }
             
@@ -891,7 +891,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(token);
             
             //TODO - doplnit parseBlock
-            if((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != 1) {
+            if((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
                 return result;
             }
             
@@ -965,7 +965,8 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                     insTapeGoto(instructionTape, skipElse1);
                     insTapeActualize(instructionTape, I_GOTO, (void *) ifLabel1, NULL, NULL);
                     ungetToken(&token);
-                    return 1;
+                    
+                    return ERR_OK;
                     break;
                 default:
                     return ERR_SYNTAX;
@@ -1073,7 +1074,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             //TODO - co predavat 
-            if((result = parseAssignment(token, localTable, instructionTape, blockListElem)) != 1) {
+            if((result = parseAssignment(token, localTable, instructionTape, blockListElem)) != ERR_OK) {
                 return result;
             }
             
@@ -1161,7 +1162,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             
-            if ((result = parseCin(instructionTape, localTable, blockListElem)) != 1) {
+            if ((result = parseCin(instructionTape, localTable, blockListElem)) != ERR_OK) {
                 return result;
             }
             
@@ -1177,7 +1178,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(token);
             
             //pokud jsem se dostal az sem, tak syntakticka analyza probehla bez chyby
-            return 1;
+            return ERR_OK;
             break;
             
             
@@ -1298,7 +1299,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             
             
             //zpracovani dalsich vstupu
-            if((result = parseCout(instructionTape, blockListElem, localTable)) != 1) {
+            if((result = parseCout(instructionTape, blockListElem, localTable)) != ERR_OK) {
                 return result;
             }
             
@@ -1314,7 +1315,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(token);
             
             //pokud jsem se dostal az sem, tak syntakticka analyza probehla v poradku
-            return 1;
+            return ERR_OK;
             break;
             
             
@@ -1340,7 +1341,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 freeTokenMem(token);
                 return ERR_SYNTAX;
             }
-            return 1;
+            return ERR_OK;
             break;
             
             
@@ -1404,7 +1405,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(token);
             
             //TODO - zpracovani bloku
-            if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != 1) {
+            if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
                 return result;
             }
             
@@ -1425,7 +1426,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             //prepisu danou instrukci
             insTapeActualize(instructionTape, I_IFNZERO, (void *) keyOfLastTMP, (void *) whileEnd, NULL);
             
-            return 1;
+            return ERR_OK;
             break;
             
             
@@ -1435,7 +1436,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(tokenOrig);
             
             //TODO - zpracovani bloku
-            if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != 1) {
+            if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
                 return result;
             }
             
@@ -1475,7 +1476,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(token);
             
             //pokud jsem se dostal az sem, tak je vse v poradku
-            return 1;
+            return ERR_OK;
             break;
             
             
@@ -1569,7 +1570,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             if(token->typ == SEMICOLON) {
                 freeIdName(idName);
                 freeTokenMem(token);
-                return 1;
+                return ERR_OK;
             }
             
             //inicializace
@@ -1620,7 +1621,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                  }
                  freeTokenMem(token);
                  //pokud jsem se dostal az sem, vse je v poradku
-                 return 1;
+                 return ERR_OK;
             }
             
             freeTokenMem(token);
@@ -1729,7 +1730,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             }
             freeTokenMem(token);
             //pokud jsem se dostal az sem, tak je vse v poradku
-            return 1;
+            return ERR_OK;
             
             break;
         default:
@@ -1767,11 +1768,11 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
         case BRACES_OPENING:
             ungetToken(&token);
             
-            if((result = parseStatementList(localTable, blockList, blockListElem, instructionTape)) != 1) {
+            if((result = parseStatementList(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
                 return result;
             }
             
-            return 1;
+            return ERR_OK;
             break;
             
         // pravidlo 28 - <block> -> <statement>
@@ -1872,7 +1873,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 }
                
                 freeTokenMem(token);
-                return 1;
+                return ERR_OK;
             }
             //zpracovavam vetev ID--
             else if(token->typ == DECREMENTATION) {
@@ -1898,7 +1899,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 }
    
                 freeTokenMem(token);
-                return 1;
+                return ERR_OK;
             }
             //zpracovavam vetev ID = expression;
             else if (token->typ == EQUAL) {
@@ -1938,7 +1939,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                     return ERR_INTERNAL;
                 }
                 
-                return 1;
+                return ERR_OK;
             }
             else {
                 freeTokenMem(token);
@@ -1993,7 +1994,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             
             freeTokenMem(token);
             //pokud jsem se dostal az sem, vse je v poradku
-            return 1;
+            return ERR_OK;
             break;
             
             
@@ -2043,7 +2044,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             
             freeTokenMem(token);
             //pokud jsem se dostal az sem, vse je v poradku
-            return 1;
+            return ERR_OK;
             break;
             
         default:
@@ -2074,7 +2075,7 @@ int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr 
     if(token->typ == SEMICOLON) {
         //navratime token, protoze s nim pocita volajici funkce
         ungetToken(&token);
-        return 1;
+        return ERR_OK;
     }
     
     if(token->typ == GREATER) {
@@ -2168,7 +2169,7 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
     if(token->typ == SEMICOLON) {
         //volajici funkce s timto tokenem pocita
         ungetToken(&token);
-        return 1;
+        return ERR_OK;
     }
     
     //pravidlo 35 - <cout> -> << <term> <cout>
