@@ -35,6 +35,11 @@ int executeTape(tInsTapeInsPtr ins) {
 				instruction = (&(*instruction)->rptr);
 			}
 		}
+		else if ((*instruction)->type == I_GOTO) {
+			if (ins->adr1 == NULL) {
+				instruction = (tInsTapeInsPtr*)ins->adr1;
+			}
+		}
 		else {
 			executeIns(instruction, frameStack);
 		}
@@ -110,7 +115,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (oper1->type == VAR_TYPE_STRING) {
 			printf("%s", oper1->data.stringVal.str);
 		}
-                fflush(stdout);
+		fflush(stdout);
 		break;
 	case I_PLUS:
 		findVariable(stack, (string*)ins->adr1, &oper1);
@@ -376,6 +381,32 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			dest->data.boolVal = -getVarVal(oper1);
 		}
 		break;
+	case I_INC:
+		findVariable(stack, (string*)ins->adr1, &oper1);
+		findVariable(stack, (string*)ins->adr3, &dest);
+		if (dest->type == VAR_TYPE_INT) {
+			dest->data.intVal = (int)getVarVal(oper1)+1;
+		}
+		else if (dest->type == VAR_TYPE_DOUBLE) {
+			dest->data.doubleVal = getVarVal(oper1)+1;
+		}
+		else if (dest->type == VAR_TYPE_BOOL) {
+			dest->data.boolVal = -getVarVal(oper1)+1;
+		}
+		break;
+	case I_DEC:
+		findVariable(stack, (string*)ins->adr1, &oper1);
+		findVariable(stack, (string*)ins->adr3, &dest);
+		if (dest->type == VAR_TYPE_INT) {
+			dest->data.intVal = -(int)getVarVal(oper1)-1;
+		}
+		else if (dest->type == VAR_TYPE_DOUBLE) {
+			dest->data.doubleVal = -getVarVal(oper1)-1;
+		}
+		else if (dest->type == VAR_TYPE_BOOL) {
+			dest->data.boolVal = -getVarVal(oper1)-1;
+		}
+		break;
 	case I_LOG_NOT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -474,7 +505,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			dest->data.boolVal = getVarVal(oper1);
 		}
 		else if (dest->type == VAR_TYPE_STRING) {
-			strCopyString(&oper1->data.stringVal, &dest->data.stringVal);
+			strCopyString(&dest->data.stringVal,&oper1->data.stringVal);
 		}
 		break;
 	case I_SP:
