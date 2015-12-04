@@ -828,6 +828,9 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
     int result;
     tTabSymVarNoAutoDataType expressionType;
     tTabSymVarDataType dataType;
+    string *key;
+    tTabSymElemData *idUsable;
+    string *idName;
     
     switch(tokenOrig->typ) {
         //pravidlo 23 - if(expression)<block><else>
@@ -1065,40 +1068,28 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return ERR_SYNTAX;
             }
             
-            string *idName = malloc(sizeof(string));
-            if (idName == NULL) return ERR_INTERNAL;
-
-            //ulozim si nazev identifikatoru
-            if ((result = strInit(idName)) == 1) {
-                free(idName);
-                return ERR_INTERNAL;
-            }
-            if ((result = strCopyString(idName, &(token->value.stringVal))) == 1) {
-                strFree(idName);
-                free(idName);
+            //zkopiruju si nazev identifikatoru
+            if ((idName = copyIdName(&(token->value.stringVal))) == NULL) {
+                freeTokenMem(token);
                 return ERR_INTERNAL;
             }
             
             freeTokenMem(token);
             
             //semanticka kontrola, zda je ID pouzitelne 
-            tTabSymElemData *idUsable;
             if ((idUsable = tabSymListSearch(blockListElem, localTable, idName)) == NULL) {
-                strFree(idName);
-                free(idName);
+                freeIdName(idName);
                 return ERR_SEM_DEF; //promenna nedefinovana
             }
             
-            string *key;
+            
             //vyhledame klic v existujici tabulce symbolu
             if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
-                strFree(idName);
-                free(idName);
+                freeIdName(idName);
                 return ERR_INTERNAL;
             }
             
-            strFree(idName);
-            free(idName);
+            freeIdName(idName);
             
             //TODO - VLOZENI INSTRUKCE
             if ((result = insTapeInsertLast(instructionTape, I_CIN, NULL, NULL, (void*) key)) == 0) {
@@ -1163,8 +1154,80 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return ERR_SYNTAX;
             }
             
-            //TODO - GENEROVANI INSTRUKCE
-            freeTokenMem(token);
+            //udrzuje informace o konstante
+            tConstantInfo *constInfo;
+            //udzuje hodnoty, kterych muze konstanta nabyvat
+            unionValue uval;
+            // vygenerovany
+            string *tmp;
+            
+            switch (token->typ) {
+                case TYPE_BOOL:
+                case TYPE_INTEGER:
+                case TYPE_DOUBLE:
+                case TYPE_STRING:
+
+                    //funkci createConstantInfo musim predat union typu unionValue
+                    //tudiz si musim tento union vyrobit, tento string neuvolnim
+                   //TODO
+                    uval.boolVal = token->value.boolVal;
+                    uval.doubleVal = token->value.doubleVal;
+                    uval.intVal = token->value.intVal;
+                    uval.stringVal = copyIdName(&(token->value.stringVal));
+
+                    freeTokenMem(token);
+
+                    //vytvorim informace o konstante
+                    if ((constInfo = tabSymCreateConstantInfo(token->typ, uval)) == NULL) {
+                        return ERR_INTERNAL;
+                    }
+                    //vytvorim si novy identifikator, ktery priradim konstante
+                    if ((tmp = tabSymListCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+                        return ERR_INTERNAL;
+                    }
+                    //vlozim konstantu do tabulky symbolu
+                    if (tabSymInsertConst(localTable, tmp, constInfo) == 0) {
+                        return ERR_INTERNAL;
+                    }
+
+                    //vzdy bych mel dany klic najit, jelikoz jsem ho prave vlozil
+                    key = tabSymListGetPointerToKey(blockListElem, localTable, tmp);
+
+                    //vlozim instrukci do instrukcni pasky
+                    if (insTapeInsertLast(instructionTape, I_COUT, (void *) key, NULL, NULL) == 0) {
+                        return ERR_INTERNAL;
+                    }
+                    break;
+
+                //vypisujeme identifikator
+                case TYPE_IDENTIFICATOR:
+
+                    //zkusim dany identifikator najit
+                    if ((idUsable = tabSymListSearch(blockListElem, localTable, &(token->value.stringVal))) == NULL) {
+                        freeTokenMem(token);
+                        return ERR_SEM_DEF;
+                    }
+
+                    //identifikator se nasel, chci ziskat klic do tabulky symbolu
+                    if ((key = tabSymListGetPointerToKey(blockListElem, localTable, &(token->value.stringVal))) == NULL) {
+                        freeTokenMem(token);
+                        return ERR_INTERNAL;
+                    }
+
+                    freeTokenMem(token);
+
+                    //vlozim instrukci do instrukcni pasky
+                    if (insTapeInsertLast(instructionTape, I_COUT, (void *) key, NULL, NULL) == 0) {
+                        return ERR_INTERNAL;
+                    }
+                    break;
+                    
+                //nikdy bych se sem nemel dostat
+                default:
+                    freeTokenMem(token);
+                    return ERR_INTERNAL;
+            }
+            
             
             //TODO - zpracovani dalsich vstupu
             if((result = parseCout(instructionTape, blockListElem, localTable)) != 1) {
@@ -1926,7 +1989,7 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
     tToken token;
     int result;
     TokenTypes ttype;
-    //udrzuje informace o promenne
+    //udrzuje informace o konstante
     tConstantInfo *constInfo;
     //udzuje hodnoty, kterych muze konstanta nabyvat
     unionValue uval;
