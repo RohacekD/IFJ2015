@@ -1313,7 +1313,7 @@ ERR_CODES genInsEInBrackets(tPrecStack* stack, tPrecStack* stackForGen){
 	//prvni je ( odstranime
 	precStackPop(stackForGen);
 	//ziskame neterminal E
-	tPrecStackData* actData = precStackTop(stack);
+	tPrecStackData* actData = precStackTop(stackForGen);
 	if(actData==NULL){
 		return ERR_INTERNAL;
 	}
