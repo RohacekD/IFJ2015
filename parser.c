@@ -1848,10 +1848,6 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 return ERR_SYNTAX;
             }
             
-            if ((key = tabSymListGetPointerToKey(blockListElem, localTable, &(token->value.stringVal))) == NULL) {
-                freeTokenMem(token);
-            }
-            
             //semanticka kontrala, zda je promenna definovana v danem rozsahu platnosti
             if ((idUsable = tabSymListSearch(blockListElem, localTable, &(token->value.stringVal))) == NULL) {
                 freeTokenMem(token);
@@ -1900,10 +1896,6 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             if(token->typ != TYPE_IDENTIFICATOR) {
                 freeTokenMem(token);
                 return ERR_SYNTAX;
-            }
-            
-            if ((key = tabSymListGetPointerToKey(blockListElem, localTable, &(token->value.stringVal))) == NULL) {
-                freeTokenMem(token);
             }
             
             //semanticka kontrala, zda je promenna definovana v danem rozsahu platnosti
