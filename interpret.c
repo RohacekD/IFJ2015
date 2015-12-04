@@ -60,6 +60,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	if (stack == NULL) return 0;
 	tVariablePtr oper1;
 	tVariablePtr oper2;
+	tVariablePtr oper3;
 	tVariablePtr dest;
 
 	tTabSym* tab;
@@ -467,9 +468,22 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			dest->data.stringVal = concat(oper1->data.stringVal, oper2->data.stringVal);
 		}
 		break;
-	case I_SUBSTR:
-		break;
-	case I_SUBSTR_DEST:
+	case I_SUBSTR://tato instrukce cte i nasledujici ktera musi byt typu I_SUBSTR_DEST
+		findVariable(stack, (string*)ins->adr1, &oper1);
+		findVariable(stack, (string*)ins->adr2, &oper2);
+		findVariable(stack, (string*)ins->adr3, &oper3);
+		*instruction = ins->rptr;
+		ins = *instruction;
+		if (ins->type != I_SUBSTR_DEST) {
+			FatalError(10, ERR_MESSAGES[ERR_RUNTIME_REST]);
+		}
+		findVariable(stack, (string*)ins->adr3, &dest);
+		if (dest->type != VAR_TYPE_STRING || oper1->type != VAR_TYPE_STRING ||
+			oper2->type != VAR_TYPE_INT || oper3->type != VAR_TYPE_INT) {
+			FatalError(10, ERR_MESSAGES[ERR_RUNTIME_REST]);
+		}
+		strFree(&dest->data.stringVal);
+		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal);
 		break;
 	case I_LENGTH:
 		findVariable(stack, (string*)ins->adr1, &oper1);
@@ -484,8 +498,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			FatalError(4, ERR_MESSAGES[ERR_SEM_COM]);
 		}
 		break;
-        case I_LABEL:
-                break;
+        case I_LABEL://jen navesti nic nedelej
+            break;
 	default:
 		break;
 	}
