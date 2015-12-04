@@ -45,7 +45,7 @@ typedef enum{
 	I_IFZERO,//jmp if adr1 == 0 to adr2 (ins)
 	I_IFNZERO,//jmp if adr1 != 0 to adr2 (ins)
     I_GOTO, //adr1 - ins
-	I_SORT,//adr1 string(argument 1)
+	I_SORT,//adr1 string(argument 1), adr3 string kam ma byt ulozen
 	I_FIND,//adr1 string s adr2 search adr3 int
 	I_CONCAT,//adr1 argument 1, adr2 argument 2 adr3 destination
 	I_SUBSTR,//adr1 string(argument 1), adr2,adr3 variable INT (argument 2 a 3)

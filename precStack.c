@@ -29,6 +29,18 @@ tPrecStackElemPtr stackCreateInitNewElem(tPrecStackData data, tPrecStackElemPtr 
 		return NULL;
 	}
 	newElem->data=data;
+
+	if(newElem->data.id!=NULL){
+		//obstarame string
+		newElem->data.id=malloc(sizeof(string));
+		if(newElem->data.id==NULL){
+			return NULL;
+		}
+		strInit(newElem->data.id);
+		if(strCopyString(newElem->data.id, data.id)){
+			return NULL;
+		}
+	}
 	newElem->next=nextPtr;
 	return newElem;
 }
@@ -70,7 +82,7 @@ int precStackPushElemBeforeTopTerm(tPrecStack * stack, tPrecStackElemType type, 
 	//ztotoznime jej s elementem predchazejicim
 	tPrecStackElemPtr elemBefore=NULL;
 
-	while(element!=NULL && element->data.type!=PREC_STACK_TERMINAL){
+	while(element!=NULL && element->data.type!=PREC_STACK_TERMINAL && element->data.type!=PREC_STACK_ENDMARK){
 		//preskocime vsechny neterminaly z vrcholu zasobniku
 		elemBefore=element;
 		element=element->next;
@@ -133,7 +145,7 @@ int precStackTopTerminal(tPrecStack* stack, tParExpTerminals* terminal){
 	tPrecStackElemPtr element=precStackTopElement(stack);
 
 	while(element!=NULL &&
-			(element->data.type!=PREC_STACK_TERMINAL || element->data.type!=PREC_STACK_ENDMARK)){
+			element->data.type!=PREC_STACK_TERMINAL && element->data.type!=PREC_STACK_ENDMARK){
 		//preskocime vsechny neterminaly z vrcholu zasobniku
 		element=element->next;
 	}
@@ -155,12 +167,13 @@ tPrecStack * precStackCreateRevertedTopReduc(tPrecStack * stack){
 		//naplnime zasobnikem <y
 		while(!precStackEmpty(stack) &&  actData->type!=PREC_STACK_ENDMARK){
 			precStackPush(newStack,*actData);
-			precStackPop(stack);
-			if(actData->type!=PREC_STACK_SIGN){
+			if(actData->type==PREC_STACK_SIGN){
 				precStackPop(newStack);	//sign nechceme
+				precStackPop(stack);
 				//koncime
 				break;
 			}
+			precStackPop(stack);
 			actData = precStackTop(stack);
 		}
 

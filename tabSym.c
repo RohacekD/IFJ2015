@@ -399,9 +399,16 @@ int sumCounters(tTabSymListElemPtr forStartElement, unsigned int* sum){
 string* tabSymListCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* locTable) {
 	char buffer[BUFFER_SIZE];
 	int flag;
-	unsigned int index;
-
+	unsigned int index=0;
 	if(locTable==NULL) return NULL;	//chyba
+	unsigned int* chooseCounter;
+	//vybereme counter
+	if(generateFor==NULL){
+		chooseCounter=&locTable->tmpCounter;
+	}else{
+		chooseCounter=&generateFor->table->tmpCounter;
+	}
+
 
 	if(sumCounters(generateFor, &index)==0){
 		//chyba overflow
@@ -433,7 +440,7 @@ string* tabSymListCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* locTa
 	strConConstString(newString, buffer);
 
 	//zvysime counter u tabulky symbolu
-	generateFor->table->tmpCounter++;
+	(*chooseCounter)++;
 	return newString;
 }
 

@@ -26,31 +26,15 @@ extern tTabSym *globalTable;
  * @return 1 OK, 0 chyba
  */
 int prepareNextToken(tPrecStack* stack, FILE* scanFile,
-		tParExpTerminals* terminalCode, tToken token) {
+		tParExpTerminals* terminalCode, tToken* token) {
 	tPrecStackData* precStackdata;
 	tToken nextToken;
 
-	if (getToken(&token, scanFile) != 1) {
+	if (getToken(token, scanFile) != 1) {
 		return 0;
 	}
 
-	typedef union utokenValue
-	{
-		//nejak implementovany pointer do tabulky symbolu
-		int intVal;
-		double doubleVal;
-		string stringVal;
-		bool boolVal;
-	}tokenValue;
-
-
-
-	typedef struct stToken{
-		TokenTypes typ;
-		tokenValue value;
-	} tToken;
-
-	switch (token->typ) {
+	switch ((*token)->typ) {
 	case PLUS:
 		// +
 		*terminalCode = TERMINAL_ADDITION;
@@ -117,19 +101,20 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 			*terminalCode = TERMINAL_INCREMENT_POSTFIX;
 		} else {
 			// prefix ++
-			if (prepareNextToken(stack, scanFile, terminalCode, nextToken)
+			if (prepareNextToken(stack, scanFile, terminalCode, &nextToken)
 					== 0) {
 				//chyba
 				return 0;
 			}
 
-			if (terminalCode == TYPE_IDENTIFICATOR) {
+			if (*terminalCode == TYPE_IDENTIFICATOR) {
 				ungetToken(&nextToken);	//vratime
 				*terminalCode = TERMINAL_INCREMENT_PREFIX;
 			} else {
 				//chyba
 				return 0;
 			}
+
 		}
 
 		break;
@@ -142,12 +127,12 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 			*terminalCode = TERMINAL_DECREMENT_POSTFIX;
 		} else {
 			// prefix --
-			if (prepareNextToken(stack, scanFile, terminalCode, nextToken)
+			if (prepareNextToken(stack, scanFile, terminalCode, &nextToken)
 					== 0) {
 				//chyba
 				return 0;
 			}
-			if (terminalCode == TYPE_IDENTIFICATOR) {
+			if (*terminalCode == TYPE_IDENTIFICATOR) {
 				ungetToken(&nextToken);	//vratime
 				*terminalCode = TERMINAL_DECREMENT_PREFIX;
 			} else {
@@ -219,7 +204,7 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
  * @return Pokud vse v poradku vraci ERR_OK. Pri chybe vraci error kody (ERR_INTERNAL, ERR_SEM_DEF).
  */
 int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr tableListElem, tParExpTerminals termKind, tToken token,
-		string* id) {
+		string** id) {
 	string* newString;
 	if (termKind == TERMINAL_IDENTIFICATOR) {
 		tTabSymVarNoAutoDataType dataType;
@@ -250,11 +235,11 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 			value.boolVal=token->value.boolVal;
 			CONSTANT_HANDLE:
 
-			id = tabSymListCreateTmpSymbol(tableListElem,table);
+			*id = tabSymListCreateTmpSymbol(tableListElem,table);
 
 			tConstantInfo* constInfo = tabSymCreateConstantInfo(dataType, value);
 
-			if (id == NULL) {
+			if (*id == NULL) {
 				return ERR_INTERNAL;	//chyba
 			}
 			if(constInfo == NULL){
@@ -264,7 +249,7 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 			}
 
 			//vlozime do tabulky
-			if(tabSymInsertConst(insertToTable, id, constInfo)==0){
+			if(tabSymInsertConst(insertToTable, *id, constInfo)==0){
 				return ERR_INTERNAL;
 			}
 
@@ -294,7 +279,7 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 				free(newString);
 				return ERR_INTERNAL;
 			}
-			id=newString;
+			*id=newString;
 			break;
 		}
 	}else if(termKind == TERMINAL_FUNCTION_IDENTIFICATOR){
@@ -322,7 +307,7 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 			free(newString);
 			return ERR_INTERNAL;
 		}
-		id=newString;
+		*id=newString;
 	}
 	return ERR_OK;
 }
@@ -386,9 +371,7 @@ typedef enum{
  * Vybere pravidlo na zaklade obsahu stacku
  * @param stack[in]	-	Stack Obsahujici terminaly a neterminaly ke zjisteni pravdila
  * @param rule[out]	-	Pokud nedojde k chybe ulozi zde kod pravidla.
- * 						Kod pravidla se vypocitava na zaklade ruleAutomateStates a to vyhradne z konecnych stavu,
- * 						kde vzorec pro vypocet pravidla vypada takto pravidlo=state-S_F_MINUS_E kde state je z mnoziny
- * 						koncovych stavu ruleAutomateStates.
+ * 						Kod pravidla odpovida kodum konecnych stavu v ruleAutomateStates.
  * @return	Vraci 0- pri syntakticke chybe, -1- pri chybe a 1 pokud je vse v poradku.
  */
 
@@ -665,7 +648,7 @@ int chooseRule(tPrecStack* stack, int* rule){
 		return 0;
 	}
 
-	*rule=actState-S_F_E_MINUS_E;
+	*rule=actState;
 	return 1;
 
 }
@@ -833,7 +816,7 @@ ERR_CODES genInsTermToNoterm(tTabSymListElemPtr startTabSymListElem, tTabSym* ta
 	//vytvorime novy neterminal, ktery bude slouzit, jako cilova adresa
 	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, codeOfDataType, stack);
 
-	if(adr1==NULL || adr3){
+	if(adr1==NULL || adr3==NULL){
 		return ERR_INTERNAL;
 	}
 
@@ -1273,15 +1256,12 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 				}
 				break;
 			case BUILD_IN_FUNC_ID_SORT:
-				if(insTapeInsertLast(insTape, I_SORT, adrPool[0], adrPool[0], adrPool[0])==0){
-					return ERR_INTERNAL;
-				}
-				if(insTapeInsertLast(insTape, I_SORT_DEST, NULL, NULL, saveTo)==0){
+				if(insTapeInsertLast(insTape, I_SORT, adrPool[0], NULL, saveTo)==0){
 					return ERR_INTERNAL;
 				}
 				break;
 			case BUILD_IN_FUNC_ID_SUBSTR:
-				if(insTapeInsertLast(insTape, I_SUBSTR, adrPool[0], adrPool[0], adrPool[0])==0){
+				if(insTapeInsertLast(insTape, I_SUBSTR, adrPool[0], adrPool[1], adrPool[2])==0){
 					return ERR_INTERNAL;
 				}
 				if(insTapeInsertLast(insTape, I_SUBSTR_DEST, NULL, NULL, saveTo)==0){
@@ -1338,7 +1318,7 @@ ERR_CODES genInsEInBrackets(tPrecStack* stack, tPrecStack* stackForGen){
 		return ERR_INTERNAL;
 	}
 	//vlozime jej na vrchol zasobniku stack
-	if(precStackPush(stack,*actData)){
+	if(precStackPush(stack,*actData)==0){
 		return ERR_INTERNAL;
 	}
 	return ERR_OK;
@@ -1597,7 +1577,10 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 	string* id; //pro vytvareni identifikatoru v tabulce symbolu
 	ERR_CODES errRet;	//chybovy kod
 	//vybereme si tabulku, do ktere se budou vkladat tmp symboly (pomocne promenne)
-	tTabSym* insertToTable=tableListElem->table;
+	tTabSym* insertToTable=NULL;
+	if(tableListElem!=NULL){
+		insertToTable=tableListElem->table;
+	}
 	if(insertToTable==NULL){
 		insertToTable=table;
 	}
@@ -1608,7 +1591,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 	tPrecStack* revertedTopStack;	//pouziva se pro vyber pravidla
 
 	//pridame ukoncujici znak
-	precStackPushElementOfKind(&stack, PREC_STACK_ENDMARK, 0, NULL);
+	precStackPushElementOfKind(&stack, PREC_STACK_ENDMARK, TERMINAL_ENDMARK, NULL);
 
 	int rule; // vybrane pravidlo
 
@@ -1616,7 +1599,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 	tParExpTerminals b;	//aktualni druh tokenu na vstupu
 	tToken token;	//aktualni token na vstupu
 
-	if(prepareNextToken(&stack, scanFile, &b, token)==0){	//ziskame pocatecni token
+	if(prepareNextToken(&stack, scanFile, &b, &token)==0){	//ziskame pocatecni token
 		//chyba lexikalni
 		return ERR_LEX;
 	}
@@ -1629,7 +1612,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 		switch (precGetRule(a, b)) {
 		case '=':
 			//dej na zasobnik prijaty token a precti dalsi ze vstupu
-			if((errRet=semHandleNewToken(table, insertToTable, tableListElem, b, token, id))!=ERR_OK){
+			if((errRet=semHandleNewToken(table, insertToTable, tableListElem, b, token, &id))!=ERR_OK){
 				goto ERROR_HANDLER;
 			}
 			if(precStackPushElementOfKind(&stack, PREC_STACK_TERMINAL, b, id)==0){
@@ -1640,7 +1623,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 			//vycistime aktualni token
 			freeTokenMem(&token);
 
-			if(prepareNextToken(&stack, scanFile, &b, token)==0){
+			if(prepareNextToken(&stack, scanFile, &b, &token)==0){
 				errRet=ERR_LEX;
 				goto ERROR_HANDLER;
 			}
@@ -1652,7 +1635,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 			 */
 			precStackPushElemBeforeTopTerm(&stack, PREC_STACK_SIGN, '<', NULL);
 
-			if((errRet=semHandleNewToken(table, insertToTable, tableListElem, b, token, id))!=ERR_OK){
+			if((errRet=semHandleNewToken(table, insertToTable, tableListElem, b, token, &id))!=ERR_OK){
 				goto ERROR_HANDLER;
 			}
 
@@ -1664,7 +1647,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 			//vycistime aktualni token
 			freeTokenMem(&token);
 
-			if(prepareNextToken(&stack, scanFile, &b, token)==0){
+			if(prepareNextToken(&stack, scanFile, &b, &token)==0){
 				errRet=ERR_LEX;
 				goto ERROR_HANDLER;
 			}
