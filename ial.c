@@ -57,6 +57,13 @@ int BMA(char* string, char* searchString, int charJump[]) {
 		return stringLength;
 	}
 }
+
+int find(char* string, char* searchString) {
+	int jumps[256];
+	computeJumps(string, jumps);
+	return BMA(string, searchString, jumps);
+}
+
 /**
  * Pouziva funkce heapsort.
  * @param string

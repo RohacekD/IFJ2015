@@ -30,7 +30,7 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 	tPrecStackData* precStackdata;
 	tToken nextToken;
 
-	if (getToken(token, scanFile) != 1) {
+	if (getToken(&token, scanFile) != 1) {
 		return 0;
 	}
 
@@ -124,13 +124,12 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 			}
 
 			if (terminalCode == TYPE_IDENTIFICATOR) {
-				ungetToken(nextToken);	//vratime
+				ungetToken(&nextToken);	//vratime
 				*terminalCode = TERMINAL_INCREMENT_PREFIX;
 			} else {
 				//chyba
 				return 0;
 			}
-
 		}
 
 		break;
@@ -149,7 +148,7 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 				return 0;
 			}
 			if (terminalCode == TYPE_IDENTIFICATOR) {
-				ungetToken(nextToken);	//vratime
+				ungetToken(&nextToken);	//vratime
 				*terminalCode = TERMINAL_DECREMENT_PREFIX;
 			} else {
 				//chyba
@@ -186,13 +185,13 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 
 		//musime zjistit, zda-li se nejedna o identifikator funkce
 		*terminalCode = TERMINAL_IDENTIFICATOR;
-		if (getToken(nextToken, scanFile) != 1)
+		if (getToken(&nextToken, scanFile) != 1)
 			return 0;
 		if (nextToken->typ == PARENTHESIS_OPENING) {
 			// jmeno funkce
 			*terminalCode = TERMINAL_FUNCTION_IDENTIFICATOR;
 		}
-		ungetToken(nextToken);	//vratime
+		ungetToken(&nextToken);	//vratime
 
 		break;
 	case END_OF_FILE:
@@ -1715,7 +1714,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 		default:
 			if(a==TERMINAL_ENDMARK && b==TERMINAL_CLOSE_BRACKET){
 				//pokud je na vrchu zasobniku $ a prichazi )
-				ungetToken(token);	//pro dalsi zpracovani
+				ungetToken(&token);	//pro dalsi zpracovani
 
 				errRet=ERR_OK;
 			}else{
@@ -1727,7 +1726,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 		precStackTopTerminal(&stack, &a);
 	} while (b!=TERMINAL_ENDMARK || a!=TERMINAL_ENDMARK);//b = $ and top = $
 
-	ungetToken(token);	//pro dalsi zpracovani
+	ungetToken(&token);	//pro dalsi zpracovani
 	precStackDispose(&stack);
 	precStackFree(&revertedTopStack);
 
