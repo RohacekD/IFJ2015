@@ -50,7 +50,8 @@ typedef enum{
 	I_CONCAT,//adr1 argument 1, adr2 argument 2 adr3 destination
 	I_SUBSTR,//adr1 string(argument 1), adr2,adr3 variable INT (argument 2 a 3)
 	I_SUBSTR_DEST, //adr3 kam ulozit vysledek
-	I_LENGTH//adr1 string adr3 int
+	I_LENGTH,//adr1 string adr3 int
+        I_LABEL //adr1 == adr2 == adr3 == NULL cil skoku pri skokovych instr.
 }tInstructTypes;
 
 
