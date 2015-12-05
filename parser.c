@@ -777,7 +777,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
         //ukonceni bloku funkce, nebo normalniho bloku
         case BRACES_CLOSING:
             //TODO - GENEROVANI INSTRUKCE PRO ODSTRANENI BLOCK FRAME
-            ungetToken(^token);
+            ungetToken(&token);
             //instrukci pro ukonceni bloku vkladam jenom kdyz jsem v zanorenem bloku
             if (parent != NULL) {
                 if (insTapeInsertLast(instructionTape, I_DBF, NULL, NULL, NULL) == 0) {
