@@ -768,6 +768,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             }
             
             //opet volam funkci pro zpracovani statement-listu
+            printf("AHA");
             return parseStatementList(localTable, blockList, parent, instructionTape);
             
             break;
@@ -776,7 +777,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
         //ukonceni bloku funkce, nebo normalniho bloku
         case BRACES_CLOSING:
             //TODO - GENEROVANI INSTRUKCE PRO ODSTRANENI BLOCK FRAME
-            freeTokenMem(&token);
+            ungetToken(&token);
             //instrukci pro ukonceni bloku vkladam jenom kdyz jsem v zanorenem bloku
             if (parent != NULL) {
                 if (insTapeInsertLast(instructionTape, I_DBF, NULL, NULL, NULL) == 0) {
@@ -1927,11 +1928,44 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
         //TODO - navratit precteny token, aby funkce parseStatementList
         //vytvorila novy rozsah platnosti pro blok?
         case BRACES_OPENING:
-            ungetToken(&token);
+            //ungetToken(&token);
+            
+            freeTokenMem(&token);
+            
+            // nova lokalni tabulka
+            tTabSym *blockLocalTable;
+            // polozka v seznamu tabulek pro bloky
+            tTabSymListElemPtr newElement;
+            
+            //vytvoreni nove lokalni tabulky symbolu
+            if ((blockLocalTable = tabSymCreate(TAB_SYM_LOC)) == NULL){
+                return ERR_INTERNAL;
+            }
+            
+            //vlozeni nove lokalni tabulky symbolu do listu bloku
+            if((newElement = tabSymListInsertTable(blockList, blockLocalTable, blockListElem)) == NULL) {
+                return ERR_INTERNAL;
+            }
+            
+            //TODO - GENEROVANI INSTRUKCE
+            if(insTapeInsertLast(instructionTape, I_CBF, (void*) blockLocalTable, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
             
             if((result = parseStatementList(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
                 return result;
             }
+            
+            if((result = getToken(&token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != BRACES_CLOSING) {
+                freeTokenMem(&token);
+                return ERR_SYNTAX;
+            }
+            
+            freeTokenMem(&token);
             
             return ERR_OK;
             break;
