@@ -492,7 +492,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		break;
 		//volani fce
 	case I_CF:
-                oper1 = NULL;
+        oper1 = NULL;
 		dest = NULL;
 		if (ins->adr3 != NULL) {//nejsme v main
 			findVariable(stack, (string*)ins->adr3, &dest);
@@ -514,7 +514,6 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			strFree(&ret);
 		}
 
-		deleteFunctionsFrames(stack);
 
 		if (ins->adr3 != NULL) {//nejsme v main
 			if (dest->type == VAR_TYPE_INT) {
@@ -530,6 +529,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				strCopyString(&oper1->data.stringVal, &dest->data.stringVal);
 			}
 		}
+		deleteFunctionsFrames(stack);
 		break;
 	case I_ASSIGN:
 		findVariable(stack, (string*)ins->adr1, &oper1);
