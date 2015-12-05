@@ -114,7 +114,6 @@ clean:
 		$(TARGETDIR_IFJ215)/parserExpr.o \
 		$(TARGETDIR_IFJ215)/parser.o \
 		$(TARGETDIR_IFJ215)/IFJ2015.o
-	rm -f -r $(TARGETDIR_IFJ215)
 
 
 # Create the target directory (if needed)
