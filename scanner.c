@@ -98,6 +98,7 @@ int getToken(tToken *Token, FILE* source) {
 				if (strAddChar(&s, c)) {
 					strFree(&s);
 					freeTokenMem(&tok);
+					
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -107,6 +108,7 @@ int getToken(tToken *Token, FILE* source) {
 				if (strAddChar(&s, c)) {
 					strFree(&s);
 					freeTokenMem(&tok);
+					
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -1061,7 +1063,7 @@ void freeTokenMem(tToken* t) {
 		strFree(&(*t)->value.stringVal);
 	}
 	free(*t);
-	t = NULL;
+	*t = NULL;
 }
 
 //void ungetToken(tToken*);
