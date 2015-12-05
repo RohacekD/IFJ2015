@@ -350,6 +350,7 @@ string* tabSymListGetPointerToKey(tTabSymListElemPtr startTabSymListElem, tTabSy
 }
 
 void tabSymListFree(tTabSymList* tabList){
+	if(tabList==NULL)return;
 	tTabSymListElemPtr act=tabList->first;
 	tTabSymListElemPtr next;
 
