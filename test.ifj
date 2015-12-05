@@ -1,6 +1,5 @@
 /* Program 1: Vypocet faktorialu (iterativne) */
-int main()
-{
+int main(){
 int a;
 int vysl;
 cout << "Zadejte cislo pro vypocet faktorialu: ";

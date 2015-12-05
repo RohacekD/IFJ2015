@@ -768,7 +768,6 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             }
             
             //opet volam funkci pro zpracovani statement-listu
-            printf("AHA");
             return parseStatementList(localTable, blockList, parent, instructionTape);
             
             break;
@@ -801,7 +800,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             if ((blockLocalTable = tabSymCreate(TAB_SYM_LOC)) == NULL){
                 return ERR_INTERNAL;
             }
-            
+                        
             //vlozeni nove lokalni tabulky symbolu do listu bloku
             if((newElement = tabSymListInsertTable(blockList, blockLocalTable, parent)) == NULL) {
                 return ERR_INTERNAL;
@@ -1052,6 +1051,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeTokenMem(&token);
             
+            /*
             //dalsi token by mel byt ID
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -1102,18 +1102,10 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             freeIdName(idName);
-            
-            if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+            */
+            if ((result = parseDeclaration(dataType, localTable, instructionTape, blockListElem)) != ERR_OK) {
+                return result;
             }
-            
-            //dalsi token by mel byt =
-            
-            if (token->typ != EQUAL) {
-                freeTokenMem(&token);
-                return ERR_SYNTAX;
-            }
-            freeTokenMem(&token);
             
             //TODO - volat parser  pro zpracovani vyrazu
             if ((result = parseExpression( blockListElem , localTable, instructionTape, &expressionType, f)) != ERR_OK) {
@@ -1132,10 +1124,10 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeIdName(lastGeneratedTMPfor);
             
-            //vygeneruji instrukci prirazeni
-            if (insTapeInsertLast(instructionTape, I_ASSIGN, (void *)keyFor1, NULL, (void *)keyFor) == 0) {
+            //vygeneruji instrukci prirazeni YODO
+            /*if (insTapeInsertLast(instructionTape, I_ASSIGN, (void *)keyFor1, NULL, (void *)keyFor) == 0) {
                 return ERR_INTERNAL;
-            }
+            }*/
                         
             if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
@@ -1154,9 +1146,9 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             //uchovavam adresu navesti
             tInsTapeInsPtr labelCondition = insTapeGetLast(instructionTape);
             
-            if ((result = parseExpression( blockListElem , localTable, instructionTape, &expressionType, f)) != ERR_OK) {
+            /*if ((result = parseExpression( blockListElem , localTable, instructionTape, &expressionType, f)) != ERR_OK) {
                 return result;
-            }
+            }*/
             
             string *lastGeneratedTMPfor2;
             if ((lastGeneratedTMPfor2 = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
@@ -1179,15 +1171,15 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             if(insTapeInsertLast(instructionTape, I_IFNZERO, (void *) keyFor2, NULL, NULL) == 0) return ERR_INTERNAL;
             tInsTapeInsPtr goBehindFor = insTapeGetLast(instructionTape);
             
-            if ((result = getToken(&token, f)) != 1) {
+            /*if ((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
-            if(token->typ != SEMICOLON) {
+            if(token->typ != SET_OPER) {
                 freeTokenMem(&token);
                 return ERR_SYNTAX;
             }
-            freeTokenMem(&token);
+            freeTokenMem(&token);*/
             //TODO
             //for(<Kdata_types>ID=expression; expression; <assignment>
             
@@ -1195,7 +1187,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return LEXICAL_ERR;
             }
             
-            if(token->typ != INCREMENTATION || token->typ != DECREMENTATION ||
+            if(token->typ != INCREMENTATION && token->typ != DECREMENTATION &&
                     token->typ != TYPE_IDENTIFICATOR) {
                 freeTokenMem(&token);
                 return ERR_SYNTAX;
@@ -1249,7 +1241,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             
             insTapeGoto(instructionTape, goBehindFor);
             insTapeActualize(instructionTape, I_IFNZERO, (void *) keyFor2, NULL, (void *) labelEndFor);
-            return 1;
+            return ERR_OK;
             
             break;
             
@@ -1648,7 +1640,21 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
         case TYPE_IDENTIFICATOR:
             
             //TODO - parse Assignment
-            return parseAssignment(tokenOrig, localTable, instructionTape, blockListElem);
+            if ((result = parseAssignment(tokenOrig, localTable, instructionTape, blockListElem)) != ERR_OK) {
+                return result;
+            } 
+            
+            if((result = getToken(&token, f)) != 1) {
+                return LEXICAL_ERR;
+            }
+            
+            if(token->typ != SEMICOLON) {
+                freeTokenMem(&token);
+                return ERR_SYNTAX;
+            }
+            freeTokenMem(&token);
+            return ERR_OK;
+                
             break;
         default:
             return ERR_SYNTAX;
@@ -1736,7 +1742,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             }
             
             //inicializace
-            if(token->typ == EQUAL) {
+            if(token->typ == SET_OPER) {
                 freeTokenMem(&token);
 
                  if ((result = parseExpression( blockListElem, localTable, instructionTape, &expressionType, f)) != ERR_OK) {
@@ -1826,7 +1832,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 return LEXICAL_ERR;
             }
             
-            if(token->typ != EQUAL) {
+            if(token->typ != SET_OPER) {
                 freeIdName(idNameAuto);
                 freeTokenMem(&token);
                 return ERR_SEM_AUTO;
@@ -2039,9 +2045,9 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             //ziskam datovy typ promenne, abych mohl provadet semantickou kontrolu
             idType = idUsable->info.var->dataType;
             
-            if((result = getToken(&token, f))) {
-                return LEXICAL_ERR;
+            if((result = getToken(&token, f)) != 1) {
                 freeIdName(idName);
+                return LEXICAL_ERR;
             }
             
             //zpracovavam vetev ID++
@@ -2097,7 +2103,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 return ERR_OK;
             }
             //zpracovavam vetev ID = expression;
-            else if (token->typ == EQUAL) {
+            else if (token->typ == SET_OPER) {
                 
                 freeTokenMem(&token);
                 
