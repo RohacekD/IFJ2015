@@ -31,6 +31,9 @@ tInsTape* insTapeCreate() {
  * @param tape[in]	-	instrukcni paska pro uvolneni.
  */
 void insTapeFree(tInsTape* tape) {
+	if(tape==NULL){
+		return;
+	}
 	//uvolnime prvky z pameti
 	tInsTapeInsPtr act;
 	tInsTapeInsPtr next = tape->first;
