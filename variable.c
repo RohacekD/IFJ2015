@@ -37,6 +37,8 @@ tVariableType tTabSymToVarNotatation(tTabSymVarDataType type) {
 	case TAB_SYM_VAR_BOOLEAN:
 		return VAR_TYPE_BOOL;
 		break;
+	default:
+		break;
 	}
 	return 42; 
 }
