@@ -107,7 +107,7 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 				return 0;
 			}
 
-			if (*terminalCode == TYPE_IDENTIFICATOR) {
+			if (*terminalCode == TERMINAL_IDENTIFICATOR) {
 				ungetToken(&nextToken);	//vratime
 				*terminalCode = TERMINAL_INCREMENT_PREFIX;
 			} else {
@@ -132,7 +132,7 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 				//chyba
 				return 0;
 			}
-			if (*terminalCode == TYPE_IDENTIFICATOR) {
+			if (*terminalCode == TERMINAL_IDENTIFICATOR) {
 				ungetToken(&nextToken);	//vratime
 				*terminalCode = TERMINAL_DECREMENT_PREFIX;
 			} else {
@@ -243,8 +243,8 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 				return ERR_INTERNAL;	//chyba
 			}
 			if(constInfo == NULL){
-				strFree(id);
-				free(id);
+				strFree(*id);
+				free(*id);
 				return ERR_INTERNAL;	//chyba
 			}
 
@@ -1268,6 +1268,8 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 					return ERR_INTERNAL;
 				}
 				break;
+			default:
+				break;
 		}
 		//vse ok
 		return ERR_OK;
@@ -1313,7 +1315,7 @@ ERR_CODES genInsEInBrackets(tPrecStack* stack, tPrecStack* stackForGen){
 	//prvni je ( odstranime
 	precStackPop(stackForGen);
 	//ziskame neterminal E
-	tPrecStackData* actData = precStackTop(stack);
+	tPrecStackData* actData = precStackTop(stackForGen);
 	if(actData==NULL){
 		return ERR_INTERNAL;
 	}

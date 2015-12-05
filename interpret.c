@@ -6,7 +6,8 @@ int executeTape(tInsTapeInsPtr ins) {
 	 */
 	static tStack* frameStack = NULL;
 
-	tInsTapeInsPtr* instruction = &ins;
+	tInsTapeInsPtr instruction;
+	instruction = ins;
 
 	ERR_CODES ret;
 
@@ -18,32 +19,32 @@ int executeTape(tInsTapeInsPtr ins) {
 		SInit(frameStack);
 	}
 	tVariablePtr oper1;
-	while (*instruction && (*instruction)->type!=I_RETURN) {
-		if ((*instruction)->type == I_IFZERO) {
-			findVariable(frameStack, (string*)ins->adr1, &oper1);
+	while (instruction && instruction->type!=I_RETURN) {
+		if ((instruction)->type == I_IFZERO) {
+			findVariable(frameStack, (string*)(instruction)->adr1, &oper1);
 			if (getVarVal(oper1) == 0) {
-				instruction = (tInsTapeInsPtr*)ins->adr2;
+				instruction = *((tInsTapeInsPtr*)(instruction)->adr2);
 			}
 			else {
-				instruction = (&(*instruction)->rptr);
+				instruction = ((instruction)->rptr);
 			}
 		}
-		else if ((*instruction)->type == I_IFNZERO) {
-			findVariable(frameStack, (string*)ins->adr1, &oper1);
+		else if ((instruction)->type == I_IFNZERO) {
+			findVariable(frameStack, (string*)(instruction)->adr1, &oper1);
 			if (getVarVal(oper1) != 0) {
-				instruction = (tInsTapeInsPtr*)ins->adr2;
+				instruction = *((tInsTapeInsPtr*)(instruction)->adr2);
 			}
 			else {
-				instruction = (&(*instruction)->rptr);
+				instruction = ((instruction)->rptr);
 			}
 		}
-		else if ((*instruction)->type == I_GOTO) {
-			if (ins->adr1 != NULL) {
-				instruction = (tInsTapeInsPtr*)ins->adr1;
+		else if ((instruction)->type == I_GOTO) {
+			if ((instruction)->adr1 != NULL) {
+				instruction = *((tInsTapeInsPtr*)(instruction)->adr1);
 			}
 		}
 		else {
-			ret = executeIns(instruction, frameStack);
+			ret = executeIns(&instruction, frameStack);
 			if (ret != ERR_OK) {
 				if(frameStack)
 					SDispose(frameStack);
@@ -54,7 +55,7 @@ int executeTape(tInsTapeInsPtr ins) {
 		}
 	}
 
-	if (*instruction==NULL) {//paska dosla na konec a nenarazil jsem na I_RETURN
+	if (instruction==NULL) {//paska dosla na konec a nenarazil jsem na I_RETURN
 		return ERR_RUNTIME_INIT_VAR;
 	}
 
