@@ -590,7 +590,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 				state = STRING;
 				break;
-			case '\n':
+			case 'n':
 				if (strAddChar(&s, '\n')) {
 					strFree(&s);
 					freeTokenMem(&tok);
@@ -598,7 +598,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 				state = STRING;
 				break;
-			case '\t':
+			case 't':
 				if (strAddChar(&s, '\t')) {
 					strFree(&s);
 					freeTokenMem(&tok);
