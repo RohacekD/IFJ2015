@@ -777,7 +777,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
         //ukonceni bloku funkce, nebo normalniho bloku
         case BRACES_CLOSING:
             //TODO - GENEROVANI INSTRUKCE PRO ODSTRANENI BLOCK FRAME
-            ungetToken(&token);
+            freeTokenMem(&token);
             //instrukci pro ukonceni bloku vkladam jenom kdyz jsem v zanorenem bloku
             if (parent != NULL) {
                 if (insTapeInsertLast(instructionTape, I_DBF, NULL, NULL, NULL) == 0) {
@@ -1962,7 +1962,7 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
                 return result;
             }
             
-            if((result = getToken(&token, f)) != 1) {
+            /*if((result = getToken(&token, f)) != 1) {
                 return LEXICAL_ERR;
             }
             
@@ -1971,7 +1971,7 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
                 return ERR_SYNTAX;
             }
             
-            freeTokenMem(&token);
+            freeTokenMem(&token);*/
             
             return ERR_OK;
             break;
