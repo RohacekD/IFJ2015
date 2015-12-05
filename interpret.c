@@ -86,31 +86,56 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	{
 	case I_CIN:
 		findVariable(stack, (string*)ins->adr3, &dest);
+		string strInput;
+		strInit(&strInput);
+		int c = getchar();
+		if (isspace(c)) {
+			while (isspace(c))
+				c = getchar();
+		}
 		if (dest->type == VAR_TYPE_INT) {
-			
+			if (!strToInt(&strInput, &(dest->data.intVal))) {
+				strFree(&strInput);
+				return ERR_RUNTIME_INPUT;
+			}
 		}
 		else if (dest->type == VAR_TYPE_DOUBLE) {
-			
+			if (!strToDouble(&strInput, &(dest->data.doubleVal))) {
+				strFree(&strInput);
+				return ERR_RUNTIME_INPUT;
+			}
 		}
 		else if (dest->type == VAR_TYPE_BOOL) {
-			
+			while (!isspace(c) && c != EOF) {
+				if (strAddChar(&dest->data.stringVal, c)) {
+					strFree(&strInput);
+					return ERR_ALLOC;
+				}
+			}
+			if (strCmpConstStr(&strInput, "true") == 0) {
+				dest->data.boolVal = true;
+			}
+			else if (strCmpConstStr(&strInput, "false") == 0) {
+				dest->data.boolVal = false;
+			}
+			else {
+				strFree(&strInput);
+				return ERR_RUNTIME_INPUT; 
+			}
 		}
 		else if (dest->type == VAR_TYPE_STRING) {
 			strFree(&dest->data.stringVal);
 			strInit(&dest->data.stringVal);
-			int c = getchar();
-			if (isspace(c)) {
-				while (isspace(c))
-					c = getchar();
-			}
 			if (c != EOF) {
 				while (!isspace(c) && c != EOF) {
 					if (strAddChar(&dest->data.stringVal, c)) {
+						strFree(&strInput);
 						return ERR_ALLOC;
 					}
 				}
 			}
 		}
+		strFree(&strInput);
 		break;
 	case I_COUT:
 		findVariable(stack, (string*)ins->adr1, &oper1);

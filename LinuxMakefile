@@ -98,7 +98,7 @@ $(TARGETDIR_IFJ215)/IFJ2015.o: $(TARGETDIR_IFJ215) IFJ2015.c
 #### Clean target deletes all generated files ####
 clean:
 	rm -f \
-		$(TARGETDIR_IFJ215)/IFJ215 \
+		$(TARGETDIR_IFJ215)/ifj215 \
 		$(TARGETDIR_IFJ215)/error.o \
 		$(TARGETDIR_IFJ215)/precTab.o \
 		$(TARGETDIR_IFJ215)/ial.o \
