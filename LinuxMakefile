@@ -15,7 +15,7 @@ CFLAGS = $(BASICOPTS)
 
 
 # Define the target directories.
-TARGETDIR_IFJ215=target
+TARGETDIR_IFJ215=./
 
 
 all: $(TARGETDIR_IFJ215)/IFJ215

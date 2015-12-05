@@ -107,7 +107,7 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 				return 0;
 			}
 
-			if (*terminalCode == TYPE_IDENTIFICATOR) {
+			if (*terminalCode == TERMINAL_IDENTIFICATOR) {
 				ungetToken(&nextToken);	//vratime
 				*terminalCode = TERMINAL_INCREMENT_PREFIX;
 			} else {
@@ -132,7 +132,7 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 				//chyba
 				return 0;
 			}
-			if (*terminalCode == TYPE_IDENTIFICATOR) {
+			if (*terminalCode == TERMINAL_IDENTIFICATOR) {
 				ungetToken(&nextToken);	//vratime
 				*terminalCode = TERMINAL_DECREMENT_PREFIX;
 			} else {
@@ -243,8 +243,8 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 				return ERR_INTERNAL;	//chyba
 			}
 			if(constInfo == NULL){
-				strFree(id);
-				free(id);
+				strFree(*id);
+				free(*id);
 				return ERR_INTERNAL;	//chyba
 			}
 
@@ -1267,6 +1267,8 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 				if(insTapeInsertLast(insTape, I_SUBSTR_DEST, NULL, NULL, saveTo)==0){
 					return ERR_INTERNAL;
 				}
+				break;
+			default:
 				break;
 		}
 		//vse ok
