@@ -492,11 +492,12 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		break;
 		//volani fce
 	case I_CF:
+                oper1 = NULL;
+		dest = NULL;
 		if (ins->adr3 != NULL) {//nejsme v main
 			findVariable(stack, (string*)ins->adr3, &dest);
 		}
-		oper1 = NULL;
-		dest = NULL;
+		
 		pushNewFrame(stack, false);
 		tab = (tTabSym*)ins->adr1;
 		insToCall = (tInsTapeInsPtr)ins->adr2;
