@@ -347,7 +347,7 @@ int parseFunction() {
         return LEXICAL_ERR;
     
     //dalsi token je fID - <function> -> <Kdata_types> fID
-    if (token->typ == TYPE_FUNCTION_IDENTIFICATOR) {
+    if (token->typ == TYPE_IDENTIFICATOR) {
          
         //uchovavam nazev identifikatoru
         string *idName;
