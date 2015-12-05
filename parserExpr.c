@@ -222,7 +222,8 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 		case TYPE_STRING:
 			dataType = TAB_SYM_VAR_NO_AUTO_STRING;
 			string* stringForValue=malloc(sizeof(string));
-			stringForValue=&(token->value.stringVal);
+			strInit(stringForValue);
+			strCopyString(stringForValue, &(token->value.stringVal));
 			value.stringVal=stringForValue;
 
 			goto CONSTANT_HANDLE;

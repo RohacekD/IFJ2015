@@ -98,6 +98,7 @@ int getToken(tToken *Token, FILE* source) {
 				if (strAddChar(&s, c)) {
 					strFree(&s);
 					freeTokenMem(&tok);
+					
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -107,6 +108,7 @@ int getToken(tToken *Token, FILE* source) {
 				if (strAddChar(&s, c)) {
 					strFree(&s);
 					freeTokenMem(&tok);
+					
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -460,7 +462,7 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			break;
 		case HEX_DEC_NUMBER:
-			if (c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F') {
+			if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
 				//zahazuji nevyznamne nuly
 				if (!(c == '0' && strGetLength(&s)==0)) {
 					if (strAddChar(&s, c)) {
@@ -1042,7 +1044,6 @@ char* keyWords[] = {
 *
 */
 int isKeyWord(string* s) {
-	int ret = 0;
 	int i = 0;
 	for (i = 0; i < 16; i++) {
 		if (strCmpConstStr(s, keyWords[i]) == 0) {
@@ -1062,7 +1063,7 @@ void freeTokenMem(tToken* t) {
 		strFree(&(*t)->value.stringVal);
 	}
 	free(*t);
-	t = NULL;
+	*t = NULL;
 }
 
 //void ungetToken(tToken*);
