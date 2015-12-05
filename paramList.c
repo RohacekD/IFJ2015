@@ -114,7 +114,10 @@ void succ(tParamListPtr list)
 void paramListFree(tParamListPtr list)
 {
     tParamListElemPtr UkPomEl; //pomocny ukazatel na strukturu element
-
+    
+    if(list == NULL)
+        return;
+    
   //dokud nebude seznam prázdný, odstranuju prvni element
     while(list->first != NULL){
         UkPomEl = list->first;
