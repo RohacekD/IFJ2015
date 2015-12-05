@@ -329,7 +329,7 @@ int parseFunction() {
     }
     
     //program muze byt i prazdny
-    if (token->typ == EOF) {
+    if (token->typ == END_OF_FILE) {
         freeTokenMem(&token);
         return ERR_OK;
     }
@@ -441,9 +441,11 @@ int parseFunction() {
             if(token->typ == BRACES_OPENING) {
                  freeTokenMem(&token);
                 //zkontroluji, zda se uz dana funkce nebyla definovana
-                if (funcID_info->info.func->defined == true) {
-                    freeIdName(idName);
-                    return ERR_SEM_DEF;
+                if (funcID_info != NULL) {
+                    if (funcID_info->info.func->defined == true) {
+                        freeIdName(idName);
+                        return ERR_SEM_DEF;
+                    }
                 }
                 
                 //nyni uz je funkce definovana

@@ -23,6 +23,7 @@ int strInit(string *s)
 void strFree(string *s)
 // funkce uvolni retezec z pameti
 {
+    if (s != NULL)
 	free(s->str);
 }
 
