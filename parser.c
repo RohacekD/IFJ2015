@@ -317,10 +317,10 @@ int parseFunction() {
     //promenna, ktera slouzi pro kontrolu, zda uz je dana funkce deklarovana
     tTabSymElemData *funcID_info;
     //promenna do ktere ukladam vytvorene informace o funkci
-    tFuncInfo *funcInfo;
+    tFuncInfo *funcInfo = NULL;
     //pro kazdou funkci tvorim novy seznam parametru
     tParamListPtr paramList = NULL;
-    if (initList(paramList) == 0) return ERR_INTERNAL;
+    if ((paramList = initList(paramList)) == 0) return ERR_INTERNAL;
     
     
     //nactu prvni token, prisel chybny token
@@ -588,7 +588,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
     //token je klicove slovo pro datovy typ
     freeTokenMem(&token);
     //seznam parametru neni prazdny, nastavime aktivitu prvni prvek seznamu parametru
-    first(data->info.func->params);
+     if (data != NULL)  first(data->info.func->params);
     
     //volam funkci pro zpracovani argumentu
     return parseArgument(paramList, data, paramType, localTable);
@@ -655,6 +655,10 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
     }
     //porovnavam parametry
     else {
+        if (data->info.func->params->act == NULL) {
+            freeIdName(idName);
+            return ERR_SEM_COM;
+        }
         if (((tTabSymVarNoAutoDataType)paramType != data->info.func->params->act->dataType) ||
                 (strcmp(idName->str, data->info.func->params->act->idName->str) != 0)) {
             freeIdName(idName);
@@ -1932,15 +1936,12 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
     
     switch(token->typ) {
         // pravidlo 27 - <block> -> {<st_list>}
-        //TODO - navratit precteny token, aby funkce parseStatementList
-        //vytvorila novy rozsah platnosti pro blok?
         case BRACES_OPENING:
-            //ungetToken(&token);
             freeTokenMem(&token);
             
             // nova lokalni tabulka
             tTabSym *blockLocalTable;
-            // polozka v seznamu tabulek pro bloky
+            // polozka v seznamu tabulek symbolu pro bloky
             tTabSymListElemPtr newElement;
             
             //vytvoreni nove lokalni tabulky symbolu
@@ -1948,9 +1949,16 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
                 return ERR_INTERNAL;
             }
             
-            //vlozeni nove lokalni tabulky symbolu do listu bloku
+            //vlozeni nove lokalni tabulky symbolu do listu tabulek symbolu pro bloky
             if((newElement = tabSymListInsertTable(blockList, blockLocalTable, blockListElem)) == NULL) {
                 return ERR_INTERNAL;
+            }
+            
+            //pokud
+            if(newElement->parentElement == NULL) {
+                tTabSymList *newList = tabSymListCreate();
+                tTabSymListElemPtr localTableElem = tabSymListInsertTable(newList, localTable, NULL);
+                newElement->parentElement = localTableElem;
             }
             
             //TODO - GENEROVANI INSTRUKCE
@@ -1958,20 +1966,9 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
                 return ERR_INTERNAL;
             }
             
-            if((result = parseStatementList(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
+            if((result = parseStatementList(blockLocalTable, newElement->childList, newElement, instructionTape)) != ERR_OK) {
                 return result;
             }
-            
-            /*if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
-            }
-            
-            if(token->typ != BRACES_CLOSING) {
-                freeTokenMem(&token);
-                return ERR_SYNTAX;
-            }
-            
-            freeTokenMem(&token);*/
             
             return ERR_OK;
             break;
