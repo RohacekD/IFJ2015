@@ -692,7 +692,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
     if (token->typ == PARENTHESIS_CLOSING) {
         freeTokenMem(&token);
         //zkontroluji, zda neni dana funkce uz deklarovana s vice parametry
-        if (data->info.func->params->act->next != NULL) {
+        if (data != NULL && data->info.func->params->act->next != NULL) {
             return ERR_SEM_COM;
         }
         return ERR_OK;
