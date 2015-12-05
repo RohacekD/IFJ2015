@@ -4,6 +4,7 @@
 #include "frameStack.h"
 #include "error.h"
 #include "tabSym.h"
+#include "scanner.h"
 #include <ctype.h>
 /*
  * Dostane instrukci a od te zacne vykonavat program.
