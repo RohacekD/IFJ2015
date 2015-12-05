@@ -37,6 +37,10 @@ typedef enum{
 	I_LOG_AND,//bezna konvence - 3. operand je bool
 	I_LOG_OR,//bezna konvence - 3. operand je bool
 	I_CBF, //create block frame - adr1 - locTab
+	/*
+		Ve volane fci se vytvori promenna $ret kam bude ulozena vracena hodnota. Na adr3 je dana adresa
+		promenne ve volajici fci kam ulozit vysledek fce
+	*/
 	I_CF, //call function adr1 - locTab adr2 - ins adr3 - adresa kam ulozit vysledek fce(u main NULL)
 	I_ASSIGN, //prirazeni = adr1(source) => adr3(dest)
 	I_SP, // adr1 -z volajici funkce, , adr3-z volane | set parametr - musis se podivat o jeden niz
