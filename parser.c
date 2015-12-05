@@ -1380,7 +1380,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             //udrzuje informace o konstante
             tConstantInfo *constInfo;
             //udzuje hodnoty, kterych muze konstanta nabyvat
-            unionValue uval;
+            unionValue *uval = malloc(sizeof(unionValue));
             // vygenerovany identifikator pro konstantu
             string *tmp;
             
@@ -1394,20 +1394,23 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                     //tudiz si musim tento union vyrobit, tento string neuvolnim
                    //TODO
                     if(token->typ == TYPE_BOOL)
-                        uval.boolVal = token->value.boolVal;
+                        uval->boolVal = token->value.boolVal;
                     if(token->typ == TYPE_DOUBLE)
-                        uval.doubleVal = token->value.doubleVal;
+                        uval->doubleVal = token->value.doubleVal;
                     if(token->typ == TYPE_INTEGER)
-                        uval.intVal = token->value.intVal;
+                        uval->intVal = token->value.intVal;
                     if(token->typ == TYPE_STRING)
-                        uval.stringVal = copyIdName(&(token->value.stringVal));
+                        uval->stringVal = copyIdName(&(token->value.stringVal));
 
-                    freeTokenMem(&token);
 
                     //vytvorim informace o konstante
-                    if ((constInfo = tabSymCreateConstantInfo(token->typ, uval)) == NULL) {
+                    if ((constInfo = tabSymCreateConstantInfo(token->typ, *uval)) == NULL) {
+                        freeTokenMem(&token);
                         return ERR_INTERNAL;
                     }
+                    
+                    freeTokenMem(&token);
+                    
                     //vytvorim si novy identifikator, ktery priradim konstante
                     if ((tmp = tabSymListCreateTmpSymbol(blockListElem, localTable)) == NULL) {
                         return ERR_INTERNAL;
