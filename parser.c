@@ -771,7 +771,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
 }
 
 
-//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!!
+//!!!!!  PRIPRAVENO K TESTOVANI !!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 15. <st_list> -> epsilon
@@ -858,16 +858,33 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
                 return ERR_INTERNAL;
             }
             
-            //TODO - GENEROVANI INSTRUKCE
+            //pokud nema nove vytvoreny element rodice, bude jeho rodicem lokalni tabulka
+            //symbolu dane funkce
+            if(newElement->parentElement == NULL) {
+                tTabSymList *newList; //novy list tabulek symbolu bloku
+                tTabSymListElemPtr localTableElem; //novy element tabulky symbolu bloku
+                
+                if ((newList = tabSymListCreate()) == NULL)
+                    return ERR_INTERNAL;
+                if ((localTableElem = tabSymListInsertTable(newList, localTable, NULL)) == NULL) {
+                    return ERR_INTERNAL;
+                }
+                
+                newElement->parentElement = localTableElem;
+            }
+            
+            //GENEROVANI INSTRUKCE
             if(insTapeInsertLast(instructionTape, I_CBF, (void*) blockLocalTable, NULL, NULL) == 0) {
                 return ERR_INTERNAL;
             }
             
             //rodicem se stane novy element, budeme pracovat s novou lokalni tabulkou
             //a novym listem, instrukcni paska je stejna
+            //--------------------------------------------------------------
             if ((result = parseStatementList(blockLocalTable, newElement->childList, newElement, instructionTape)) != ERR_OK) {
                 return result;
             }
+            //--------------------------------------------------------------
             
             //volam rekurzivne parseStatementList po vynoreni
             return parseStatementList(localTable, blockList, parent, instructionTape);
