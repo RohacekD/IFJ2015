@@ -1294,8 +1294,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 freeIdName(idName);
                 return ERR_SEM_DEF; //promenna nedefinovana
             }
-            
-            
+                  
             //vyhledame klic v existujici tabulce symbolu
             if((key = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
                 freeIdName(idName);
@@ -1381,8 +1380,8 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 case TYPE_STRING:
 
                     //funkci createConstantInfo musim predat union typu unionValue
-                    //tudiz si musim tento union vyrobit, tento string neuvolnim
-                   //TODO
+                    //tudiz si musim tento union vyrobit
+                   //TODO - jak je to s uvolnovanim stringu?
                     if(token->typ == TYPE_BOOL)
                         uval->boolVal = token->value.boolVal;
                     if(token->typ == TYPE_DOUBLE)
@@ -1474,10 +1473,12 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
         //pravidlo 22 - <statement> -> return expression;
         case KEYW_RETURN:
             freeTokenMem(&tokenOrig);
-            //TODO - zpracovani vyrazu
+            
+            //*****************************************
             if ((result = parseExpression( blockListElem, localTable, instructionTape, &expressionType, f)) != ERR_OK) {
                 return result;
             }
+            //*****************************************
             
             //generuji instrukci pro navrat z funkce
             if(insTapeInsertLast(instructionTape, I_RETURN, NULL, NULL, NULL) == 0) {
@@ -1518,10 +1519,11 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeTokenMem(&token);
             
-            //zpracovani vyrazu
-            if ((result = parseExpression( blockListElem ,localTable, instructionTape , &expressionType, f)) != ERR_OK) {
+            //***********************************
+            if ((result = parseExpression(blockListElem, localTable, instructionTape , &expressionType, f)) != ERR_OK) {
                 return result;
             }
+            //***********************************
             
             string *lastGeneratedTMP, *keyOfLastTMP;
             //zjistim ID posledniho vygenerovaneho identifikatoru
@@ -1555,10 +1557,11 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeTokenMem(&token);
             
-            //TODO - zpracovani bloku
+            //------------------------------------------
             if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
                 return result;
             }
+            //------------------------------------------
             
             //vytvorim instrukci skoku, ktera skoci vzdy na zacatek whilu
             if (insTapeInsertLast(instructionTape, I_GOTO, (void *) whileBegin, NULL, NULL) == 0) {
@@ -1586,10 +1589,29 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
         case KEYW_DO:
             freeTokenMem(&tokenOrig);
             
-            //TODO - zpracovani bloku
+            //vygeneruji si navesti pro zacatek cyklu
+            if (insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //zapamatuji si adresu navesti
+            tInsTapeInsPtr labDoBegin = insTapeGetLast(instructionTape);
+            
+            //---------------------------------------
             if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
                 return result;
             }
+            //---------------------------------------
+            
+            if((result = getToken(&token, f)) != 1) {
+                return ERR_LEX;
+            }
+            
+            if(token->typ != KEYW_WHILE) {
+                freeTokenMem(&token);
+                return ERR_SYNTAX;
+            }
+            freeTokenMem(&token);
             
             if((result = getToken(&token, f)) != 1) {
                 return ERR_LEX;
@@ -1601,9 +1623,30 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeTokenMem(&token);
             
-            //TODO - zpracovani vyrazu
+            //********************************
             if ((result = parseExpression( blockListElem, localTable, instructionTape , &expressionType, f)) != ERR_OK) {
                 return result;
+            }
+            //********************************
+            
+            string* lastGeneratedTMPdo, *keyDo;
+            
+            //ziskam identifikator posledniho vygenerovaneho prvku
+            if ((lastGeneratedTMPdo = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+                return ERR_INTERNAL;
+            }
+            
+            //ziskam odkaz na dany identifikator do tabulky symbolu
+            if ((keyDo = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMPdo)) == NULL) {
+                freeIdName(lastGeneratedTMPdo);
+                return ERR_INTERNAL;
+            }
+            
+            freeIdName(lastGeneratedTMPdo);
+            
+            //provedu instrukci skoku, na navesti, pokud hodnota neni 0
+            if(insTapeInsertLast(instructionTape, I_IFNZERO, (void *) keyDo, (void *) labDoBegin, NULL) == 0) {
+                return ERR_INTERNAL;
             }
             
             if((result = getToken(&token, f)) != 1) {
@@ -1661,7 +1704,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
 }
 
 
-//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!!
+//!!!!! PRIPRAVENO K TESTOVANI !!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 36. <declaration> -> <Kdata_types> ID<dec_init>
@@ -1741,11 +1784,13 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             //inicializace
             if(token->typ == SET_OPER) {
                 freeTokenMem(&token);
-
+                 
+                //****************************************************
                  if ((result = parseExpression( blockListElem, localTable, instructionTape, &expressionType, f)) != ERR_OK) {
                      freeIdName(idName);
                      return result;
                  }
+                //****************************************************
                  
                 string *lastGeneratedTMP;
                 string *key, *key2;
@@ -1837,15 +1882,14 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             
             freeTokenMem(&token);
             
-            //TODO - zpracovani vyrazu
+            //***************************************
             if((result = parseExpression( blockListElem ,localTable, instructionTape, &expressionType, f)) != ERR_OK) {
                 freeIdName(idNameAuto);
                 return result;
             }
+            //***************************************
             
             //vytvoreni informaci o promenne
-            //TODO - vkladam jeji datovy typ az na zaklade datoveho typu
-                    // po vyhodnoceni vyrazu
             if ((variableInfo = tabSymCreateVariableInfo((tTabSymVarDataType)expressionType)) == NULL) {
                 freeIdName(idNameAuto);
                 return ERR_INTERNAL;
@@ -1880,7 +1924,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             }
             freeIdName(lastGeneratedTMP);
             
-            //TODO GENEROVANI INSTRUKCE
+            //GENEROVANI INSTRUKCE
             if ((result = insTapeInsertLast(instructionTape, I_ASSIGN, (void*) key2, NULL, (void*) key)) == 0) {
                 return ERR_INTERNAL;
             }
@@ -1906,7 +1950,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
 }
 
 
-//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!!
+//!!!!! PRIPRAVENO K TESTOVANI !!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 27.  <block> -> {<st_list>}
@@ -2252,7 +2296,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
     }
 }
 
-//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!:
+//!!!!! PRIPRAVENO K TESTOVANI !!!!!:
 /**
  * * zpracovava nasledujici pravidla:
  * 32.  <cin> -> epsilon
@@ -2335,7 +2379,7 @@ int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr 
 }
 
 
-//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!!
+//!!!!! PRIPRAVENO K TESTOVANI !!!!!
 
 /**
  * zpracovava nasledujici pravidla
@@ -2353,7 +2397,7 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
     //udrzuje informace o konstante
     tConstantInfo *constInfo;
     //udzuje hodnoty, kterych muze konstanta nabyvat
-    unionValue uval;
+    unionValue *uval = malloc(sizeof(unionValue));
     //tmp je string pro novy identifikator, key je string, ktery ukazuje na prvek v
     //tabulce symbolu
     string *tmp, *key;
@@ -2403,18 +2447,18 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
                         //tudiz si musim tento union vyrobit, tento string neuvolnim
                        // TODO - predelat do funkce
                         if(token->typ == TYPE_BOOL)
-                            uval.boolVal = token->value.boolVal;
+                            uval->boolVal = token->value.boolVal;
                         if(token->typ == TYPE_DOUBLE)
-                            uval.doubleVal = token->value.doubleVal;
+                            uval->doubleVal = token->value.doubleVal;
                         if(token->typ == TYPE_INTEGER)
-                            uval.intVal = token->value.intVal;
+                            uval->intVal = token->value.intVal;
                         if(token->typ == TYPE_STRING)
-                            uval.stringVal = copyIdName(&(token->value.stringVal));
+                            uval->stringVal = copyIdName(&(token->value.stringVal));
                         
                         freeTokenMem(&token);
                         
                         //vytvorim informace o konstante
-                        if ((constInfo = tabSymCreateConstantInfo(ttype, uval)) == NULL) {
+                        if ((constInfo = tabSymCreateConstantInfo(ttype, *uval)) == NULL) {
                             return ERR_INTERNAL;
                         }
                         //vytvorim si novy identifikator, ktery priradim konstante
