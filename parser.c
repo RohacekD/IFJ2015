@@ -272,10 +272,11 @@ void parse() {
             FatalError(ERR_SEM_DEF, ERR_MESSAGES[ERR_SEM_DEF]);
         }
         
-        tTabSymElemData *findMain;
-        char *mainId = "main";
-        string *mainString;
+        tTabSymElemData *findMain; //promenna slouzi pro ulozeni informac pro funkci main
+        char *mainId = "main"; //nazev funkce main
+        string *mainString; //string, do ktereho si chci ulozit nazev funkce
         
+        //ulozwni nazvu funkce do promenne mainString
         if (((mainString = malloc(sizeof(string))) == NULL) || (strInit(mainString) == 1) ||
             (strConConstString(mainString, mainId)) == 1) {
             tabSymFree(globalTable);
@@ -283,27 +284,28 @@ void parse() {
             FatalError(ERR_INTERNAL, ERR_MESSAGES[ERR_ALLOC]);
         }
         
+        //vyhledani funkce main
         if((findMain = tabSymSearch(globalTable, mainString)) == NULL) {
             tabSymFree(globalTable);
             fclose(f);
             FatalError(ERR_SEM_DEF, ERR_MESSAGES[ERR_SEM_DEF]);
         }
         
-        //volani interpretu - generuju nejaky instrukce, ktery po me chce Dominik
-        //ani nevim, jestli dobre
-        tTabSym *localTable;
-        tInsTapeInsPtr firstIns; 
-        tInsTape *insTape;
+        tTabSym *localTable = NULL; //ukazatel na lokalni tabulku symbolu
+        tInsTapeInsPtr firstIns = NULL; //ukazatel na prvni instrukci
+        tInsTape *insTape = NULL; //ukazatel na instrukcni pasku
                 
-        insTape = findMain->info.func->instTape;
-        localTable = findMain->info.func->locTab; 
-        firstIns = insTape->first;
+        insTape = findMain->info.func->instTape; //ukazatel ukazuje na instrukcni pasku mainu
+        localTable = findMain->info.func->locTab; //ukazatel ukazuje na lokalni tabulku mainu
+        firstIns = insTape->first; //ukazatelna prvni instrukci mainu
         
+        //TODO - vlozeni instrukci, ktery po mne chtel Dominik
         insTapeInsertFirst(insTape, I_CF ,(void *) localTable, (void *) firstIns, NULL);
         insTapeFirst(insTape);
         
         insTapePostInsert(insTape, I_RETURN, NULL, NULL, NULL);
         
+        //provedeni interpretace
         if ((result = executeTape(findMain->info.func->instTape->first)) != ERR_OK) {
             goto ERROR;
         }
@@ -311,8 +313,6 @@ void parse() {
         //TODO;
         exit(0);
     }
-    
-    
 }
 
 
@@ -329,7 +329,7 @@ int parseFunction() {
     //do teto promenne ukladam navratovy typ funkce
     tTabSymVarDataType returnType;
     //promenna, ktera slouzi pro kontrolu, zda uz je dana funkce deklarovana
-    tTabSymElemData *funcID_info;
+    tTabSymElemData *funcID_info = NULL;
     //promenna do ktere ukladam vytvorene informace o funkci
     tFuncInfo *funcInfo = NULL;
     //pro kazdou funkci tvorim novy seznam parametru
@@ -373,9 +373,12 @@ int parseFunction() {
         //uvolnim token
         freeTokenMem(&token);
         
-        //funkce jeste nebyla deklarovana
-        if((funcID_info = tabSymSearch(globalTable, idName)) == NULL) {
-            //zkontroluji, zda je ID pouzitelne
+        //ziskam informace o funkci
+        funcID_info = tabSymSearch(globalTable, idName);
+            
+        //funkce uz byla deklarovana
+        if (funcID_info != NULL) {
+            //uzivatel nemuze definovat funkce se shodnym nazvem, jaky maji funkce preddefinovane
             if((strcmp(idName->str, "length") == 0) || (strcmp(idName->str, "substr") == 0) ||
                     (strcmp(idName->str, "concat") == 0) || (strcmp(idName->str, "find") == 0) ||
                     (strcmp(idName->str, "sort") == 0)) {
@@ -383,9 +386,6 @@ int parseFunction() {
                 freeIdName(idName);         
                 return ERR_SEM_DEF; //pokus o redefinici funkce
             }
-        }
-        //funkce uz byla deklarovana
-        else {
             //zkontroluji, zda je dany identifikator identifikatorem funkce
             if (funcID_info->type != TAB_SYM_FUNCTION) {
                 freeIdName(idName);
@@ -403,6 +403,7 @@ int parseFunction() {
             freeIdName(idName);
             return ERR_LEX;
         }
+        
         //token byl '('
         if(token->typ == PARENTHESIS_OPENING) {
             //uvolnim token
