@@ -316,6 +316,7 @@ void parse() {
 }
 
 
+//!!!!! PRIPRAVENO K TESTOVANI !!!!!
 /**
  * pravidlo ve tvaru:
  *          <function> -> <Kdata_types> fID(<arguments>)<body><function>
@@ -324,8 +325,6 @@ void parse() {
 int parseFunction() {
     int result;
     tToken token;
-    //oznacuje, zda byla funkce deklarovana, nebo definovana
-    bool defined = false;
     //do teto promenne ukladam navratovy typ funkce
     tTabSymVarDataType returnType;
     //promenna, ktera slouzi pro kontrolu, zda uz je dana funkce deklarovana
@@ -413,12 +412,14 @@ int parseFunction() {
             //do ni uz budu ukladat parametry funkce
             tTabSym *localTabSym = tabSymCreate(TAB_SYM_LOC);
             
+            //-------------------------------------------------------------
             //volani funkce pro zpracovani <arguments>
             if((result = parseArguments(paramList, funcID_info, localTabSym)) != ERR_OK) {
                 freeIdName(idName);
                 //navratim chybovy kod
                 return result;
             }
+            //-------------------------------------------------------------
 
             //<function> -> <Kdata_types> fID(<arguments>)<body>
             //jsme u <body> -> bud ';'(deklarace), nebo '{' (definice)
@@ -427,7 +428,7 @@ int parseFunction() {
                 return ERR_LEX;
             }
             
-            //jde pouze o deklaraci funkce
+            // DEKLARACE FUNKCE
             if(token->typ == SEMICOLON) {
                 //uvolnim token
                 freeTokenMem(&token);
@@ -452,7 +453,7 @@ int parseFunction() {
                 return parseFunction();
             }
             
-            //jedna se o definici funkce
+            //DEFINICE FUNKCE
             if(token->typ == BRACES_OPENING) {
                  freeTokenMem(&token);
                 //zkontroluji, zda se uz dana funkce nebyla definovana
@@ -463,11 +464,7 @@ int parseFunction() {
                     }
                 }
                 
-                //nyni uz je funkce definovana
-                defined = true;
-                
                 //vytvorim prazdny seznam tabulek bloku
-                //TODO - nesmim zapomenout na uvolneni pameti
                 tTabSymList *blockList;
                 if ((blockList = tabSymListCreate()) == NULL) {
                     freeIdName(idName);
@@ -481,40 +478,42 @@ int parseFunction() {
                     return ERR_INTERNAL;
                 }
                 
+                //--------------------------------------------------------
                 //pripravu jsem dokoncil, muzu provadet telo funkce
                 if ((result = parseStatementList(localTabSym, blockList, NULL, instructionTape)) != ERR_OK) {
                     freeIdName(idName);
                     return result;
                 }
+                //--------------------------------------------------------
                 
                 //telo funkce probehlo v poradku, doplnim informace do globalni tabulky symbolu
-                
+                //pokud uz byla funkce deklarovana, tak pouziji znamy seznam parametru
                 if(funcID_info != NULL) {
                     paramList = funcID_info->info.func->params;
                 }
                 
+                //vytvorim informace o funkci
                 if ((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType,
-                        localTabSym, blockList, instructionTape, defined)) == NULL) {
+                        localTabSym, blockList, instructionTape, true)) == NULL) {
                     freeIdName(idName);
                     return ERR_INTERNAL;
                 }
                 
+                //vlozim informace o funkci do globalni tabulky symbolu
                 if ((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
                     freeIdName(idName);
                     return ERR_INTERNAL;
                 }
                 
-                //muzu zpracovavat dalsi funkci
                 freeIdName(idName);
-                return parseFunction();
-                
+                //muzu zpracovavat dalsi funkci
+                return parseFunction();  
             }
             
             //token neni ; ani {
             freeTokenMem(&token);
             freeIdName(idName);
             return ERR_SYNTAX;
-
         }
         //token neni oteviraci zavorka
         else {
@@ -532,6 +531,7 @@ int parseFunction() {
     return ERR_INTERNAL;
 }
 
+//!!!!! PRIPRAVENO K TESTOVANI !!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 4. <Kdata_types> -> keyw_bool
@@ -562,6 +562,7 @@ int kDataTypes(tTabSymVarDataType *variableType, TokenTypes tokenType) {
     }
 }
 
+//!!!!! PRIPRAVENO K TESTOVANI !!!!!
 /**
  * * zpracovava pravidla:
  * 8. <arguments> -> epsilon
@@ -605,15 +606,17 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
         return result;
     }
     
-    //token je klicove slovo pro datovy typ
     freeTokenMem(&token);
-    //seznam parametru neni prazdny, nastavime aktivitu prvni prvek seznamu parametru
+    
+    //pukud kontrolujeme parametry (to je v pripade, kdy data != NULL)
+    //tak nastavime aktivitu prvni prvek seznamu parametru
      if (data != NULL)  first(data->info.func->params);
     
     //volam funkci pro zpracovani argumentu
     return parseArgument(paramList, data, paramType, localTable);
 }
 
+//!!!!! PRIPRAVENO K TESTOVANI !!!!!
 /**
  * pravidlo 10: <argument> -> <Kdata_types>ID<argumentNext>
  * @param paramList[out]        -   seznam parametru k doplneni 
@@ -640,13 +643,14 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
     //token je identifikator
     string *idName;
     
+    //ulozim si nazev identifikatoru
     if((idName = copyIdName(&(token->value.stringVal))) == NULL) {
         freeTokenMem(&token);
         return ERR_INTERNAL;
     }
     freeTokenMem(&token);
     
-    //vkladam prvek do seznamu parametru a lokalni tabulky symbolu
+    //pripad, kdy vkladam prvek do seznamu parametru a lokalni tabulky symbolu
     if(data == NULL) {
         //kontroluji, zda uz neni promenna definovana a vkladam do lokalni tabulky symbolu
         tTabSymElemData *localTableInfo = tabSymSearch(localTable, idName);
@@ -661,7 +665,7 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
             freeIdName(idName);
             return ERR_INTERNAL;
         }
-        //podarilo se mi vlozit parametr do seznamu parametru
+        //vytvorim informace o promenne
         tVariableInfo* varInfo = tabSymCreateVariableInfo((tTabSymVarDataType)paramType);
         if (varInfo == NULL) {
             freeIdName(idName);
@@ -691,6 +695,7 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
     return argumentNext(paramList, data, localTable);
 }
 
+//!!!!! PRIPRAVENO K TESTOVANI !!!!!
 /**
  * funkce zpracovava providla:
  * 11. <argumentNext> -> epsilon
@@ -732,7 +737,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
              return result;
         }
         freeTokenMem(&token);
-        //posunu se v seznamu argumentu na dalsi prvek
+        //v pripade, kdy provadim kontrolu, tak se posunu se v seznamu argumentu na dalsi prvek
         if (data != NULL)  succ(data->info.func->params);
         return parseArgument(paramList, data, paramType, localTable);
     }
