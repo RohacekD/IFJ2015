@@ -18,11 +18,9 @@
 #include "token.h"
 #include "parserExpr.h"
 
-
-/*
-#define SYNTAX_OK 1
-#define SYNTAX_FAILED 0
-*/
+//promenna se nachazi v ial.c a nastavuje se, pokud po pruchodu zdrojovym souborem
+//zustane nejaka funkce nedefinovana
+extern int notDefined;
 
 /**
  * do globalni promenne ulozim odkaz na soubor

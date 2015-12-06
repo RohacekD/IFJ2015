@@ -11,6 +11,7 @@
  * @brief Vestavene funkce pro IAL.
  */
 #include "ial.h"
+#include "tabSym.h"
 
 int len(char* string) {
 	int num = 0;
@@ -323,5 +324,34 @@ void BSTFree(tBSTNodePtr* rootPtr, void (*dataFree)(void*) ){
 	//smazeme uzel
 	BSTFreeNode(*rootPtr);
 	*rootPtr=NULL;
+}
+
+//promenna, kterou nastavim, pokud najdu nedefinovanou funkci
+ int notDefined = 0;
+
+ 
+void BSTcheckFuncDef(tBSTNodePtr *rootPtr) {
+    
+    if(rootPtr == NULL) {
+        //chubny ukazatel
+        return;
+    }
+    
+    if(*rootPtr == NULL) {
+        //hotovo
+        return;
+    }
+    
+    tTabSymElemData *elem = (tTabSymElemData *) (*rootPtr)->data;
+    
+    //pokud je nektera z funkci nedefinovana, nastavime promennou notDefined
+    if(elem->info.func->defined == false)
+        notDefined = 1;
+    
+    //prochazime levou vetvi
+    BSTcheckFuncDef(&((*rootPtr)->l));
+    //prochazime pravou vetvi
+    BSTcheckFuncDef(&((*rootPtr)->r));
+    
 }
 /*** End of file: ial.c ***/

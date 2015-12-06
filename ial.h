@@ -99,5 +99,11 @@ void BSTFree(tBSTNodePtr* rootPtr, void (*dataFree)(void*));
  * @return	0-chyba, 1-v poradku
  */
 int BSTCreateNode(tBSTNodePtr*, string*, void*);
+
+/**
+  * funkce prochazi stromem a nastavi priznak, pokud narazi na nedefinovanou funkci
+  * @param rootPtr          -   koren stromu
+  */
+void BSTcheckFuncDef(tBSTNodePtr *rootPtr);
 #endif /* IAL_H_ */
 /*** End of file: ial.h ***/

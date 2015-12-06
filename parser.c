@@ -2,11 +2,6 @@
 #include "interpret.h"
 
 
-//ve funkcich muze dojit k ruznym typum chyb
-//chyba v lexikalni analyze(kdy ma vratit 1), nemuzu
-//zakodovat jako 1, protoze to u me znamena uspech
-#define LEXICAL_ERR 0
-
 // vytvorim strukturu pro globalni tabulku symbolu
 tTabSym *globalTable;
 FILE *f;
@@ -222,20 +217,25 @@ void parse() {
     if ((globalTable = tabSymCreate(TAB_SYM_GLOB)) == NULL) {
         FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
     }
-
+    
+    //pridam do globalni tabulky informace o vnorenych funkcich 
     if(prepareGlobalTable() == 0) {
         tabSymFree(globalTable);
         FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
     }
     
+        
     //TODO - osetreni chyb a uvolneni pameti
     if ((result = parseFunction()) != ERR_OK) {
-        //TODO
         //uvolneni pameti - globalni tabulky symbolu
         tabSymFree(globalTable);
-        //vraceni chyboveho kodu na zaklade chyby v parseru
+        //uzavreni souboru
+        fclose(f);
+        //vraceni chyboveho kodu na zaklade chyby v parseru, nebo interpretu
+        
+        ERROR:
         switch(result) {
-            case LEXICAL_ERR:
+            case ERR_LEX:
                 FatalError(ERR_LEX, ERR_MESSAGES[ERR_LEX]);
             case ERR_SYNTAX:
                 FatalError(ERR_SYNTAX, ERR_MESSAGES[ERR_SYNTAX]);
@@ -263,6 +263,15 @@ void parse() {
     }
     //TODO - syntakticka a semanticka kontrola probehla v poradku
     else {
+        
+        //musim jeste zkontrolovat, zda byly vsechny funkce definovany
+        BSTcheckFuncDef(&(globalTable->root));
+        if (notDefined == 1) {
+            tabSymFree(globalTable);
+            fclose(f);
+            FatalError(ERR_SEM_DEF, ERR_MESSAGES[ERR_SEM_DEF]);
+        }
+        
         tTabSymElemData *findMain;
         char *mainId = "main";
         string *mainString;
@@ -270,11 +279,13 @@ void parse() {
         if (((mainString = malloc(sizeof(string))) == NULL) || (strInit(mainString) == 1) ||
             (strConConstString(mainString, mainId)) == 1) {
             tabSymFree(globalTable);
+            fclose(f);
             FatalError(ERR_INTERNAL, ERR_MESSAGES[ERR_ALLOC]);
         }
         
         if((findMain = tabSymSearch(globalTable, mainString)) == NULL) {
             tabSymFree(globalTable);
+            fclose(f);
             FatalError(ERR_SEM_DEF, ERR_MESSAGES[ERR_SEM_DEF]);
         }
         
@@ -293,9 +304,12 @@ void parse() {
         
         insTapePostInsert(insTape, I_RETURN, NULL, NULL, NULL);
         
-        result = executeTape(findMain->info.func->instTape->first);
+        if ((result = executeTape(findMain->info.func->instTape->first)) != ERR_OK) {
+            goto ERROR;
+        }
         
         //TODO;
+        exit(0);
     }
     
     
@@ -325,7 +339,7 @@ int parseFunction() {
     
     //nactu prvni token, prisel chybny token
     if((result = getToken(&token, f)) != 1) {
-        return LEXICAL_ERR;
+        return ERR_LEX;
     }
     
     //program muze byt i prazdny
@@ -344,7 +358,7 @@ int parseFunction() {
     freeTokenMem(&token);
     
     if((result = getToken(&token, f)) != 1)
-        return LEXICAL_ERR;
+        return ERR_LEX;
     
     //dalsi token je fID - <function> -> <Kdata_types> fID
     if (token->typ == TYPE_IDENTIFICATOR) {
@@ -387,7 +401,7 @@ int parseFunction() {
         //dalsi token by mel byt '('
         if ((result = getToken(&token, f) != 1)) {
             freeIdName(idName);
-            return LEXICAL_ERR;
+            return ERR_LEX;
         }
         //token byl '('
         if(token->typ == PARENTHESIS_OPENING) {
@@ -409,7 +423,7 @@ int parseFunction() {
             //jsme u <body> -> bud ';'(deklarace), nebo '{' (definice)
             if ((result = getToken(&token, f)) != 1) {
                 freeIdName(idName);
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //jde pouze o deklaraci funkce
@@ -473,6 +487,11 @@ int parseFunction() {
                 }
                 
                 //telo funkce probehlo v poradku, doplnim informace do globalni tabulky symbolu
+                
+                if(funcID_info != NULL) {
+                    paramList = funcID_info->info.func->params;
+                }
+                
                 if ((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType,
                         localTabSym, blockList, instructionTape, defined)) == NULL) {
                     freeIdName(idName);
@@ -560,7 +579,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
     
     //nacteme token
     if((result = getToken(&token, f)) != 1) {
-        return LEXICAL_ERR;
+        return ERR_LEX;
     }
     
     //zadne argumenty: pravidlo 8
@@ -609,7 +628,7 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
     
     //pozadam o novy token
     if((result = getToken(&token, f)) != 1) {
-        return LEXICAL_ERR;
+        return ERR_LEX;
     }
     //token neni ID
     if(token->typ != TYPE_IDENTIFICATOR) {
@@ -685,7 +704,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
     
     //nactu dalsi token
     if((result = getToken(&token, f)) != 1) {
-        return LEXICAL_ERR;
+        return ERR_LEX;
     }
     
     //token je ')'
@@ -704,7 +723,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
         //prectu jeste jeden token, jelikoz funkce parse Argument
         //ocekava jako prvni token v me implementaci az ID
          if((result = getToken(&token, f)) != 1) {
-            return LEXICAL_ERR;
+            return ERR_LEX;
         }
         if ((result = kDataTypes(&paramType, token->typ)) != 1) {
             //uvolnim token
@@ -713,7 +732,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
         }
         freeTokenMem(&token);
         //posunu se v seznamu argumentu na dalsi prvek
-        succ(data->info.func->params);
+        if (data != NULL)  succ(data->info.func->params);
         return parseArgument(paramList, data, paramType, localTable);
     }
     //neocekavany token
@@ -746,7 +765,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
     
     //pozadam o token
     if((result = getToken(&token, f)) != 1) {
-        return LEXICAL_ERR;
+        return ERR_LEX;
     }
     
     switch(token->typ) {
@@ -893,7 +912,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             
             //nactu dalsi token - mel by byt '('
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             if (token->typ != PARENTHESIS_OPENING){
                 freeTokenMem(&token);
@@ -934,7 +953,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             tInsTapeInsPtr ifSkip1 = insTapeGetLast(instructionTape);
             
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             //ocekavam uzaviraci zavorku
             if(token->typ != PARENTHESIS_CLOSING) {
@@ -1035,7 +1054,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(&tokenOrig);
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != PARENTHESIS_OPENING) {
@@ -1045,7 +1064,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(&token);
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //v promenne dataType je ulozeny datovy typ promenne
@@ -1059,7 +1078,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             /*
             //dalsi token by mel byt ID
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //TODO - ulozeni identifikatoru do tabulky symbolu
@@ -1135,7 +1154,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }*/
                         
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != SEMICOLON) {
@@ -1177,7 +1196,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             tInsTapeInsPtr goBehindFor = insTapeGetLast(instructionTape);
             
             /*if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != SET_OPER) {
@@ -1189,7 +1208,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             //for(<Kdata_types>ID=expression; expression; <assignment>
             
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != INCREMENTATION && token->typ != DECREMENTATION &&
@@ -1223,7 +1242,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             //SKOCIM NA NAVESTI PRED VYHODNOCENIM PODMINKY
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //ocekavam uzaviraci zavorku - for(<Kdata_types>ID=expression; expression; <assignment>)
@@ -1258,7 +1277,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(&tokenOrig);
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //ocekavam prvni >
@@ -1269,7 +1288,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(&token);
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //ocekavam druhe >
@@ -1280,7 +1299,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(&token);
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //ocekavam identifikator
@@ -1323,7 +1342,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //dalsi token by mel byt ;
@@ -1344,7 +1363,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(&tokenOrig);
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //ocekavam prvni <
@@ -1355,7 +1374,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(&token);
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //ocekavam druhe <
@@ -1366,7 +1385,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(&token);
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //isTerm
@@ -1463,7 +1482,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //dalsi token by mel byt ;
@@ -1493,7 +1512,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != SEMICOLON) {
@@ -1517,7 +1536,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             tInsTapeInsPtr whileBegin = insTapeGetLast(instructionTape);
             
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != PARENTHESIS_OPENING) {
@@ -1554,7 +1573,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             tInsTapeInsPtr whileGoToEnd = insTapeGetLast(instructionTape);
             
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != PARENTHESIS_CLOSING) {
@@ -1600,7 +1619,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != PARENTHESIS_OPENING) {
@@ -1615,7 +1634,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != PARENTHESIS_CLOSING) {
@@ -1625,7 +1644,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeTokenMem(&token);
             
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != SEMICOLON) {
@@ -1650,7 +1669,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             } 
             
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != SEMICOLON) {
@@ -1696,7 +1715,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
         case TAB_SYM_VAR_STRING:
             
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if (token->typ != TYPE_IDENTIFICATOR) {
@@ -1736,7 +1755,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             
             if((result = getToken(&token, f)) != 1) {
                 freeIdName(idName);
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //pouze definice promenne
@@ -1784,7 +1803,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 }
                 
                  if((result = getToken(&token, f)) != 1) {
-                     return LEXICAL_ERR;
+                     return ERR_LEX;
                  }
                  
                  //dalsi token by mel byt ;
@@ -1807,7 +1826,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
         // pravidlo 37 - <declaration> -> auto ID = expression;
         case TAB_SYM_VAR_AUTO:
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if (token->typ != TYPE_IDENTIFICATOR) {
@@ -1834,7 +1853,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             //nactu dalsi token, ktery by mel by =
             if((result = getToken(&token, f)) != 1) {
                 freeIdName(idNameAuto);
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != SET_OPER) {
@@ -1894,7 +1913,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             }
             
             if ((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != SEMICOLON){
@@ -1931,7 +1950,7 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
     int result;
     
     if((result = getToken(&token, f)) != 1) {
-        return LEXICAL_ERR;
+        return ERR_LEX;
     }
     
     switch(token->typ) {
@@ -2044,7 +2063,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             
             if((result = getToken(&token, f)) != 1) {
                 freeIdName(idName);
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //zpracovavam vetev ID++
@@ -2152,7 +2171,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             freeTokenMem(&tokenOrig);
             //TODO - semanticke akce a generovani kodu
             if((result = getToken(&token, f))) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != TYPE_IDENTIFICATOR) {
@@ -2202,7 +2221,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             freeTokenMem(&tokenOrig);
             //TODO - semanticke akce a generovani kodu
             if((result = getToken(&token, f))) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             if(token->typ != TYPE_IDENTIFICATOR) {
@@ -2267,7 +2286,7 @@ int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr 
     tTabSymElemData *idUsable;
     
     if((result = getToken(&token, f)) != 1) {
-        return LEXICAL_ERR;
+        return ERR_LEX;
     }
     
     if(token->typ == SEMICOLON) {
@@ -2280,14 +2299,14 @@ int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr 
         freeTokenMem(&token);
         
         if((result = getToken(&token, f)) != 1) {
-            return LEXICAL_ERR;
+            return ERR_LEX;
         }
         //uz mame >>
         if(token->typ == GREATER) {
             freeTokenMem(&token);
             
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             //ocekavam identifikator
@@ -2360,7 +2379,7 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
     tTabSymElemData *idData;
     
     if ((result = getToken(&token, f)) != 1) {
-        return LEXICAL_ERR;
+        return ERR_LEX;
     }
     
     //pravidlo 34 - <cout> -> epsilon
@@ -2375,7 +2394,7 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
         freeTokenMem(&token);
         
         if((result = getToken(&token, f)) != 1) {
-            return LEXICAL_ERR;
+            return ERR_LEX;
         }
         
         if(token->typ == LESS) {
@@ -2383,7 +2402,7 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
             
             //dalsi token by mel byt term
             if((result = getToken(&token, f)) != 1) {
-                return LEXICAL_ERR;
+                return ERR_LEX;
             }
             
             ttype = token->typ;
