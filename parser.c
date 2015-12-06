@@ -337,7 +337,7 @@ void parse() {
 /**
  * pravidlo ve tvaru:
  *          <function> -> <Kdata_types> fID(<arguments>)<body><function>
- * @return 
+ * @return          funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 int parseFunction() {
     int result;
@@ -965,10 +965,12 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return ERR_SYNTAX;
             }
             freeTokenMem(&token);
-            //TODO - volat parser pro zpracovani vyrazu
+            
+            //******************************************
             if((result = parseExpression( blockListElem ,localTable, instructionTape , &expressionType, f)) != ERR_OK) {
                 return result;
             }
+            //******************************************
             
             string *lastGeneratedTMPif, *keyIF;
             
@@ -986,11 +988,11 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             freeIdName(lastGeneratedTMPif);
             
             //vygeneruji instrukci pro znegovani hodnoty
-            if((insTapeInsertLast(instructionTape, I_LOG_NOT, (void *) keyIF, NULL, keyIF)) == 0) {
+            if((insTapeInsertLast(instructionTape, I_LOG_NOT, (void *) keyIF, NULL, (void *)keyIF)) == 0) {
                 return ERR_INTERNAL;
             }
             
-            //vygeneruji instrukci podmineneho skoku
+            //vygeneruji instrukci podmineneho skoku - zatim nevim, kam budu skakat
             if(insTapeInsertLast(instructionTape, I_IFNZERO, (void *) keyIF, NULL, NULL) == 0) {
                 return ERR_INTERNAL;
             }
@@ -1008,87 +1010,58 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeTokenMem(&token);
             
-            //TODO - doplnit parseBlock
+            //------------------------------------------
             if((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
                 return result;
             }
+            //------------------------------------------
             
+            //vygenerji instrukci pro nepodmineny skok - budu preskakovat else vetev
+            //zatim neznam adresu instrukce, na kterou budu skakat
             if (insTapeInsertLast(instructionTape, I_GOTO, NULL, NULL, NULL) == 0) {
                 return ERR_INTERNAL;
             }
             
-            //preskakuju else vetev
+            //zapamatuji si instrukci
             tInsTapeInsPtr skipElse1 = insTapeGetLast(instructionTape);
-         
-            //TODO - zpracovani else vetve
-            if((result = getToken(&token, f)) != 1) {
-                return ERR_SYNTAX;
+            
+            //vytvorim navesti
+            if (insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
             }
             
-            switch(token->typ) {
-                //pravidlo 31 <else> -> else <block>
-                case KEYW_ELSE:
-                    //TODO - co poslu bloku
-                    //vygeneruji instrukci s navestim
-                    if(insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
-                        return ERR_INTERNAL;
-                    }
-
-                    //zapamatuji si instrukci navesti
-                    tInsTapeInsPtr elseLabel1 = insTapeGetLast(instructionTape);
-
-                    //nastavim aktivitu na instrukci ifSkip1, protoze ji chci upravit
-                    insTapeGoto(instructionTape, ifSkip1);
-                    //aktualizuji danou instrukci
-                    insTapeActualize(instructionTape, I_IFNZERO, (void *) keyIF, (void *) elseLabel1, NULL);
-                    freeTokenMem(&token);
-                    return parseBlock(localTable, blockList, blockListElem, instructionTape);
-                    break;
-                    
-                    
-                //pravidlo 30 - <else> -> epsilon
-                case KEYW_IF:
-                case KEYW_FOR:
-                case KEYW_WHILE:
-                case KEYW_RETURN:
-                case KEYW_CIN:
-                case KEYW_COUT:
-                case KEYW_DO:
-                case TYPE_IDENTIFICATOR:
-                case INCREMENTATION:
-                case DECREMENTATION:
-                case KEYW_INT:
-                case KEYW_DOUBLE:
-                case KEYW_STRING:
-                case KEYW_BOOL:
-                case KEYW_AUTO:
-                case BRACES_CLOSING:
-                case BRACES_OPENING:
-                    
-                    //vygeneruji instrukci s navestim
-                    if(insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
-                        return ERR_INTERNAL;
-                    }
-
-                    //zapamatuji si instrukci navesti
-                    tInsTapeInsPtr ifLabel1 = insTapeGetLast(instructionTape);
-
-                    //nastavim aktivitu na instrukci ifSkip1, protoze ji chci upravit
-                    insTapeGoto(instructionTape, ifSkip1);
-                    //aktualizuji danou instrukci
-                    insTapeActualize(instructionTape, I_IFNZERO, (void *) keyIF, (void *) ifLabel1, NULL);
-                    //navratim token, dalsi funkce pocitaji s tim, ze ho prectou
-                    
-                    //pokud jsem provedl prvni blok, tak neprovadim else
-                    insTapeGoto(instructionTape, skipElse1);
-                    insTapeActualize(instructionTape, I_GOTO, (void *) ifLabel1, NULL, NULL);
-                    ungetToken(&token);
-                    
-                    return ERR_OK;
-                    break;
-                default:
-                    return ERR_SYNTAX;
+            //ulozim si odkaz na navesti
+            tInsTapeInsPtr labElse = insTapeGetLast(instructionTape);
+            
+            //nastavim aktivitu na ifskip1
+            insTapeGoto(instructionTape, ifSkip1);
+            
+            //aktualizuji instrukci, jiz vim, kam budu skakat
+            insTapeActualize(instructionTape, I_IFNZERO, (void *) keyIF, (void *) labElse, NULL);
+            
+            //zpracovavam else vetev
+            //----------------------------------------------
+            if ((result = parseElse(localTable, blockList, blockListElem, instructionTape)) != ERR_OK){
+                return result;
             }
+            //----------------------------------------------
+            
+            //vytvorim instrukci navesti
+            if(insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //ulozim si odkaz na tuto instrukci
+            tInsTapeInsPtr labSkipElse = insTapeGetLast(instructionTape);
+            
+            //aktualizuji instrukci skipElse1
+            insTapeGoto(instructionTape, skipElse1);
+            
+            //aktualizuji informace
+            insTapeActualize(instructionTape, I_GOTO, (void *) labSkipElse, NULL, NULL);
+            
+            //vse probehlo v poradku
+            return ERR_OK;
             break;
             
             
@@ -2552,4 +2525,62 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
     
     freeTokenMem(&token);
     return ERR_SYNTAX;
+}
+
+/**
+ * zpracovava pravidla:
+ * 30: <else> -> epsilon
+ * 31. <else> -> else <block>
+ * @param localTable[in]            -   lokalni tabulka symbolu
+ * @param instructionTape           -   ukazatel na pasku instrukci
+ * @param blockList                 -   list tabulek symbolu pro bloky
+ * @param blockListElem             -   aktualni element v listu tabulek bloku
+ * @return      funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
+ */
+int parseElse(tTabSym *localTable, tTabSymList *blockList,
+                tTabSymListElemPtr blockListElem, tInsTape *instructionTape) {
+    tToken token;
+    int result;
+    
+    if((result = getToken(&token, f)) != 1) {
+        return ERR_SYNTAX;
+    }
+            
+    switch(token->typ) {
+        //pravidlo 31 <else> -> else <block>
+        case KEYW_ELSE:
+
+            //------------------------------------
+            return parseBlock(localTable, blockList, blockListElem, instructionTape);
+            //------------------------------------
+            break;
+
+
+        //pravidlo 30 - <else> -> epsilon
+        case KEYW_IF:
+        case KEYW_FOR:
+        case KEYW_WHILE:
+        case KEYW_RETURN:
+        case KEYW_CIN:
+        case KEYW_COUT:
+        case KEYW_DO:
+        case TYPE_IDENTIFICATOR:
+        case INCREMENTATION:
+        case DECREMENTATION:
+        case KEYW_INT:
+        case KEYW_DOUBLE:
+        case KEYW_STRING:
+        case KEYW_BOOL:
+        case KEYW_AUTO:
+        case BRACES_CLOSING:
+        case BRACES_OPENING:
+
+            //navratim token - dalsi instrukce s nim pocitaji
+            ungetToken(&token);
+
+            return ERR_OK;
+            break;
+        default:
+            return ERR_SYNTAX;
+    }
 }

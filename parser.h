@@ -77,13 +77,11 @@ void parse();
 int parseFunction();
 
 /**
- * pro pravidla 8 a 9:
- *          <arguments> -> epsilon
- *          <arguments> - > argument
- * @return SYNTAX_OK(1) - pokud je vse v poradku
- *         SYNTAX_FAILED(0) - pokud nastala chyba
+ * pravidlo ve tvaru:
+ *          <function> -> <Kdata_types> fID(<arguments>)<body><function>
+ * @return          funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
-int parseArguments();
+int parseFunction();
 
 /**
  * zpracovava nasledujici pravidla:
@@ -93,7 +91,7 @@ int parseArguments();
  * 7. <Kdata_types> -> keyw_double
  * @param variableType[out]     -   datovy typ tokenu
  * @param tokenType[in]         -   typ prijimaneho tokenu
- * @return      funkce vraci 1, pokud je vse v poradku
+ * @return      funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 int kDataTypes(tTabSymVarDataType *variableType, TokenTypes tokenType);
 
@@ -105,7 +103,7 @@ int kDataTypes(tTabSymVarDataType *variableType, TokenTypes tokenType);
  * @param data[in]           -   NULL, jestli se identifikator funkce v globalni tabulce nenachazi
  *                               jinak odkaz na dany prvek
  * @param localTabel[out]    -  odkaz na lokalni tabulku, do ktere ukladame parametry
- * @return 
+ * @return          funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localTable);
 
@@ -116,7 +114,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
  *                                  jinak odkaz na dany prvek
  * @param paramType[in]         -   datovy typ promenne
  * @param localTabel[out]       -  odkaz na lokalni tabulku, do ktere ukladame parametry
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarDataType paramType, tTabSym *localTable);
 
@@ -125,7 +123,7 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
  * funkce zpracovava providla:
  * 11. <argumentNext> -> epsilon
  * 12. <argumentNext> -> , <argument>
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localTable);
 
@@ -140,7 +138,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
  * @param blockList         -   ukazatel na list tabulek bloku
  * @param parent            -   ukazatel na rodicovsky prvek 
  * @param instructionTape   -   ukazatel na pasku instrukci
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
                         tTabSymListElemPtr parent, tInsTape *instructionTape);
@@ -162,7 +160,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
  * @param instructionTape   -   ukazatel na instrukcni pasku
  * @param blockList         -   ukazatel na list tabulek bloku
  * @param blockListElem     -   aktualni element v listu tabulek symbolu pro bloky
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionTape,
                     tTabSymList *blockList,tTabSymListElemPtr blockListElem);
@@ -176,7 +174,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
  * @param localTable        -   ukazatel na lokalni tabulku symbolu
  * @param instructionTape   -   ukazatel na pasku instrukci
  * @param blockListElem     -   aktualni element v listu tabulek bloku
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                     tInsTape *instructionTape, tTabSymListElemPtr blockListElem);
@@ -190,7 +188,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
  * @param instructionTape           -   ukazatel na pasku instrukci
  * @param blockList                 -   list tabulek symbolu pro bloky
  * @param blockListElem             -   aktualni element v listu tabulek bloku
- * @return          pokud probehlo vse v poradku, tak 1
+ * @return          funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 int parseBlock(tTabSym *localTable, tTabSymList *blockList,
                 tTabSymListElemPtr blockListElem, tInsTape *instructionTape);
@@ -203,7 +201,7 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
  * 41. <assignment> = <specID>ID
  * @param tokenType
  * @param localTable
- * @return          pokud probehlo vse v poradku, tak 1
+ * @return          funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 
 int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instructionTape,
@@ -219,7 +217,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
  * @param instructionTape           -   odkaz na instrukcni pasku
  * @param localTable                -   odkaz na lokalni tabulku symbolu
  * @param blockListElem             -   aktualni element v tabulce symbolu pro bloky
- * @return              pokud probehlo vse v poradku, tak 1
+ * @return              funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr blockListElem);
 
@@ -229,9 +227,22 @@ int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr 
  * zpracovava nasledujici pravidla
  *34. <cout> -> epsilon
  *35. <cout> -> << <term> <cout>
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
  */
 int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabSym *localTable);
+
+/**
+ * zpracovava pravidla:
+ * 30: <else> -> epsilon
+ * 31. <else> -> else <block>
+ * @param localTable[in]            -   lokalni tabulka symbolu
+ * @param instructionTape           -   ukazatel na pasku instrukci
+ * @param blockList                 -   list tabulek symbolu pro bloky
+ * @param blockListElem             -   aktualni element v listu tabulek bloku
+ * @return      funkce vraci ERR_OK, pokud je v poradku, jinak kod chyby
+ */
+int parseElse(tTabSym *localTable, tTabSymList *blockList,
+                tTabSymListElemPtr blockListElem, tInsTape *instructionTape);
 
 #endif	/* PARSER_H */
 
