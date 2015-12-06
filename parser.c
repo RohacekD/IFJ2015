@@ -1101,6 +1101,14 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             //-----------------------------------
             
+            //vygeneruji instrukci pro LABEL
+            if (insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //zaznamenam si instrukci
+            tInsTapeInsPtr labBegin = insTapeGetLast(instructionTape);
+            
             //jsem ve stavu - for(<declaration>;expr
             //***********************************
             if ((result = parseExpression( blockListElem , localTable, instructionTape, &expressionType, f)) != ERR_OK) {
@@ -1119,7 +1127,20 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return ERR_INTERNAL;
             }
             freeIdName(lastGeneratedTMPfor);
-                        
+            
+            //zneguji si vysledek vyrazu
+            if (insTapeInsertLast(instructionTape, I_LOG_NOT, (void *)keyFor1, NULL, (void *) keyFor1) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //vygeneruji podmineny skok, kterym preskocim provadeni cyklu
+            if (insTapeInsertLast(instructionTape, I_IFNZERO, (void *)keyFor1, NULL, NULL) == 0){
+                return ERR_INTERNAL;
+            }
+            
+            //zapamatuji si instrukci
+            tInsTapeInsPtr stepOver = insTapeGetLast(instructionTape);
+            
             if ((result = getToken(&token, f)) != 1) {
                 return ERR_LEX;
             }
@@ -1131,22 +1152,27 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeTokenMem(&token);
             
-            
-            string *lastGeneratedTMPfor2;
-            if ((lastGeneratedTMPfor2 = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
-                return ERR_INTERNAL;
-            }
-            
-            string *keyFor2;
-            if ((keyFor2 = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMPfor2)) == NULL) {
-                freeIdName(lastGeneratedTMPfor2);
-                return ERR_INTERNAL;
-            }
-            freeIdName(lastGeneratedTMPfor2);
-            
             if((result = getToken(&token, f)) != 1) {
                 return ERR_LEX;
             }
+            
+            //vygeneruji si instrukci pro skok do bloku
+            if(insTapeInsertLast(instructionTape, I_GOTO, NULL, NULL, NULL) == 0) {
+                freeTokenMem(&token);
+                return ERR_INTERNAL;
+            }
+            
+            //zapamatuji si instrukci 
+            tInsTapeInsPtr goToBlock = insTapeGetLast(instructionTape);
+            
+            //vygeneruji si navesti pro assignment
+            if (insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                freeTokenMem(&token);
+                return ERR_INTERNAL;
+            }
+            
+            //zapamatuji si adresu navesti
+            tInsTapeInsPtr labAssignment = insTapeGetLast(instructionTape);
             
             //jsem ve stavu - for(<declaration>;expr;<assignment>
             if(token->typ != INCREMENTATION && token->typ != DECREMENTATION &&
@@ -1155,11 +1181,16 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return ERR_SYNTAX;
             }
             
-            //SEM SKOCIM PO PROVEDENI TELA FUNKCE
+            //---------------------------------------------
             if((result = parseAssignment(token, localTable, instructionTape, blockListElem)) != ERR_OK) {
                 return result;
             }
+            //---------------------------------------------
             
+            //vytvorim instrukci skoku zpet k vyhodnoceni podminky
+            if (insTapeInsertLast(instructionTape, I_GOTO, (void *) labBegin, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
             
             if ((result = getToken(&token, f)) != 1) {
                 return ERR_LEX;
@@ -1172,12 +1203,41 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             freeTokenMem(&token);
             
+            //vygeneuji instrukci pro navesti
+            if(insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //poznamenam si instrukci navesti
+            tInsTapeInsPtr labBlock = insTapeGetLast(instructionTape);
+            
+            //upravim instrukci pro skok do bloku
+            insTapeGoto(instructionTape, goToBlock);
+            insTapeActualize(instructionTape, I_GOTO, (void *) labBlock, NULL, NULL);
+            
             //-----------------------------------------------
             if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
                 return result;
             }
             //-----------------------------------------------
-  
+            
+            //vytvorim instrukci pro skok na assignment
+            if (insTapeInsertLast(instructionTape, I_GOTO, (void *)labAssignment, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //vytvorim si navesti pro preskoceni cyklu
+            if (insTapeInsertLast(instructionTape, I_LABEL, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
+            //poznamenam si adresu navesti
+            tInsTapeInsPtr labEndCycle = insTapeGetLast(instructionTape);
+            
+            //aktualizuji instrukce, ktera preskakuje telo cyklu
+            insTapeGoto(instructionTape, stepOver);
+            insTapeActualize(instructionTape, I_IFNZERO, (void *)keyFor1, (void *) labEndCycle, NULL);
+            
             return ERR_OK;
             
             break;
