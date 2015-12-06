@@ -599,12 +599,13 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
     }
     
     //upravene pravidlo 9: <arguments> -> <argument>
-    //kontroluji, zda je token datoveho typu
+    //-----------------------------------------------------------
     if ((result = kDataTypes(&paramType, token->typ)) != 1) {
         //uvolnim token
         freeTokenMem(&token);
         return result;
     }
+    //----------------------------------------------------------
     
     freeTokenMem(&token);
     
@@ -731,11 +732,15 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
          if((result = getToken(&token, f)) != 1) {
             return ERR_LEX;
         }
+        
+        //--------------------------------------------------------
         if ((result = kDataTypes(&paramType, token->typ)) != 1) {
             //uvolnim token
             freeTokenMem(&token);
              return result;
         }
+        //--------------------------------------------------------
+        
         freeTokenMem(&token);
         //v pripade, kdy provadim kontrolu, tak se posunu se v seznamu argumentu na dalsi prvek
         if (data != NULL)  succ(data->info.func->params);
@@ -791,11 +796,12 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             //uvolnim token
             freeTokenMem(&token);
             
+            //----------------------------------------------------
             //volam funkci pro zpracovani deklarace
-            // parent je v tomto pripade aktualni element z listu tabulek symbolu bloku
             if ((result = parseDeclaration(dataType, localTable, instructionTape, parent)) != ERR_OK) {
                 return result;
             }
+            //----------------------------------------------------
             
             //opet volam funkci pro zpracovani statement-listu
             return parseStatementList(localTable, blockList, parent, instructionTape);
@@ -805,7 +811,6 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
         //pravidlo 15 - <st_list> -> epsilon (konec funkce)
         //ukonceni bloku funkce, nebo normalniho bloku
         case BRACES_CLOSING:
-            //TODO - GENEROVANI INSTRUKCE PRO ODSTRANENI BLOCK FRAME
             freeTokenMem(&token);
             //instrukci pro ukonceni bloku vkladam jenom kdyz jsem v zanorenem bloku
             if (parent != NULL) {
@@ -864,10 +869,11 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
         case DECREMENTATION:
             
             
-            //TODO - jeste nevim, co vse musim predat funkci parseStatement
+            //-----------------------------------------------------
             if((result = parseStatement(localTable, token, instructionTape, blockList, parent)) != ERR_OK) {
                 return result;
             }
+            //-----------------------------------------------------
             
             return parseStatementList(localTable, blockList, parent, instructionTape);
             
@@ -1979,21 +1985,28 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
                 return ERR_INTERNAL;
             }
             
-            //pokud
+            //pokud nema nove vytvoreny element rodice, bude jeho rodicem lokalni tabulka
+            //symbolu dane funkce
             if(newElement->parentElement == NULL) {
-                tTabSymList *newList = tabSymListCreate();
-                tTabSymListElemPtr localTableElem = tabSymListInsertTable(newList, localTable, NULL);
+                tTabSymList *newList;
+                tTabSymListElemPtr localTableElem;
+                if ((newList = tabSymListCreate()) == NULL)
+                    return ERR_INTERNAL;
+                if ((localTableElem = tabSymListInsertTable(newList, localTable, NULL)) == NULL) {
+                    return ERR_INTERNAL;
+                }
                 newElement->parentElement = localTableElem;
             }
             
-            //TODO - GENEROVANI INSTRUKCE
             if(insTapeInsertLast(instructionTape, I_CBF, (void*) blockLocalTable, NULL, NULL) == 0) {
                 return ERR_INTERNAL;
             }
             
+            //---------------------------------------------------
             if((result = parseStatementList(blockLocalTable, newElement->childList, newElement, instructionTape)) != ERR_OK) {
                 return result;
             }
+            //---------------------------------------------------
             
             return ERR_OK;
             break;
@@ -2010,7 +2023,9 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
         case INCREMENTATION:
         case DECREMENTATION:
             
+            //--------------------------------------------
             return parseStatement(localTable, token, instructionTape, blockList, blockListElem);
+            //--------------------------------------------
             
         default:
             return ERR_SYNTAX;
