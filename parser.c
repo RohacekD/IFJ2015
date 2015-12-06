@@ -299,17 +299,34 @@ void parse() {
         localTable = findMain->info.func->locTab; //ukazatel ukazuje na lokalni tabulku mainu
         firstIns = insTape->first; //ukazatelna prvni instrukci mainu
         
-        //TODO - vlozeni instrukci, ktery po mne chtel Dominik
-        insTapeInsertFirst(insTape, I_CF ,(void *) localTable, (void *) firstIns, NULL);
+        //vlozeni instrukci, ktery po mne chtel Dominik
+        if (insTapeInsertFirst(insTape, I_CF ,(void *) localTable, (void *) firstIns, NULL) == 0) {
+            tabSymFree(globalTable);
+            fclose(f);
+            FatalError(ERR_INTERNAL, ERR_MESSAGES[ERR_ALLOC]);
+        }
+        
+        //aktivni instrukci se stane prvni
         insTapeFirst(insTape);
         
-        insTapePostInsert(insTape, I_RETURN, NULL, NULL, NULL);
+        //vlozeni druhe instrukce
+        if (insTapePostInsert(insTape, I_RETURN, NULL, NULL, NULL) == 0) {
+            tabSymFree(globalTable);
+            fclose(f);
+            FatalError(ERR_INTERNAL, ERR_MESSAGES[ERR_ALLOC]);
+        }
         
         //provedeni interpretace
         if ((result = executeTape(findMain->info.func->instTape->first)) != ERR_OK) {
+           //uvolneni globalni tabuljy
+            tabSymFree(globalTable);
+            fclose(f);
             goto ERROR;
         }
         
+        //uvolneni globalni tabulky po vygenerovani vsech instrukci a uzavreni souboru
+        tabSymFree(globalTable);
+        fclose(f);
         //TODO;
         exit(0);
     }
