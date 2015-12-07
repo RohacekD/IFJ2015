@@ -171,8 +171,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_BOOL) {
 			dest->data.boolVal = getVarVal(oper1) + getVarVal(oper2);
 		}
-		break;
 		dest->init = true;//dest je nyni inicializovan
+		break;
 	case I_MINUS:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
@@ -681,8 +681,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else {
 			return ERR_SEM_COM;
 		}
-		break;
 		dest->init = true;//dest je nyni inicializovan
+		break;
     case I_LABEL://jen navesti nic nedelej
             break;
 	default:
