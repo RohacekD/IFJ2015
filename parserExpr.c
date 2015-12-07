@@ -27,7 +27,7 @@ extern tTabSym *globalTable;
  */
 int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 		tParExpTerminals* terminalCode, tToken* token) {
-	tPrecStackData* precStackdata;
+	tPrecStackData* precStackdata=NULL;
 	tToken nextToken;
 
 	if (getToken(token, scanFile) != 1) {
@@ -205,7 +205,7 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
  */
 int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr tableListElem, tParExpTerminals termKind, tToken token,
 		string** id) {
-	string* newString;
+	string* newString=NULL;
 	if (termKind == TERMINAL_IDENTIFICATOR) {
 		tTabSymVarNoAutoDataType dataType;
 		//vytvorime si value
@@ -237,12 +237,12 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 			CONSTANT_HANDLE:
 
 			*id = tabSymListCreateTmpSymbol(tableListElem,table);
-
-			tConstantInfo* constInfo = tabSymCreateConstantInfo(dataType, value);
-
 			if (*id == NULL) {
 				return ERR_INTERNAL;	//chyba
 			}
+			tConstantInfo* constInfo = tabSymCreateConstantInfo(dataType, value);
+
+
 			if(constInfo == NULL){
 				strFree(*id);
 				free(*id);
@@ -288,9 +288,9 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 		 * Jedna se o funkcni identifikator, zkontrolujeme jestli se nachazi v tabulce
 		 * symbolu a jestli je definovana.
 		 */
-		tTabSymElemData* functionData;
+		tTabSymElemData* functionData=NULL;
 		if(((functionData=tabSymSearch(globalTable, &(token->value.stringVal)))==NULL) ||
-				functionData->info.func->defined==true){
+				functionData->info.func->defined==false){
 			//nenalezeno/nedefinovano semanticka chyba
 			return ERR_SEM_DEF;
 		}
@@ -721,7 +721,9 @@ string* createNewNoterminal(tTabSymListElemPtr startTabSymListElem, tTabSym* tab
 		goto INTERNAL_ERROR_2;
 	}
 
-
+	//vycistime newTmp
+	strFree(newTmp);
+	free(newTmp);
 	return adrOfString;
 
 INTERNAL_ERROR_2:
@@ -1175,8 +1177,8 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 	tTabSymVarDataType dataTypeOfResult;	//datovy typ vysledku
 
 	tBuildInFunctions buildInKind=compareBuildInFunctions(topElemData->id);
-	tTabSymElemData* funcData;
-	tFuncInfo* funcInfo;
+	tTabSymElemData* funcData=NULL;
+	tFuncInfo* funcInfo=NULL;
 	//jedna se o vestavenou funkci?
 	if(buildInKind!=BUILD_IN_FUNC_NO_MATCH){
 		funcData=tabSymSearch(globalTable, topElemData->id);
@@ -1577,7 +1579,7 @@ ERR_CODES manageRule(ruleAutomateStates rule, tTabSymListElemPtr startTabSymList
 
 int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* tape,
 		tTabSymVarNoAutoDataType* expDataType, FILE* scanFile) {
-	string* id; //pro vytvareni identifikatoru v tabulce symbolu
+	string* id=NULL; //pro vytvareni identifikatoru v tabulce symbolu
 	ERR_CODES errRet;	//chybovy kod
 	//vybereme si tabulku, do ktere se budou vkladat tmp symboly (pomocne promenne)
 	tTabSym* insertToTable=NULL;
@@ -1609,6 +1611,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 
 	if(precStackTopTerminal(&stack, &a)==0){
 		//vlozili jsme ENDMARK NEMUZE, BYT POKUD ANO CHYBA
+		freeTokenMem(&token);
 		return ERR_INTERNAL;
 	}
 	do {
@@ -1625,6 +1628,10 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 
 			//vycistime aktualni token
 			freeTokenMem(&token);
+			//vycistime i id
+			strFree(id);
+			free(id);
+			id=NULL;
 
 			if(prepareNextToken(&stack, scanFile, &b, &token)==0){
 				errRet=ERR_LEX;
@@ -1649,6 +1656,10 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 
 			//vycistime aktualni token
 			freeTokenMem(&token);
+			//vycistime i id
+			strFree(id);
+			free(id);
+			id=NULL;
 
 			if(prepareNextToken(&stack, scanFile, &b, &token)==0){
 				errRet=ERR_LEX;
@@ -1738,9 +1749,13 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 	return ERR_OK;
 
 ERROR_HANDLER:
+
 	freeTokenMem(&token);
 	precStackDispose(&stack);
 	precStackFree(&revertedTopStack);
+	//vycistime i id
+	strFree(id);
+	free(id);
 	return errRet;
 
 }
