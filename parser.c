@@ -286,11 +286,16 @@ void parse() {
         }
         
         //vyhledani funkce main
-        if((findMain = tabSymSearch(globalTable, mainString)) == NULL) {
-            tabSymFree(globalTable);
+		if ((findMain = tabSymSearch(globalTable, mainString)) == NULL) {
+			tabSymFree(globalTable);
+			//uvolneni stringu fce main
+			freeIdName(mainString);
             fclose(f);
             FatalError(ERR_SEM_DEF, ERR_MESSAGES[ERR_SEM_DEF]);
         }
+
+		//uvolneni stringu fce main
+		freeIdName(mainString);
         
         //kontrola, jestli je funkce main definovana se spravnym seznamem parametru
         if (findMain->info.func->params->first != NULL) {
@@ -1522,6 +1527,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 freeTokenMem(&token);
                 return ERR_SYNTAX;
             }
+			freeTokenMem(&token);
             return ERR_OK;
             break;
             
