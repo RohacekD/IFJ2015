@@ -73,7 +73,7 @@ int prepareGlobalTable() {
     //vlozeni predpisu pro funkci:  int length (string s)
     char *lengthID = "length";
     string *length = NULL;
-    if ((length = malloc(sizeof(string))) == NULL) return 0;
+    if ((length = (string*)malloc(sizeof(string))) == NULL) return 0;
     if (strInit(length) == 1) return 0;
     
     if (strConConstString(length, lengthID) == 1) return 0;
@@ -90,7 +90,7 @@ int prepareGlobalTable() {
     //vlozeni predpisu pro funkci: string substr(string s, int i, int n)
     char *substrID = "substr";
     string *substr = NULL;
-    if ((substr = malloc(sizeof(string))) == NULL) return 0;
+    if ((substr = (string*)malloc(sizeof(string))) == NULL) return 0;
     if (strInit(substr) == 1) return 0;
     
     if (strConConstString(substr, substrID) == 1) {
@@ -111,7 +111,7 @@ int prepareGlobalTable() {
     //vlozeni predpisu pro funkci: string concat(string s1, string s2)
     char *concatID = "concat";
     string *concat;
-    if ((concat = malloc(sizeof(string))) == NULL) return 0;
+    if ((concat = (string*)malloc(sizeof(string))) == NULL) return 0;
     if (strInit(concat) == 1) return 0;
     
     if (strConConstString(concat, concatID) == 1) {
@@ -131,7 +131,7 @@ int prepareGlobalTable() {
     //vlozeni predpisu pro funkci: string find(string s, string search)
     char *findID = "find";
     string *find;
-    if ((find = malloc(sizeof(string))) == NULL) return 0;
+    if ((find = (string*)malloc(sizeof(string))) == NULL) return 0;
     if (strInit(find) == 1) return 0;
     
     if (strConConstString(find, findID) == 1) {
@@ -151,7 +151,7 @@ int prepareGlobalTable() {
     //vlozeni predpisu pro funkci: string sort(string s)
     char *sortID = "sort";
     string *sort;
-    if ((sort = malloc(sizeof(string))) == NULL) return 0;
+    if ((sort = (string*)malloc(sizeof(string))) == NULL) return 0;
     if (strInit(sort) == 1) return 0;
     
     if (strConConstString(sort, sortID) == 1) {
@@ -177,7 +177,7 @@ int prepareGlobalTable() {
  * @return      funkce vraci ukazatel na novy string, pokud probehlo vse v poradku, jinak NULL
  */
 string* copyIdName(string *identificator) {
-    string *idName = malloc(sizeof(string));
+    string *idName = (string*)malloc(sizeof(string));
     if (idName == NULL) return 0;
 
     if (strInit(idName) == 1) {
@@ -1403,7 +1403,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             //udrzuje informace o konstante
             tConstantInfo *constInfo;
             //udzuje hodnoty, kterych muze konstanta nabyvat
-            unionValue *uval = malloc(sizeof(unionValue));
+            unionValue *uval = (unionValue*)malloc(sizeof(unionValue));
             // vygenerovany identifikator pro konstantu
             string *tmp;
             
@@ -2438,7 +2438,7 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
     //udrzuje informace o konstante
     tConstantInfo *constInfo;
     //udzuje hodnoty, kterych muze konstanta nabyvat
-    unionValue *uval = malloc(sizeof(unionValue));
+    unionValue *uval = (unionValue*)malloc(sizeof(unionValue));
     //tmp je string pro novy identifikator, key je string, ktery ukazuje na prvek v
     //tabulce symbolu
     string *tmp, *key;

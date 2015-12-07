@@ -1093,7 +1093,7 @@ int unescapeStr(string* s) {
 }
 
 void TQInit() {
-	TQueue = malloc(sizeof(tTokenQueue));
+	TQueue = (tTokenQueue*)malloc(sizeof(tTokenQueue));
 	TQueue->First = NULL;
 	TQueue->Last = NULL;
 }
@@ -1106,7 +1106,7 @@ void TQDequeue(tToken* token) {
 		token = NULL;
 		return;
 	}
-	(*token) = malloc(sizeof(struct stToken));
+	(*token) = (tToken)malloc(sizeof(struct stToken));
 	(*token)->typ = TQueue->First->token->typ;
 	if ((*token)->typ == TYPE_IDENTIFICATOR || (*token)->typ == TYPE_STRING) {
 		strInit(&(*token)->value.stringVal);
@@ -1137,8 +1137,8 @@ void ungetToken(tToken* token) {
 	if (!TQueue) {
 		TQInit();
 	}
-	tToken newTok = malloc(sizeof(struct stToken));
-	tTokenQueueElem elm = malloc(sizeof(struct tTQelem));
+	tToken newTok = (tToken)malloc(sizeof(struct stToken));
+	tTokenQueueElem elm = (tTokenQueueElem)malloc(sizeof(struct tTQelem));
 	if (!newTok || !elm) {
 		FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 	}
