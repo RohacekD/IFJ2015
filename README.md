@@ -1,2 +1,9 @@
 # IFJ2015
-Je nutno kompletnì opravit soubor frameStack.c byl asi vytvoøen z jiného listu bez úprav na pouití struktury tFrame. Je nutno myslet na dealokaci
+Je nutno kompletnÄ› opravit soubor frameStack.c byl asi vytvoÅ™en z jinÃ©ho listu bez Ãºprav na pouÅ¾itÃ­ struktury tFrame. Je nutno myslet na dealokaci
+##Skore po alokaci HonzÃ­kova testovacÃ­ho programu
+
+656 - VÃ½chozÃ­
+
+576 - Dominik
+
+488 - HonzÃ­k
