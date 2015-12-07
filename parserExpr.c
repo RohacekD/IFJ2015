@@ -1113,7 +1113,7 @@ ERR_CODES genInsFuncParams(tParamListPtr params, tTabSymListElemPtr startTabSymL
 	tTabSymElemData* actParam= tabSymListSearch(startTabSymListElem,tabSym, actParamData->id);
 	tTabSymVarDataType codeOfDataType;
 
-	while(params->act!=NULL && actParam!=NULL){
+	while(params->act!=NULL && actParamData!=NULL){
 		//hledame symbol neterminalu v tabulce
 		actParam= tabSymListSearch(startTabSymListElem,tabSym, actParamData->id);
 		if(actParam == NULL){
@@ -1147,7 +1147,7 @@ ERR_CODES genInsFuncParams(tParamListPtr params, tTabSymListElemPtr startTabSymL
 		succ(params);
 	}
 	//zkontrolujeme jestli je vse semanticky v poradku
-	if(params->act!=NULL || actParam!=NULL){
+	if(params->act!=NULL || actParamData!=NULL){
 		return ERR_SEM_COM;
 	}
 	return ERR_OK;
@@ -1206,7 +1206,7 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 
 
 
-		for(unsigned int i=0; i<POOL_SIZE && params->act!=NULL && actParam!=NULL;i++){
+		for(unsigned int i=0; i<POOL_SIZE && params->act!=NULL && actParamData!=NULL;i++){
 			//hledame symbol neterminalu v tabulce
 			actParam= tabSymListSearch(startTabSymListElem,tabSym, actParamData->id);
 			if(actParam == NULL){
@@ -1234,7 +1234,7 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 			succ(params);
 		}
 		//zkontrolujeme jestli je vse semanticky v poradku
-		if(params->act!=NULL || actParam!=NULL){
+		if(params->act!=NULL || actParamData!=NULL){
 			return ERR_SEM_COM;
 		}
 
