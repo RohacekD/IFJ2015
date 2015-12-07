@@ -1,4 +1,4 @@
-﻿#ifndef SCANNER_H
+#ifndef SCANNER_H
 #define SCANNER_H
 #include <stdbool.h>
 #include <stdio.h>
