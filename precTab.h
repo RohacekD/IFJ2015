@@ -35,9 +35,9 @@ typedef enum{
 	TERMINAL_NOT,						// !
 	TERMINAL_AND,						// &&
 	TERMINAL_OR,						// ||
-	TERMINAL_IDENTIFICATOR,				// jmeno promenne nebo konstanta
 	TERMINAL_FUNCTION_IDENTIFICATOR,	// jmeno funkce
 	TERMINAL_COMMA,						// ,
+	TERMINAL_IDENTIFICATOR,				// jmeno promenne nebo konstanta
 	TERMINAL_ENDMARK					// ukoncovaci
 }tParExpTerminals;
 
