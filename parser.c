@@ -1435,12 +1435,14 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                     }
                     //vlozim konstantu do tabulky symbolu
                     if (tabSymInsertConst(localTable, tmp, constInfo) == 0) {
+                        freeIdName(tmp);
                         return ERR_INTERNAL;
                     }
 
                     //vzdy bych mel dany klic najit, jelikoz jsem ho prave vlozil
                     key = tabSymListGetPointerToKey(blockListElem, localTable, tmp);
-
+                    freeIdName(tmp);
+                    
                     //vlozim instrukci do instrukcni pasky
                     if (insTapeInsertLast(instructionTape, I_COUT, (void *) key, NULL, NULL) == 0) {
                         return ERR_INTERNAL;
@@ -2500,11 +2502,13 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
                         }
                         //vlozim konstantu do tabulky symbolu
                         if (tabSymInsertConst(localTable, tmp, constInfo) == 0) {
+                            freeIdName(tmp);
                             return ERR_INTERNAL;
                         }
                         
                         //vzdy bych mel dany klic najit, jelikoz jsem ho prave vlozil
                         key = tabSymListGetPointerToKey(blockListElem, localTable, tmp);
+                        freeIdName(tmp);
                         
                         //vlozim instrukci do instrukcni pasky
                         if (insTapeInsertLast(instructionTape, I_COUT, (void *) key, NULL, NULL) == 0) {
