@@ -1127,6 +1127,7 @@ void TQDequeue(tToken* token) {
 	}
 	//uvolnime po sobe pamet
 	freeTokenMem(&elm->token);
+	free(elm);
 }
 
 void ungetToken(tToken* token) {

@@ -286,11 +286,16 @@ void parse() {
         }
         
         //vyhledani funkce main
-        if((findMain = tabSymSearch(globalTable, mainString)) == NULL) {
-            tabSymFree(globalTable);
+		if ((findMain = tabSymSearch(globalTable, mainString)) == NULL) {
+			tabSymFree(globalTable);
+			//uvolneni stringu fce main
+			freeIdName(mainString);
             fclose(f);
             FatalError(ERR_SEM_DEF, ERR_MESSAGES[ERR_SEM_DEF]);
         }
+
+		//uvolneni stringu fce main
+		freeIdName(mainString);
         
         //kontrola, jestli je funkce main definovana se spravnym seznamem parametru
         if (findMain->info.func->params->first != NULL) {
@@ -1435,12 +1440,14 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                     }
                     //vlozim konstantu do tabulky symbolu
                     if (tabSymInsertConst(localTable, tmp, constInfo) == 0) {
+                        freeIdName(tmp);
                         return ERR_INTERNAL;
                     }
 
                     //vzdy bych mel dany klic najit, jelikoz jsem ho prave vlozil
                     key = tabSymListGetPointerToKey(blockListElem, localTable, tmp);
-
+                    freeIdName(tmp);
+                    
                     //vlozim instrukci do instrukcni pasky
                     if (insTapeInsertLast(instructionTape, I_COUT, (void *) key, NULL, NULL) == 0) {
                         return ERR_INTERNAL;
@@ -1522,6 +1529,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 freeTokenMem(&token);
                 return ERR_SYNTAX;
             }
+			freeTokenMem(&token);
             return ERR_OK;
             break;
             
@@ -2500,11 +2508,13 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
                         }
                         //vlozim konstantu do tabulky symbolu
                         if (tabSymInsertConst(localTable, tmp, constInfo) == 0) {
+                            freeIdName(tmp);
                             return ERR_INTERNAL;
                         }
                         
                         //vzdy bych mel dany klic najit, jelikoz jsem ho prave vlozil
                         key = tabSymListGetPointerToKey(blockListElem, localTable, tmp);
+                        freeIdName(tmp);
                         
                         //vlozim instrukci do instrukcni pasky
                         if (insTapeInsertLast(instructionTape, I_COUT, (void *) key, NULL, NULL) == 0) {

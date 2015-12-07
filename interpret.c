@@ -137,7 +137,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			strCopyString(&dest->data.stringVal,&strInput);
 		}
 		strFree(&strInput);
-                dest->init = TRUE;
+                dest->init = true;
 		break;
 	case I_COUT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
