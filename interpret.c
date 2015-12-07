@@ -103,29 +103,28 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				}
 		}
 		if (dest->type == VAR_TYPE_INT) {
-                        if (strCmpConstStr(&strInput, "") == 0) {
-				strFree(&strInput);
-				return ERR_RUNTIME_INPUT;
-			}
-                        
 			if (!strToInt(&strInput, &(dest->data.intVal))) {
 				strFree(&strInput);
 				return ERR_RUNTIME_INPUT;
 			}
 		}
-		else if (dest->type == VAR_TYPE_DOUBLE) {
+		else if (dest->type == VAR_TYPE_DOUBLE) {                        
 			if (!strToDouble(&strInput, &(dest->data.doubleVal))) {
 				strFree(&strInput);
 				return ERR_RUNTIME_INPUT;
 			}
 		}
 		else if (dest->type == VAR_TYPE_BOOL) {
-			if (strCmpConstStr(&strInput, "true") == 0) {
+                        int tmp;
+			if (!strCmpConstStr(&strInput, "true")) {
 				dest->data.boolVal = true;
 			}
-			else if (strCmpConstStr(&strInput, "false") == 0) {
+			else if (!strCmpConstStr(&strInput, "false")) {
 				dest->data.boolVal = false;
 			}
+                        else if (strToInt(&strInput, &tmp) && strCmpConstStr(&strInput, "")){
+                               dest->data.boolVal = (tmp == 0) ? false : true; 
+                        }
 			else {
 				strFree(&strInput);
 				return ERR_RUNTIME_INPUT; 
