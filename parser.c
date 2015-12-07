@@ -2229,7 +2229,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             
             freeTokenMem(&tokenOrig);
             //TODO - semanticke akce a generovani kodu
-            if((result = getToken(&token, f))) {
+            if((result = getToken(&token, f)) != 1) {
                 return ERR_LEX;
             }
             
@@ -2279,7 +2279,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
             
             freeTokenMem(&tokenOrig);
             //TODO - semanticke akce a generovani kodu
-            if((result = getToken(&token, f))) {
+            if((result = getToken(&token, f)) != 1) {
                 return ERR_LEX;
             }
             
