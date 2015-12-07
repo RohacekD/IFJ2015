@@ -441,6 +441,8 @@ int parseFunction() {
 
             if((result = parseArguments(paramList, funcID_info, localTabSym)) != ERR_OK) {
                 freeIdName(idName);
+                paramListFree(paramList);
+                tabSymFree(localTabSym);
                 //navratim chybovy kod
                 return result;
             }
@@ -450,6 +452,8 @@ int parseFunction() {
             //jsme u <body> -> bud ';'(deklarace), nebo '{' (definice)
             if ((result = getToken(&token, f)) != 1) {
                 freeIdName(idName);
+                paramListFree(paramList);
+                tabSymFree(localTabSym);
                 return ERR_LEX;
             }
             
@@ -462,11 +466,15 @@ int parseFunction() {
                 if((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType, 
                         localTabSym, NULL, NULL, false)) == NULL) {
                     freeIdName(idName);
+                    paramListFree(paramList);
+                    tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
                 
                 if((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
                     freeIdName(idName);
+                    paramListFree(paramList);
+                    tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
                 
@@ -485,6 +493,8 @@ int parseFunction() {
                 if (funcID_info != NULL) {
                     if (funcID_info->info.func->defined == true) {
                         freeIdName(idName);
+                        paramListFree(paramList);
+                        tabSymFree(localTabSym);
                         return ERR_SEM_DEF;
                     }
                 }
@@ -493,6 +503,8 @@ int parseFunction() {
                 tTabSymList *blockList;
                 if ((blockList = tabSymListCreate()) == NULL) {
                     freeIdName(idName);
+                    paramListFree(paramList);
+                    tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 } 
                 
@@ -500,6 +512,8 @@ int parseFunction() {
                 tInsTape *instructionTape;
                 if ((instructionTape = insTapeCreate()) == NULL) {
                     freeIdName(idName);
+                    paramListFree(paramList);
+                    tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
                 
@@ -507,6 +521,8 @@ int parseFunction() {
                 //pripravu jsem dokoncil, muzu provadet telo funkce
                 if ((result = parseStatementList(localTabSym, blockList, NULL, instructionTape)) != ERR_OK) {
                     freeIdName(idName);
+                    paramListFree(paramList);
+                    tabSymFree(localTabSym);
                     return result;
                 }
                 //--------------------------------------------------------
@@ -521,12 +537,16 @@ int parseFunction() {
                 if ((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType,
                         localTabSym, blockList, instructionTape, true)) == NULL) {
                     freeIdName(idName);
+                    paramListFree(paramList);
+                    tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
                 
                 //vlozim informace o funkci do globalni tabulky symbolu
                 if ((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
                     freeIdName(idName);
+                    paramListFree(paramList);
+                    tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
                 
@@ -538,6 +558,8 @@ int parseFunction() {
             //token neni ; ani {
             freeTokenMem(&token);
             freeIdName(idName);
+            paramListFree(paramList);
+            tabSymFree(localTabSym);
             return ERR_SYNTAX;
         }
         //token neni oteviraci zavorka
