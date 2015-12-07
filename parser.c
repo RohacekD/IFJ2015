@@ -529,9 +529,12 @@ int parseFunction() {
                     paramList = funcID_info->info.func->params;
                 }
                 
+                //vlozim zbytecnou instrukci z duvodu rekurze, kdy funkce vola sebe sama
+                insTapeInsertFirst(instructionTape, I_LABEL, NULL, NULL, NULL);
+                
                 //vytvorim informace o funkci
                 if ((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType,
-                        NULL, NULL, NULL, true)) == NULL) {
+                        localTabSym, NULL, instructionTape, true)) == NULL) {
                     freeIdName(idName);
                     paramListFree(paramList);
                     tabSymFree(localTabSym);
