@@ -438,7 +438,11 @@ string* tabSymListCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* locTa
 		free(newString);
 		return NULL;
 	}
-	strConConstString(newString, buffer);
+	if(strConConstString(newString, buffer)){
+		strFree(newString);
+		free(newString);
+		return NULL;
+	}
 
 	//zvysime counter u tabulky symbolu
 	(*chooseCounter)++;
