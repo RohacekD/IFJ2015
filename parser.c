@@ -524,11 +524,33 @@ int parseFunction() {
                     return ERR_INTERNAL;
                 }
                 
+                //pokud uz byla funkce deklarovana, tak pouziji znamy seznam parametru
+                if(funcID_info != NULL) {
+                    paramList = funcID_info->info.func->params;
+                }
+                
+                //vytvorim informace o funkci
+                if ((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType,
+                        NULL, NULL, NULL, true)) == NULL) {
+                    freeIdName(idName);
+                    paramListFree(paramList);
+                    tabSymFree(localTabSym);
+                    return ERR_INTERNAL;
+                }
+                
+                //vlozim informace o funkci do globalni tabulky symbolu
+                if ((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
+                    freeIdName(idName);
+                    paramListFree(paramList);
+                    tabSymFree(localTabSym);
+                    return ERR_INTERNAL;
+                }
+                
                 //--------------------------------------------------------
                 //pripravu jsem dokoncil, muzu provadet telo funkce
                 if ((result = parseStatementList(localTabSym, blockList, NULL, instructionTape)) != ERR_OK) {
                     freeIdName(idName);
-                    paramListFree(paramList);
+                    //paramListFree(paramList);
                     tabSymFree(localTabSym);
                     return result;
                 }
