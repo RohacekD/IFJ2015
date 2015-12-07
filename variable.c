@@ -13,6 +13,7 @@ void variableCreate(tVariablePtr* var, tVariableType type) {
         if(strInit(&v->data.stringVal)) //str init vraci 0 pri uspechu protoze str.c psal idiot
             FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
     }
+	v->init = false;
     *var = v;
 }
 void variableDelete(void* var) {

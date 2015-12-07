@@ -136,9 +136,11 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			}
 		}
 		strFree(&strInput);
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_COUT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type == VAR_TYPE_INT) {
 			printf("%d", oper1->data.intVal);
 		}
@@ -157,6 +159,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1) + (int)getVarVal(oper2);
 		}
@@ -167,10 +171,13 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			dest->data.boolVal = getVarVal(oper1) + getVarVal(oper2);
 		}
 		break;
+		dest->init = true;//dest je nyni inicializovan
 	case I_MINUS:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1) - (int)getVarVal(oper2);
 		}
@@ -180,11 +187,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_BOOL) {
 			dest->data.boolVal = getVarVal(oper1) - getVarVal(oper2);
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_DIV:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (getVarVal(oper2)==0) {
 			return ERR_RUNTIME_ZERO_DIV;
 		}
@@ -197,11 +207,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_BOOL) {
 			dest->data.boolVal = getVarVal(oper1) / getVarVal(oper2);
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_MUL:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1) * (int)getVarVal(oper2);
 		}
@@ -211,11 +224,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_BOOL) {
 			dest->data.boolVal = getVarVal(oper1) * getVarVal(oper2);
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_EQUAL:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
 				dest->data.intVal = (int)getVarVal(oper1) == (int)getVarVal(oper2);
@@ -243,11 +259,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				}
 			}
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_NOTEQUAL:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
 				dest->data.intVal = (int)getVarVal(oper1) == (int)getVarVal(oper2);
@@ -275,11 +294,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				}
 			}
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_GREATER:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
 				dest->data.intVal = (int)getVarVal(oper1) > (int)getVarVal(oper2);
@@ -307,11 +329,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				}
 			}
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_GEQUAL:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
 				dest->data.intVal = (int)getVarVal(oper1) >= (int)getVarVal(oper2);
@@ -339,11 +364,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				}
 			}
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_LESSER:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
 				dest->data.intVal = (int)getVarVal(oper1) < (int)getVarVal(oper2);
@@ -371,11 +399,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				}
 			}
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_LEQUAL:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
 				dest->data.intVal = (int)getVarVal(oper1) <= (int)getVarVal(oper2);
@@ -403,10 +434,12 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				}
 			}
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_UMINUS:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = -(int)getVarVal(oper1);
 		}
@@ -416,10 +449,12 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_BOOL) {
 			dest->data.boolVal = -getVarVal(oper1);
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_INC:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1)+1;
 		}
@@ -429,10 +464,12 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_BOOL) {
 			dest->data.boolVal = getVarVal(oper1)+1;
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_DEC:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1)-1;
 		}
@@ -442,10 +479,12 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_BOOL) {
 			dest->data.boolVal = getVarVal(oper1)-1;
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_LOG_NOT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = !(int)getVarVal(oper1);
 		}
@@ -455,11 +494,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_BOOL) {
 			dest->data.boolVal = !getVarVal(oper1);
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_LOG_AND:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1) && (int)getVarVal(oper2);
 		}
@@ -469,11 +511,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_BOOL) {
 			dest->data.boolVal = getVarVal(oper1) && getVarVal(oper2);
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_LOG_OR:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1) || (int)getVarVal(oper2);
 		}
@@ -483,6 +528,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_BOOL) {
 			dest->data.boolVal = getVarVal(oper1) || getVarVal(oper2);
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 		//vytoreni blokoveho ramce
 	case I_CBF:
@@ -528,12 +574,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			else if (dest->type == VAR_TYPE_STRING) {
 				strCopyString(&oper1->data.stringVal, &dest->data.stringVal);
 			}
+			dest->init = true;//dest je nyni inicializovan
 		}
 		deleteFunctionsFrames(stack);
 		break;
 	case I_ASSIGN:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1);
 		}
@@ -546,6 +594,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_STRING) {
 			strCopyString(&dest->data.stringVal,&oper1->data.stringVal);
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_SP:
 
@@ -556,15 +605,19 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	case I_SORT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING || dest->type != VAR_TYPE_STRING)
 			return ERR_SEM_COM;
 		strCopyString(&dest->data.stringVal, &oper1->data.stringVal);
 		heapSort(dest->data.stringVal.str);
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_FIND:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 
 		if (oper1->type != VAR_TYPE_STRING ||
 			oper2->type != VAR_TYPE_STRING ||
@@ -575,11 +628,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		if (dest->data.intVal > oper1->data.stringVal.length) {
 			dest->data.intVal = -1;
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_CONCAT:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type != VAR_TYPE_STRING){
 			return ERR_SEM_COM;
 		}
@@ -587,11 +643,15 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			strFree(&dest->data.stringVal);
 			dest->data.stringVal = concat(oper1->data.stringVal, oper2->data.stringVal);
 		}
+		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_SUBSTR://tato instrukce cte i nasledujici ktera musi byt typu I_SUBSTR_DEST
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &oper3);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
+		if (!oper3->init) return ERR_RUNTIME_INIT_VAR;
 		*instruction = ins->rptr;
 		ins = *instruction;
 		if (ins->type != I_SUBSTR_DEST) {
@@ -604,11 +664,13 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		}
 		strFree(&dest->data.stringVal);
 		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal);
+		dest->init = true;//dest je nyni inicializovan
 
 		break;
 	case I_LENGTH:
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT && oper1->type==VAR_TYPE_STRING) {
 			dest->data.intVal = length(oper1->data.stringVal);
 		}
@@ -619,7 +681,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			return ERR_SEM_COM;
 		}
 		break;
-        case I_LABEL://jen navesti nic nedelej
+		dest->init = true;//dest je nyni inicializovan
+    case I_LABEL://jen navesti nic nedelej
             break;
 	default:
 		break;
@@ -642,6 +705,7 @@ void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer) {
 		else if (((tTabSymElemData*)node->data)->type == TAB_SYM_CONSTANT) {
 			type = tTabSymToVarNotatation(((tTabSymElemData*)node->data)->info.constant->dataType);
 			variableCreate(&var, type);
+			var->init = true;//konstanty jsou inicializovane
 			switch (var->type)
 			{
 			case VAR_TYPE_INT:

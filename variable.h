@@ -27,6 +27,7 @@ typedef union
 typedef struct tVariableStr{
 	tVariableType type;
 	tVariableData data;
+	bool init;
 } *tVariablePtr;
 
 /*
