@@ -27,7 +27,7 @@ extern tTabSym *globalTable;
  */
 int prepareNextToken(tPrecStack* stack, FILE* scanFile,
 		tParExpTerminals* terminalCode, tToken* token) {
-	tPrecStackData* precStackdata;
+	tPrecStackData* precStackdata=NULL;
 	tToken nextToken;
 
 	if (getToken(token, scanFile) != 1) {
@@ -205,7 +205,7 @@ int prepareNextToken(tPrecStack* stack, FILE* scanFile,
  */
 int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr tableListElem, tParExpTerminals termKind, tToken token,
 		string** id) {
-	string* newString;
+	string* newString=NULL;
 	if (termKind == TERMINAL_IDENTIFICATOR) {
 		tTabSymVarNoAutoDataType dataType;
 		//vytvorime si value
@@ -288,7 +288,7 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 		 * Jedna se o funkcni identifikator, zkontrolujeme jestli se nachazi v tabulce
 		 * symbolu a jestli je definovana.
 		 */
-		tTabSymElemData* functionData;
+		tTabSymElemData* functionData=NULL;
 		if(((functionData=tabSymSearch(globalTable, &(token->value.stringVal)))==NULL) ||
 				functionData->info.func->defined==false){
 			//nenalezeno/nedefinovano semanticka chyba
@@ -1177,8 +1177,8 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 	tTabSymVarDataType dataTypeOfResult;	//datovy typ vysledku
 
 	tBuildInFunctions buildInKind=compareBuildInFunctions(topElemData->id);
-	tTabSymElemData* funcData;
-	tFuncInfo* funcInfo;
+	tTabSymElemData* funcData=NULL;
+	tFuncInfo* funcInfo=NULL;
 	//jedna se o vestavenou funkci?
 	if(buildInKind!=BUILD_IN_FUNC_NO_MATCH){
 		funcData=tabSymSearch(globalTable, topElemData->id);
@@ -1579,7 +1579,7 @@ ERR_CODES manageRule(ruleAutomateStates rule, tTabSymListElemPtr startTabSymList
 
 int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* tape,
 		tTabSymVarNoAutoDataType* expDataType, FILE* scanFile) {
-	string* id; //pro vytvareni identifikatoru v tabulce symbolu
+	string* id=NULL; //pro vytvareni identifikatoru v tabulce symbolu
 	ERR_CODES errRet;	//chybovy kod
 	//vybereme si tabulku, do ktere se budou vkladat tmp symboly (pomocne promenne)
 	tTabSym* insertToTable=NULL;
