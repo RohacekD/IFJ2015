@@ -675,11 +675,11 @@ tBuildInFunctions compareBuildInFunctions(string* toCompare){
 	char IDFind[]="find";
 	char IDSort[]="sort";
 
-	if(strCmpConstStr(toCompare, IDLength)) return BUILD_IN_FUNC_ID_LENGTH;
-	if(strCmpConstStr(toCompare, IDSubstr)) return BUILD_IN_FUNC_ID_SUBSTR;
-	if(strCmpConstStr(toCompare, IDConcat)) return BUILD_IN_FUNC_ID_CONCAT;
-	if(strCmpConstStr(toCompare, IDFind)) return BUILD_IN_FUNC_ID_FIND;
-	if(strCmpConstStr(toCompare, IDSort)) return BUILD_IN_FUNC_ID_SORT;
+	if(strCmpConstStr(toCompare, IDLength)==0) return BUILD_IN_FUNC_ID_LENGTH;
+	if(strCmpConstStr(toCompare, IDSubstr)==0) return BUILD_IN_FUNC_ID_SUBSTR;
+	if(strCmpConstStr(toCompare, IDConcat)==0) return BUILD_IN_FUNC_ID_CONCAT;
+	if(strCmpConstStr(toCompare, IDFind)==0) return BUILD_IN_FUNC_ID_FIND;
+	if(strCmpConstStr(toCompare, IDSort)==0) return BUILD_IN_FUNC_ID_SORT;
 	return BUILD_IN_FUNC_NO_MATCH;
 }
 
