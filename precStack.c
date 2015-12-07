@@ -195,9 +195,10 @@ void precStackFree(tPrecStack ** stack){
 	if(stack==NULL){
 		return;
 	}
-	if(* stack==NULL){
+	if((*stack)==NULL){
 		return;
 	}
+
 	precStackDispose(*stack);
 	free(*stack);
 	*stack=NULL;

@@ -91,9 +91,23 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		int c = getchar();
 		if (isspace(c)) {
 			while (isspace(c))
-				c = getchar();
+                        c = getchar();
+		}
+                if (c != EOF) {
+                    while (!isspace(c) && c != EOF) {                                        
+                            if (strAddChar(&strInput, c)) {
+                                    strFree(&strInput);
+                                    return ERR_ALLOC;
+                            }
+                                    c = getchar();
+				}
 		}
 		if (dest->type == VAR_TYPE_INT) {
+                        if (strCmpConstStr(&strInput, "") == 0) {
+				strFree(&strInput);
+				return ERR_RUNTIME_INPUT;
+			}
+                        
 			if (!strToInt(&strInput, &(dest->data.intVal))) {
 				strFree(&strInput);
 				return ERR_RUNTIME_INPUT;
@@ -106,12 +120,6 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			}
 		}
 		else if (dest->type == VAR_TYPE_BOOL) {
-			while (!isspace(c) && c != EOF) {
-				if (strAddChar(&dest->data.stringVal, c)) {
-					strFree(&strInput);
-					return ERR_ALLOC;
-				}
-			}
 			if (strCmpConstStr(&strInput, "true") == 0) {
 				dest->data.boolVal = true;
 			}
@@ -126,17 +134,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		else if (dest->type == VAR_TYPE_STRING) {
 			strFree(&dest->data.stringVal);
 			strInit(&dest->data.stringVal);
-			if (c != EOF) {
-				while (!isspace(c) && c != EOF) {
-					if (strAddChar(&dest->data.stringVal, c)) {
-						strFree(&strInput);
-						return ERR_ALLOC;
-					}
-				}
-			}
+			strCopyString(&dest->data.stringVal,&strInput);
 		}
 		strFree(&strInput);
-		dest->init = true;//dest je nyni inicializovan
+                dest->init = true;
 		break;
 	case I_COUT:
 		findVariable(stack, (string*)ins->adr1, &oper1);

@@ -1,0 +1,30 @@
+int main() {
+
+    int a = 1;
+    ++a;
+    a++;
+
+    if (a < 5) 
+    {
+        cout << a;
+    }
+    /*
+    else
+    {
+        a = 10;
+        cout << a << "\n";
+    }
+    */
+
+    while (a < 15)
+        a++;
+
+    cout << "\n";
+    cout << a << "\n";
+
+    for(int i = 0; i < 10; i++) {
+        cout << "Hodnota i:" << i << "\n";
+    }
+
+return a;
+}
