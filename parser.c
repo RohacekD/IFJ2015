@@ -1403,7 +1403,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             //udrzuje informace o konstante
             tConstantInfo *constInfo;
             //udzuje hodnoty, kterych muze konstanta nabyvat
-            unionValue *uval = (unionValue*)malloc(sizeof(unionValue));
+            unionValue uval;
             // vygenerovany identifikator pro konstantu
             string *tmp;
             
@@ -1417,17 +1417,17 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                     //tudiz si musim tento union vyrobit
                    //TODO - jak je to s uvolnovanim stringu?
                     if(token->typ == TYPE_BOOL)
-                        uval->boolVal = token->value.boolVal;
+                        uval.boolVal = token->value.boolVal;
                     if(token->typ == TYPE_DOUBLE)
-                        uval->doubleVal = token->value.doubleVal;
+                        uval.doubleVal = token->value.doubleVal;
                     if(token->typ == TYPE_INTEGER)
-                        uval->intVal = token->value.intVal;
+                        uval.intVal = token->value.intVal;
                     if(token->typ == TYPE_STRING)
-                        uval->stringVal = copyIdName(&(token->value.stringVal));
+                        uval.stringVal = copyIdName(&(token->value.stringVal));
 
 
                     //vytvorim informace o konstante
-                    if ((constInfo = tabSymCreateConstantInfo(token->typ, *uval)) == NULL) {
+                    if ((constInfo = tabSymCreateConstantInfo(token->typ, uval)) == NULL) {
                         freeTokenMem(&token);
                         return ERR_INTERNAL;
                     }
@@ -2438,7 +2438,7 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
     //udrzuje informace o konstante
     tConstantInfo *constInfo;
     //udzuje hodnoty, kterych muze konstanta nabyvat
-    unionValue *uval = (unionValue*)malloc(sizeof(unionValue));
+    unionValue uval;
     //tmp je string pro novy identifikator, key je string, ktery ukazuje na prvek v
     //tabulce symbolu
     string *tmp, *key;
@@ -2488,18 +2488,18 @@ int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabS
                         //tudiz si musim tento union vyrobit, tento string neuvolnim
                        // TODO - predelat do funkce
                         if(token->typ == TYPE_BOOL)
-                            uval->boolVal = token->value.boolVal;
+                            uval.boolVal = token->value.boolVal;
                         if(token->typ == TYPE_DOUBLE)
-                            uval->doubleVal = token->value.doubleVal;
+                            uval.doubleVal = token->value.doubleVal;
                         if(token->typ == TYPE_INTEGER)
-                            uval->intVal = token->value.intVal;
+                            uval.intVal = token->value.intVal;
                         if(token->typ == TYPE_STRING)
-                            uval->stringVal = copyIdName(&(token->value.stringVal));
+                            uval.stringVal = copyIdName(&(token->value.stringVal));
                         
                         freeTokenMem(&token);
                         
                         //vytvorim informace o konstante
-                        if ((constInfo = tabSymCreateConstantInfo(ttype, *uval)) == NULL) {
+                        if ((constInfo = tabSymCreateConstantInfo(ttype, uval)) == NULL) {
                             return ERR_INTERNAL;
                         }
                         //vytvorim si novy identifikator, ktery priradim konstante
