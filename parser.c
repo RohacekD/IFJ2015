@@ -442,7 +442,9 @@ int parseFunction() {
             
             //-------------------------------------------------------------
             //volani funkce pro zpracovani <arguments>
-            if ((paramList = initList(paramList)) == 0) return ERR_INTERNAL;
+            if ((paramList = initList(paramList)) == 0) {
+                return ERR_INTERNAL;
+            }
 
             if((result = parseArguments(paramList, funcID_info, localTabSym)) != ERR_OK) {
                 freeIdName(idName);
