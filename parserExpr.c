@@ -237,12 +237,12 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 			CONSTANT_HANDLE:
 
 			*id = tabSymListCreateTmpSymbol(tableListElem,table);
-
-			tConstantInfo* constInfo = tabSymCreateConstantInfo(dataType, value);
-
 			if (*id == NULL) {
 				return ERR_INTERNAL;	//chyba
 			}
+			tConstantInfo* constInfo = tabSymCreateConstantInfo(dataType, value);
+
+
 			if(constInfo == NULL){
 				strFree(*id);
 				free(*id);
@@ -290,7 +290,7 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 		 */
 		tTabSymElemData* functionData;
 		if(((functionData=tabSymSearch(globalTable, &(token->value.stringVal)))==NULL) ||
-				functionData->info.func->defined==true){
+				functionData->info.func->defined==false){
 			//nenalezeno/nedefinovano semanticka chyba
 			return ERR_SEM_DEF;
 		}
@@ -721,7 +721,9 @@ string* createNewNoterminal(tTabSymListElemPtr startTabSymListElem, tTabSym* tab
 		goto INTERNAL_ERROR_2;
 	}
 
-
+	//vycistime newTmp
+	strFree(newTmp);
+	free(newTmp);
 	return adrOfString;
 
 INTERNAL_ERROR_2:
@@ -1609,6 +1611,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 
 	if(precStackTopTerminal(&stack, &a)==0){
 		//vlozili jsme ENDMARK NEMUZE, BYT POKUD ANO CHYBA
+		freeTokenMem(&token);
 		return ERR_INTERNAL;
 	}
 	do {
@@ -1625,6 +1628,10 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 
 			//vycistime aktualni token
 			freeTokenMem(&token);
+			//vycistime i id
+			strFree(id);
+			free(id);
+			id=NULL;
 
 			if(prepareNextToken(&stack, scanFile, &b, &token)==0){
 				errRet=ERR_LEX;
@@ -1649,6 +1656,10 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 
 			//vycistime aktualni token
 			freeTokenMem(&token);
+			//vycistime i id
+			strFree(id);
+			free(id);
+			id=NULL;
 
 			if(prepareNextToken(&stack, scanFile, &b, &token)==0){
 				errRet=ERR_LEX;
@@ -1738,9 +1749,13 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 	return ERR_OK;
 
 ERROR_HANDLER:
+
 	freeTokenMem(&token);
 	precStackDispose(&stack);
 	precStackFree(&revertedTopStack);
+	//vycistime i id
+	strFree(id);
+	free(id);
 	return errRet;
 
 }

@@ -34,10 +34,18 @@ tPrecStackElemPtr stackCreateInitNewElem(tPrecStackData data, tPrecStackElemPtr 
 		//obstarame string
 		newElem->data.id=malloc(sizeof(string));
 		if(newElem->data.id==NULL){
+			free(newElem);
 			return NULL;
 		}
-		strInit(newElem->data.id);
+		if(strInit(newElem->data.id)){
+			free(newElem->data.id);
+			free(newElem);
+			return NULL;
+		}
 		if(strCopyString(newElem->data.id, data.id)){
+			strFree(newElem->data.id);
+			free(newElem->data.id);
+			free(newElem);
 			return NULL;
 		}
 	}
