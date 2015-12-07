@@ -1556,7 +1556,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             
             string *lastGeneratedTMP, *keyOfLastTMP;
             //zjistim ID posledniho vygenerovaneho identifikatoru
-            if((lastGeneratedTMP = tabSymListCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+            if((lastGeneratedTMP = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
                 return ERR_INTERNAL;
             }
             
