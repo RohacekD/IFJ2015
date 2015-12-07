@@ -225,10 +225,11 @@ void parse() {
     }
     
         
-    //TODO - osetreni chyb a uvolneni pameti
     if ((result = parseFunction()) != ERR_OK) {
         //uvolneni pameti - globalni tabulky symbolu
         tabSymFree(globalTable);
+        //uvolnim frontu, pokud v ni zustaly nejake prvku
+        freeTokenQueue();
         //uzavreni souboru
         fclose(f);
         //vraceni chyboveho kodu na zaklade chyby v parseru, nebo interpretu
@@ -291,6 +292,13 @@ void parse() {
             FatalError(ERR_SEM_DEF, ERR_MESSAGES[ERR_SEM_DEF]);
         }
         
+        //kontrola, jestli je funkce main definovana se spravnym seznamem parametru
+        if (findMain->info.func->params->first != NULL) {
+            tabSymFree(globalTable);
+            fclose(f);
+            FatalError(ERR_SEM_COM, ERR_MESSAGES[ERR_SEM_COM]);
+        }
+        
         tTabSym *localTable = NULL; //ukazatel na lokalni tabulku symbolu
         tInsTapeInsPtr firstIns = NULL; //ukazatel na prvni instrukci
         tInsTape *insTape = NULL; //ukazatel na instrukcni pasku
@@ -349,9 +357,7 @@ int parseFunction() {
     //promenna do ktere ukladam vytvorene informace o funkci
     tFuncInfo *funcInfo = NULL;
     //pro kazdou funkci tvorim novy seznam parametru
-    tParamListPtr paramList = NULL;
-    if ((paramList = initList(paramList)) == 0) return ERR_INTERNAL;
-    
+    tParamListPtr paramList = NULL;    
     
     //nactu prvni token, prisel chybny token
     if((result = getToken(&token, f)) != 1) {
@@ -431,6 +437,8 @@ int parseFunction() {
             
             //-------------------------------------------------------------
             //volani funkce pro zpracovani <arguments>
+            if ((paramList = initList(paramList)) == 0) return ERR_INTERNAL;
+
             if((result = parseArguments(paramList, funcID_info, localTabSym)) != ERR_OK) {
                 freeIdName(idName);
                 //navratim chybovy kod
@@ -921,8 +929,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
 
 
 
-//!!!!!!!!!!!   UNCOMPLETE  !!!!!!!!!!!!
-//-----------   DODELAT GENEROVANI INSTRUKCI ---------
+//!!!!! PRIPRAVENO K TESTOVANI !!!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 19. <statement> -> <assignment>;
@@ -1679,10 +1686,11 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
         case DECREMENTATION:
         case TYPE_IDENTIFICATOR:
             
-            //TODO - parse Assignment
+            //------------------------------------
             if ((result = parseAssignment(tokenOrig, localTable, instructionTape, blockListElem)) != ERR_OK) {
                 return result;
             } 
+            //------------------------------------
             
             if((result = getToken(&token, f)) != 1) {
                 return ERR_LEX;
@@ -2149,10 +2157,13 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
                 
                 freeTokenMem(&token);
                 
+                //*****************************************
                 if((result = parseExpression(blockListElem, localTable, instructionTape, &expType, f)) != ERR_OK) {
                     freeIdName(idName);
                     return result;
                 }
+                //*****************************************
+                
                 //potrebuji ziskat vyhodnoceni vyrazu
                 string *lastCreatedTMP;
                 if ((lastCreatedTMP = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {

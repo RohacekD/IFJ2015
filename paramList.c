@@ -131,5 +131,6 @@ void paramListFree(tParamListPtr list)
         free(UkPomEl); //uvolnim pamet
     }
     free(list);
+    list = NULL;
 }
 
