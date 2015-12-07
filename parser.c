@@ -552,9 +552,6 @@ int parseFunction() {
                 //--------------------------------------------------------
                 //pripravu jsem dokoncil, muzu provadet telo funkce
                 if ((result = parseStatementList(localTabSym, blockList, NULL, instructionTape)) != ERR_OK) {
-                    freeIdName(idName);
-                    //paramListFree(paramList);
-                    tabSymFree(localTabSym);
                     return result;
                 }
                 //--------------------------------------------------------
