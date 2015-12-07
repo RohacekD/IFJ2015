@@ -1591,7 +1591,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 	//vytvorime zasobniky
 	tPrecStack stack;
 	precStackInit(&stack);
-	tPrecStack* revertedTopStack;	//pouziva se pro vyber pravidla
+	tPrecStack* revertedTopStack=NULL;	//pouziva se pro vyber pravidla
 
 	//pridame ukoncujici znak
 	precStackPushElementOfKind(&stack, PREC_STACK_ENDMARK, TERMINAL_ENDMARK, NULL);
