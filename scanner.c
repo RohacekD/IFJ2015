@@ -1167,9 +1167,12 @@ void ungetToken(tToken* token) {
 void freeTokenQueue() {
 	if (TQueue == NULL) return;
 	tTokenQueueElem elem = TQueue->First;
+	tTokenQueueElem temp;
 	while (elem!=NULL) {
 		freeTokenMem(&elem->token);
+		temp = elem->rptr;
 		free(elem);
+		elem = temp;
 	}
 	free(TQueue);
 	TQueue = NULL;
