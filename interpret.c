@@ -23,7 +23,7 @@ int executeTape(tInsTapeInsPtr ins) {
 		if ((instruction)->type == I_IFZERO) {
 			findVariable(frameStack, (string*)(instruction)->adr1, &oper1);
 			if (getVarVal(oper1) == 0) {
-				instruction = *((tInsTapeInsPtr*)(instruction)->adr2);
+				instruction = (tInsTapeInsPtr)(instruction->adr2);
 			}
 			else {
 				instruction = ((instruction)->rptr);
@@ -32,7 +32,7 @@ int executeTape(tInsTapeInsPtr ins) {
 		else if ((instruction)->type == I_IFNZERO) {
 			findVariable(frameStack, (string*)(instruction)->adr1, &oper1);
 			if (getVarVal(oper1) != 0) {
-				instruction = *((tInsTapeInsPtr*)(instruction)->adr2);
+				instruction = (tInsTapeInsPtr)(instruction->adr2);
 			}
 			else {
 				instruction = ((instruction)->rptr);
@@ -40,7 +40,7 @@ int executeTape(tInsTapeInsPtr ins) {
 		}
 		else if ((instruction)->type == I_GOTO) {
 			if ((instruction)->adr1 != NULL) {
-				instruction = *((tInsTapeInsPtr*)(instruction)->adr1);
+				instruction = (tInsTapeInsPtr)(instruction->adr1);
 			}
 		}
 		else {
