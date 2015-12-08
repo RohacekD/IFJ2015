@@ -189,7 +189,7 @@ int getToken(tToken *Token, FILE* source) {
 				strFree(&s);
 				if (errorFlag) {
 					freeTokenMem(&tok);
-					FatalError(errorFlag, ERR_MESSAGES[ERR_LEX]);
+					return 42;
 				}
 				return 1;
 			}

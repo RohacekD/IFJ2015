@@ -278,6 +278,9 @@ void parse() {
         //vraceni chyboveho kodu na zaklade chyby v parseru, nebo interpretu
         
         ERROR:
+		if (errorFlag != 0) {
+			result = ERR_LEX;
+		}
         switch(result) {
             case ERR_LEX:
                 FatalError(ERR_LEX, ERR_MESSAGES[ERR_LEX]);

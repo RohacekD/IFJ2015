@@ -14,6 +14,7 @@
 #define INSTAPE_H_
 
 #include <stdlib.h>
+#include <stdio.h>
 
 //todo: vsechny instrukce musi mit variantu 
 //pokud jde o operaci vyuzivajici 3 adresy tak oper1,oper2,vysledek
@@ -236,6 +237,6 @@ int insTapeActive (tInsTape* tape);
  * @param gotoInstr[in]     -   instrukce, na kterou se ma nastavit aktivita
  */
 void insTapeGoto(tInsTape *tape, tInsTapeInsPtr gotoInstr);
-
+void printTape(tInsTapeInsPtr ins);
 #endif /* INSTAPE_H_ */
 /*** End of file: insTape.h ***/
