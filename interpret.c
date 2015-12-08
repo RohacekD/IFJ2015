@@ -597,7 +597,23 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_SP:
-
+                findVariableInSubFrame(stack,(string*)ins->adr1,&oper1);
+                findVariable(stack, (string*)ins->adr3, &dest);
+                if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (dest->type == VAR_TYPE_INT) {
+			dest->data.intVal = (int)getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_DOUBLE) {
+			dest->data.doubleVal = getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_BOOL) {
+			dest->data.boolVal = getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_STRING) {
+			strCopyString(&dest->data.stringVal,&oper1->data.stringVal);
+		}
+		dest->init = true;//dest je nyni inicializovan
+                
 		break;
 	case I_DBF:
 		deleteTopFrame(stack);

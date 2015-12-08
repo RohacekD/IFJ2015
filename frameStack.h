@@ -64,7 +64,17 @@ void insertNewVariable(tFrameContainer*, tVariablePtr, string*);
  * @param stack[in] frameStack
  * @param s[in] jmeno hledane promenne
  * @param var[out] zde vrati ukazatel na promennou pokud ji najde jinak NULL
+ * @return 1 pokud se hledani zdarailo jinak 0
  */
 int findVariable(const tStack* , string *, tVariablePtr*); 
+/**
+ * Hlada variable v druhem nejvyssim funkcim ramci 
+ * jedna se o pomocnou funkci pro predavani parametru
+ * @param stack[in] frameStack
+ * @param s[in] jmeno hledane promenne
+ * @param var[out] zde vrati ukazatel na promennou pokud ji najde jinak NULL
+ * @return 1 pokud se hledani zdarailo jinak 0
+ */
+int findVariableInSubFrame(const tStack* stack, string* s, tVariablePtr* var);
 
 #endif //FRAMESTACK_H_
