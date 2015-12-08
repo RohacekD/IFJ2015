@@ -58,6 +58,44 @@ int isTerm(TokenTypes ttype) {
 
 
 /**
+ * funkce naplni tabulku bloku a vraci jeji element
+ * @param blockLocalTable[out]       -   nova lokalni tabulka pro bloky
+ * @param blockList[in]              -   ukazatel seznam bloku
+ * @param blockListElem[in]          -   ukazatel na aktualni rodicovsky element
+ * @param localTable[in]             -   existujici lokalni tabulka funkce
+ * @return          funkce vraci ukazatel na novy element v pripade uspechu, jinak NULL
+ */
+tTabSymListElemPtr prepareBlockList(tTabSym** blockLocalTable, tTabSymList* blockList, tTabSymListElemPtr blockListElem, tTabSym *localTable) {
+    // polozka v seznamu tabulek symbolu pro bloky
+    tTabSymListElemPtr newElement;
+    
+    //vytvoreni nove lokalni tabulky symbolu
+    if ((*blockLocalTable = tabSymCreate(TAB_SYM_LOC)) == NULL){
+        return NULL;
+    }   
+    
+    //vlozeni nove lokalni tabulky symbolu do listu tabulek symbolu pro bloky
+    if((newElement = tabSymListInsertTable(blockList, *blockLocalTable, blockListElem)) == NULL) {
+        return NULL;
+    }
+
+    //pokud nema nove vytvoreny element rodice, bude jeho rodicem lokalni tabulka
+    //symbolu dane funkce
+    if(newElement->parentElement == NULL) {
+        tTabSymList *newList;
+        tTabSymListElemPtr localTableElem;
+        if ((newList = tabSymListCreate()) == NULL)
+            return NULL;
+        if ((localTableElem = tabSymListInsertTable(newList, localTable, NULL)) == NULL) {
+            return NULL;
+        }
+        newElement->parentElement = localTableElem;
+    }
+    
+    return newElement;
+}
+
+/**
  * vlozi do globalni tabulky predpis pro vnorene funkce
  * @return      funkce vraci 1, pokud probehla bez chyby, jinak 0
  */
@@ -626,7 +664,7 @@ int kDataTypes(tTabSymVarDataType *variableType, TokenTypes tokenType) {
         case KEYW_DOUBLE:
         case KEYW_STRING:
         case KEYW_BOOL:
-            
+        case KEYW_AUTO:    
             //prevedu typ tokenu na typ promenne
             if ((*variableType = tokenTypeToVarType(tokenType)) == 99) {
                 return ERR_INTERNAL;
@@ -907,29 +945,8 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
             // polozka v seznamu tabulek pro bloky
             tTabSymListElemPtr newElement;
             
-            //vytvoreni nove lokalni tabulky symbolu
-            if ((blockLocalTable = tabSymCreate(TAB_SYM_LOC)) == NULL){
+            if ((newElement = prepareBlockList(&blockLocalTable, blockList, parent, localTable)) == 0){
                 return ERR_INTERNAL;
-            }
-                        
-            //vlozeni nove lokalni tabulky symbolu do listu bloku
-            if((newElement = tabSymListInsertTable(blockList, blockLocalTable, parent)) == NULL) {
-                return ERR_INTERNAL;
-            }
-            
-            //pokud nema nove vytvoreny element rodice, bude jeho rodicem lokalni tabulka
-            //symbolu dane funkce
-            if(newElement->parentElement == NULL) {
-                tTabSymList *newList; //novy list tabulek symbolu bloku
-                tTabSymListElemPtr localTableElem; //novy element tabulky symbolu bloku
-                
-                if ((newList = tabSymListCreate()) == NULL)
-                    return ERR_INTERNAL;
-                if ((localTableElem = tabSymListInsertTable(newList, localTable, NULL)) == NULL) {
-                    return ERR_INTERNAL;
-                }
-                
-                newElement->parentElement = localTableElem;
             }
             
             //GENEROVANI INSTRUKCE
@@ -2012,7 +2029,6 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
 }
 
 
-//!!!!! PRIPRAVENO K TESTOVANI !!!!!
 /**
  * zpracovava nasledujici pravidla:
  * 27.  <block> -> {<st_list>}
@@ -2039,30 +2055,10 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
             
             // nova lokalni tabulka
             tTabSym *blockLocalTable;
-            // polozka v seznamu tabulek symbolu pro bloky
-            tTabSymListElemPtr newElement;
+            tTabSymListElemPtr newElement = NULL;
             
-            //vytvoreni nove lokalni tabulky symbolu
-            if ((blockLocalTable = tabSymCreate(TAB_SYM_LOC)) == NULL){
+            if((newElement = prepareBlockList(&blockLocalTable, blockList, blockListElem, localTable)) == NULL) {
                 return ERR_INTERNAL;
-            }
-            
-            //vlozeni nove lokalni tabulky symbolu do listu tabulek symbolu pro bloky
-            if((newElement = tabSymListInsertTable(blockList, blockLocalTable, blockListElem)) == NULL) {
-                return ERR_INTERNAL;
-            }
-            
-            //pokud nema nove vytvoreny element rodice, bude jeho rodicem lokalni tabulka
-            //symbolu dane funkce
-            if(newElement->parentElement == NULL) {
-                tTabSymList *newList;
-                tTabSymListElemPtr localTableElem;
-                if ((newList = tabSymListCreate()) == NULL)
-                    return ERR_INTERNAL;
-                if ((localTableElem = tabSymListInsertTable(newList, localTable, NULL)) == NULL) {
-                    return ERR_INTERNAL;
-                }
-                newElement->parentElement = localTableElem;
             }
             
             if(insTapeInsertLast(instructionTape, I_CBF, (void*) blockLocalTable, NULL, NULL) == 0) {
@@ -2649,3 +2645,4 @@ int parseElse(tTabSym *localTable, tTabSymList *blockList,
             return ERR_SYNTAX;
     }
 }
+
