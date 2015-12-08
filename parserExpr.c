@@ -1241,7 +1241,7 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 		//vytvorime novy neterminal, ktery bude slouzit, jako return pro funkci (vysledkem je string)
 		string* saveTo=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, dataTypeOfResult, stack);
 		//vygenerujeme prislusne instrukce
-		switch (buildInKind=compareBuildInFunctions(topElemData->id)) {
+		switch (buildInKind) {
 			case BUILD_IN_FUNC_ID_CONCAT:
 				if(insTapeInsertLast(insTape, I_CONCAT, adrPool[0], adrPool[1], saveTo)==0){
 					return ERR_INTERNAL;
