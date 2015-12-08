@@ -42,6 +42,15 @@ tTabSymVarDataType tokenTypeToVarType(TokenTypes ttype);
  */
 int isTerm(TokenTypes ttype);
 
+/**funkce naplni tabulku bloku a vraci jeji element
+ * @param blockLocalTable[out]       -   nova lokalni tabulka pro bloky
+ * @param blockList[in]              -   ukazatel seznam bloku
+ * @param blockListElem[in]          -   ukazatel na aktualni rodicovsky element
+ * @param localTable[in]             -   existujici lokalni tabulka funkce
+ * @return          funkce vraci ukazatel na novy element v pripade uspechu, jinak NULL
+ */
+tTabSymListElemPtr prepareBlockList(tTabSym** blockLocalTable, tTabSymList* blockList, tTabSymListElemPtr blockListElem, tTabSym *localTable);
+
 /**
  * vlozi do globalni tabulky predpis pro vnorene funkce
  * @return      funkce vraci 1, pokud probehla bez chyby, jinak 0
