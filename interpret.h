@@ -23,4 +23,6 @@ int executeIns(tInsTapeInsPtr* , tStack* );
 
 void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer);
 
+int setParams(tInsTapeInsPtr* ins, tStack* stack);
+
 #endif //INTERPRET_H_

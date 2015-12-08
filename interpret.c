@@ -542,7 +542,9 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	case I_CF:
         oper1 = NULL;
 		dest = NULL;
-		if (ins->adr3 != NULL) {//nejsme v main
+		bool isMain = (ins->adr3 == NULL);
+		if (!isMain) {//nejsme v main
+			//najdeme kam budeme vracet navratovou hodnotu
 			findVariable(stack, (string*)ins->adr3, &dest);
 		}
 		
@@ -550,20 +552,18 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		tab = (tTabSym*)ins->adr1;
 		insToCall = (tInsTapeInsPtr)ins->adr2;
 		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
-		retErr = executeTape(insToCall);
-		if (retErr != ERR_OK)
+		//do ramce volane fce nastavime parametry a zavolame fci, pokud neporjde tak vratime error
+		if ((retErr=setParams(&ins, stack)) != ERR_OK || (retErr=executeTape(insToCall)) != ERR_OK)
 			return retErr;
 		//string pro nalezeni promenne pro vraceni
-		if (ins->adr3 != NULL) {//nejsme v main
+		if (!isMain) {//nejsme v main
+			//tak najdeme navratovou hodnotu
 			string ret;
 			strInit(&ret);
 			strConConstString(&ret, "$ret");
 			findVariable(stack, &ret, &oper1);
 			strFree(&ret);
-		}
-
-
-		if (ins->adr3 != NULL) {//nejsme v main
+			//a ulozime ji do urcene promenne
 			if (dest->type == VAR_TYPE_INT) {
 				dest->data.intVal = (int)getVarVal(oper1);
 			}
@@ -598,10 +598,11 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		}
 		dest->init = true;//dest je nyni inicializovan
 		break;
-	case I_SP:
-                findVariableInSubFrame(stack,(string*)ins->adr1,&oper1);
-                findVariable(stack, (string*)ins->adr3, &dest);
-                if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		//moved
+	/*case I_SP:
+        findVariableInSubFrame(stack,(string*)ins->adr1,&oper1);
+        findVariable(stack, (string*)ins->adr3, &dest);
+        if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1);
 		}
@@ -616,7 +617,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		}
 		dest->init = true;//dest je nyni inicializovan
                 
-		break;
+		break;*/
 	case I_DBF:
 		deleteTopFrame(stack);
 		break;
@@ -708,6 +709,36 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	*instruction = ins->rptr;
 	return ERR_OK;
 }
+
+
+int setParams(tInsTapeInsPtr* ins, tStack* stack) {
+	tVariablePtr oper1;
+	tVariablePtr dest;
+
+	tInsTapeInsPtr istruction = *ins;
+	while (istruction->rptr->type == I_SP) {
+		istruction = istruction->rptr;
+		findVariableInSubFrame(stack, (string*)istruction->adr1, &oper1);
+		findVariable(stack, (string*)istruction->adr3, &dest);
+		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		if (dest->type == VAR_TYPE_INT) {
+			dest->data.intVal = (int)getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_DOUBLE) {
+			dest->data.doubleVal = getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_BOOL) {
+			dest->data.boolVal = getVarVal(oper1);
+		}
+		else if (dest->type == VAR_TYPE_STRING) {
+			strCopyString(&dest->data.stringVal, &oper1->data.stringVal);
+		}
+		dest->init = true;//dest je nyni inicializovan
+	}
+	*ins = istruction;
+	return ERR_OK;
+}
+
 
 /*
  * Projde cely strom pomoci preorder
