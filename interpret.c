@@ -11,6 +11,8 @@ int executeTape(tInsTapeInsPtr ins) {
 
 	ERR_CODES ret;
 
+	//printTape(ins);
+
 	/*Prvotni inicializace stacku*/
 	if (!frameStack) {
 		if (!(frameStack = (tStack *)malloc(sizeof(tStack)))) {
