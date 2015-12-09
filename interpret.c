@@ -682,11 +682,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			return ERR_RUNTIME_REST;
 		}
 		strFree(&dest->data.stringVal);
-                int err;
-		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal,err);
+		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal,retErr);
 		dest->init = true;//dest je nyni inicializovan
                 
-                if(err) return ERR_RUNTIME_REST;
+                if(retErr) return ERR_RUNTIME_REST;
 
 		break;
 	case I_LENGTH:
