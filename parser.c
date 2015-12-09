@@ -342,7 +342,7 @@ void parse() {
         freeIdName(mainString);
         
         //kontrola, jestli je funkce main definovana se spravnym seznamem parametru
-        if (findMain->info.func->params->first != NULL) {
+        if (findMain->info.func->params->first != NULL || findMain->info.func->retType != TAB_SYM_VAR_NO_AUTO_INTEGER) {
             tabSymFree(globalTable);
             fclose(f);
             FatalError(ERR_SEM_COM, ERR_MESSAGES[ERR_SEM_COM]);
