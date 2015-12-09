@@ -682,7 +682,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			return ERR_RUNTIME_REST;
 		}
 		strFree(&dest->data.stringVal);
-		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal,retErr);
+		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal,&retErr);
 		dest->init = true;//dest je nyni inicializovan
                 
                 if(retErr) return ERR_RUNTIME_REST;

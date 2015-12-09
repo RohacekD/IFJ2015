@@ -6,6 +6,8 @@
 #include <string.h>
 #include <malloc.h>
 
+#include "error.h"
+
 typedef struct
 {
 	char* str;		// misto pro dany retezec ukonceny znakem '\0'
@@ -35,7 +37,7 @@ int strCharToString(string* s, char* c);
  * @param err simulace exception C++11; 
  * @return vraci podretezec
  */
-string substr(string s, int i, int n, int err);
+string substr(string s, int i, int n, ERR_CODES *err);
 
 /**
  * vestavena funkce jazyka IFJ2015
