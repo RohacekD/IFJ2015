@@ -1396,12 +1396,23 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 		return errCode;
 	}
 
+
+
+
+
+	//mame oba operandy a dle pravidla i operator, nasleduje provedeni semanticke kontroly
+
 	if(leftOperCodeOfDataType==TAB_SYM_VAR_AUTO || rightOperCodeOfDataType==TAB_SYM_VAR_AUTO){
 		//pokud je auto
 		return ERR_SEM_COM;
 	}
 
-	//mame oba operandy a dle pravidla i operator, nasleduje provedeni semanticke kontroly
+	if((leftOperCodeOfDataType==TAB_SYM_VAR_STRING && rightOperCodeOfDataType!=TAB_SYM_VAR_STRING) ||
+			(rightOperCodeOfDataType==TAB_SYM_VAR_STRING && leftOperCodeOfDataType!=TAB_SYM_VAR_STRING)){
+		//pokud je jeden z operandu string musi byt i ten druhy string
+		//chyba nesmi byt string
+		return ERR_SEM_COM;
+	}
 
 	tTabSymVarDataType dataTypeOfResult=TAB_SYM_VAR_INTEGER;	//datovy typ vysledku	implicitne pro logicke
 
