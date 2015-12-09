@@ -548,21 +548,23 @@ int parseFunction() {
             if(token->typ == SEMICOLON) {
                 //uvolnim token
                 freeTokenMem(&token);
+                if (funcID_info == NULL) {
                 
-                //vytvoreni informaci o funkci pro globalni tabulku symbolu
-                if((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType, 
-                        localTabSym, NULL, NULL, false)) == NULL) {
-                    freeIdName(idName);
-                    paramListFree(paramList);
-                    tabSymFree(localTabSym);
-                    return ERR_INTERNAL;
-                }
-                
-                if((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
-                    freeIdName(idName);
-                    paramListFree(paramList);
-                    tabSymFree(localTabSym);
-                    return ERR_INTERNAL;
+                    //vytvoreni informaci o funkci pro globalni tabulku symbolu
+                    if((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType, 
+                            localTabSym, NULL, NULL, false)) == NULL) {
+                        freeIdName(idName);
+                        paramListFree(paramList);
+                        tabSymFree(localTabSym);
+                        return ERR_INTERNAL;
+                    }
+
+                    if((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
+                        freeIdName(idName);
+                        paramListFree(paramList);
+                        tabSymFree(localTabSym);
+                        return ERR_INTERNAL;
+                    }
                 }
                 
                 //nyni uz muzu uvolnit string, ktery nese informace o id funkce
