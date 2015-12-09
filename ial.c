@@ -20,6 +20,7 @@ int len(char* string) {
 	return num;
 }
 
+
 void computeJumps(char* string, int charJump[]) {
 	int lengthString = len(string);
 
