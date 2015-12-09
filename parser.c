@@ -1338,10 +1338,6 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             insTapeGoto(instructionTape, stepOver);
             insTapeActualize(instructionTape, I_IFNZERO, (void *)keyFor1, (void *) labEndCycle, NULL);
             
-            //po ukonceni for cyklu musim smazat y lokalni tabulky symbolu promennou, kterou jse vytvoril
-            //v prvni casti for-cyklu
-            
-            BSTDelete(&(localTable->root), forCycle);
             freeIdName(forCycle);
             
             return ERR_OK;
