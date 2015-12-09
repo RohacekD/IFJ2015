@@ -371,7 +371,7 @@ void parse() {
             fclose(f);
             FatalError(ERR_INTERNAL, ERR_MESSAGES[ERR_ALLOC]);
         }
-        
+
         //provedeni interpretace
         if ((result = executeTape(findMain->info.func->instTape->first)) != ERR_OK) {
            //uvolneni globalni tabuljy
