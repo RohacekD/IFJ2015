@@ -122,10 +122,14 @@ int strCharToString(string* s, char* c)
 	return 1;
 }
 
-string substr(string s, int i, int n){
+string substr(string s, int i, int n, int err){
+    err = STR_SUCCESS;
     string new;
     strInit(&new);
-    if(i<0){
+    
+    if(i<0 || i>= s.length){
+        strFree(&new);
+        err = STR_ERROR;
         return new; //zde by mel nastat pravdepodobne runtime error
     }
     

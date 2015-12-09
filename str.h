@@ -32,9 +32,10 @@ int strCharToString(string* s, char* c);
  * @param s vstupni retezec
  * @param i zacatek podretezce
  * @param n delka podretezce
+ * @param err simulace exception C++11; 
  * @return vraci podretezec
  */
-string substr(string s, int i, int n);
+string substr(string s, int i, int n, int err);
 
 /**
  * vestavena funkce jazyka IFJ2015
