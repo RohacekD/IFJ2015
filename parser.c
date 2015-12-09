@@ -181,7 +181,7 @@ int prepareGlobalTable() {
          (insertEl(findParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 ) {
         return 0;
     }
-    if ((findInfo = tabSymCreateFuncInfo(findParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+    if ((findInfo = tabSymCreateFuncInfo(findParam, TAB_SYM_VAR_NO_AUTO_INTEGER, NULL, NULL, NULL, true)) == NULL) {
         return 0;
     }
     if (tabSymInsertFunc(globalTable, find, findInfo) == 0)
