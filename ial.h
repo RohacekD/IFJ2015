@@ -44,6 +44,12 @@ void computeJumps(char* string, int charJump[]);
  */
 int BMA(char* string, char* searchString, int charJump[]);
 
+/**
+ * Vyhledavani podretezce v ratezci
+ * @param string[in]		-	String ve kterem vyhledava.
+ * @param searchString[in]	-	String, ktery vyhledava.
+ * @return Vraci index, na zacatek nalezene sekvence ve string. Pokud chyba vrati delku string.
+ */
 int find(char* string, char* searchString);
 
 /**
