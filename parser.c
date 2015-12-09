@@ -272,6 +272,8 @@ void parse() {
         freeTokenQueue();
         //uzavreni souboru
         fclose(f);
+        //uvolneni globalni promenne
+        freeIdName(retGlobal);
         //vraceni chyboveho kodu na zaklade chyby v parseru, nebo interpretu
         
         ERROR:
@@ -307,7 +309,6 @@ void parse() {
     }
     //TODO - syntakticka a semanticka kontrola probehla v poradku
     else {
-        
         //musim jeste zkontrolovat, zda byly vsechny funkce definovany
         BSTcheckFuncDef(&(globalTable->root));
         if (notDefined == 1) {
@@ -382,6 +383,7 @@ void parse() {
         
         //uvolneni globalni tabulky po vygenerovani vsech instrukci a uzavreni souboru
         tabSymFree(globalTable);
+        freeIdName(retGlobal);
         fclose(f);
         //TODO;
         exit(0);
