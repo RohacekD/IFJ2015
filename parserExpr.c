@@ -1249,12 +1249,12 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 
 				break;
 			case BUILD_IN_FUNC_ID_FIND:
-				if(insTapeInsertLast(insTape, I_CONCAT, adrPool[0], adrPool[1], saveTo)==0){
+				if(insTapeInsertLast(insTape, I_FIND, adrPool[0], adrPool[1], saveTo)==0){
 					return ERR_INTERNAL;
 				}
 				break;
 			case BUILD_IN_FUNC_ID_LENGTH:
-				if(insTapeInsertLast(insTape, I_CONCAT, adrPool[0], NULL, saveTo)==0){
+				if(insTapeInsertLast(insTape, I_LENGTH, adrPool[0], NULL, saveTo)==0){
 					return ERR_INTERNAL;
 				}
 				break;
