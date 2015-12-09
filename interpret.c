@@ -574,7 +574,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				dest->data.boolVal = getVarVal(oper1);
 			}
 			else if (dest->type == VAR_TYPE_STRING) {
-				strCopyString(&oper1->data.stringVal, &dest->data.stringVal);
+				strCopyString(&dest->data.stringVal, &oper1->data.stringVal);
 			}
 			dest->init = true;//dest je nyni inicializovan
 		}
