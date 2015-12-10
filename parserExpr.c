@@ -480,6 +480,9 @@ int chooseRule(tPrecStack* stack, int* rule){
 			case S_FUN_OPEN_BRACKET:
 				if(act->data.type==PREC_STACK_NONTERMINAL){
 					actState=S_FUN_OPEN_BRACKET_E;
+				}else if(act->data.type==PREC_STACK_TERMINAL &&
+						act->data.key==TERMINAL_CLOSE_BRACKET){
+						actState=S_F_FUN;
 				}else{
 					//chyba
 					return 0;
@@ -1104,13 +1107,24 @@ ERR_CODES genInsPostfix(ruleAutomateStates rule, tTabSymListElemPtr startTabSymL
  * @return Vraci ERR_CODES
  */
 ERR_CODES genInsFuncParams(tParamListPtr params, tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tPrecStack* stackForGen, tInsTape* insTape){
+
+	//vezmeme prvni parametr
+	tPrecStackData* actParamData=precStackTop(stackForGen);
+
+
+	//nejprve provedeme kontrolu pro prazdne parametry
+	//je-li seznam parametru prazdny musi byt na vrcholu zasobniku )
+	if(params->first==NULL && actParamData->type==PREC_STACK_TERMINAL && actParamData->key==TERMINAL_CLOSE_BRACKET){
+		return ERR_OK;
+	}
+
+	tTabSymElemData* actParam= tabSymListSearch(startTabSymListElem,tabSym, actParamData->id);
+	tTabSymVarDataType codeOfDataType;
+
 	//budeme prochazet paramlist a parovat s neterminaly na stacku
 	//nastavime aktivitu na prvni prvek
 	first(params);
-	//vezmeme prvni parametr
-	tPrecStackData* actParamData=precStackTop(stackForGen);
-	tTabSymElemData* actParam= tabSymListSearch(startTabSymListElem,tabSym, actParamData->id);
-	tTabSymVarDataType codeOfDataType;
+
 
 	while(params->act!=NULL && actParamData!=NULL){
 		//hledame symbol neterminalu v tabulce
@@ -1167,7 +1181,7 @@ ERR_CODES genInsFuncParams(tParamListPtr params, tTabSymListElemPtr startTabSymL
  * @return	Vraci ERR_CODES
  */
 ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
-	//E->f(E...)	...-seznam parametru oddelenych carkou
+	//E->f(...)	...-seznam parametru oddelenych carkou muze byt i prazdny
 	static const unsigned int POOL_SIZE=4;	//velikost poolu adres
 
 	//ziskame data o identifikatoru funkce
@@ -1423,7 +1437,7 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 	if(leftOperCodeOfDataType!=TAB_SYM_VAR_STRING && rightOperCodeOfDataType!=TAB_SYM_VAR_STRING){
 		//provadime implicitni konverze, nesmi byt ani jeden z operandu string
 
-		dataTypeOfResult=leftOperCodeOfDataType;	//implicitne nastavime na typ leveho
+		dataTypeOfResult=leftOperCodeOfDataType;	//implicitne nastavime vysledek na typ leveho
 
 		if(leftOperCodeOfDataType!=rightOperCodeOfDataType){
 			//operandy se nerovnaji
@@ -1436,6 +1450,7 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 				 * BOOL		INT		|	INT
 				 * BOOL		DOUBLE	|	DOUBLE
 				 */
+				leftOperandData->type=rightOperCodeOfDataType;	//prepiseme jeho dataovy typ
 				dataTypeOfResult=rightOperCodeOfDataType;
 			}
 			if(leftOperCodeOfDataType==TAB_SYM_VAR_DOUBLE){
@@ -1447,10 +1462,11 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 				 * DOUBLE	INT		|	DOUBLE
 				 * DOUBLE	DOUBLE	|	DOUBLE			//nemame kvuli zanoreni v podmince
 				 */
+				rightOperandData->type=TAB_SYM_VAR_DOUBLE;
 				dataTypeOfResult=TAB_SYM_VAR_DOUBLE;
 			}
-			if(leftOperCodeOfDataType==TAB_SYM_VAR_INTEGER && rightOperCodeOfDataType==TAB_SYM_VAR_DOUBLE){
-				/*levy je integer a pravy double.
+			if(leftOperCodeOfDataType==TAB_SYM_VAR_INTEGER){
+				/*levy je integer
 				 * Vysvetleni:
 				 * LEVY		PRAVY	|	KONVERZE NA
 				 * ---------------------------------
@@ -1458,9 +1474,29 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 				 * INT		INT		|	INT				//nemame kvuli zanoreni v podmince
 				 * INT		DOUBLE	|	DOUBLE
 				 */
-				dataTypeOfResult=TAB_SYM_VAR_DOUBLE;
+
+
+				if(rightOperCodeOfDataType==TAB_SYM_VAR_DOUBLE){
+					//levy je integer a pravy double.
+					leftOperandData->type=TAB_SYM_VAR_DOUBLE;	//prepiseme jeho dataovy typ
+					dataTypeOfResult=TAB_SYM_VAR_DOUBLE;
+				}else{
+					rightOperandData->type=TAB_SYM_VAR_INTEGER;
+				}
+
 			}
 		}
+	}
+
+
+
+
+
+	//nyni je nutne jeste upravit vysledek pro logicke operace, mohlo dojit k prepsani
+	if(rule==S_F_E_EQU_E || rule==S_F_E_NEQU_E || rule==S_F_E_LESS_E || rule==S_F_E_GREATER_E || rule==S_F_E_LESSEQU_E
+			|| rule==S_F_E_GREATEREQU_E || rule==S_F_E_AND_E  || rule==S_F_E_OR_E){
+		//pro jistotu vracime implicitni hodnotu
+		dataTypeOfResult=TAB_SYM_VAR_INTEGER;
 	}
 
 
