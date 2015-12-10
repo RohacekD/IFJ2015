@@ -286,7 +286,7 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 	}else if(termKind == TERMINAL_FUNCTION_IDENTIFICATOR){
 		/**
 		 * Jedna se o funkcni identifikator, zkontrolujeme jestli se nachazi v tabulce
-		 * symbolu a jestli je definovana.
+		 * symbolu.
 		 */
 		tTabSymElemData* functionData=NULL;
 		if(((functionData=tabSymSearch(globalTable, &(token->value.stringVal)))==NULL)){
