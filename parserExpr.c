@@ -289,9 +289,8 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 		 * symbolu a jestli je definovana.
 		 */
 		tTabSymElemData* functionData=NULL;
-		if(((functionData=tabSymSearch(globalTable, &(token->value.stringVal)))==NULL) ||
-				functionData->info.func->defined==false){
-			//nenalezeno/nedefinovano semanticka chyba
+		if(((functionData=tabSymSearch(globalTable, &(token->value.stringVal)))==NULL)){
+			//nenalezeno semanticka chyba
 			return ERR_SEM_DEF;
 		}
 		newString = malloc(sizeof(string));
