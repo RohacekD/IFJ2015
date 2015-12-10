@@ -40,9 +40,11 @@ void computeJumps(char* string, int charJump[]);
  * @param searchString	-	retezec, ktery se vyhledava
  * @param charJump		-	predvypocitane hodnoty skoku pro searchString pomoci computeJumps
  * @return Vraci index pocatecni polohy vzorku v danem textu. Pri neuspechu
- * 	vraci maximalni index stringu +1.
+ * 	vraci delku retezce.
  */
 int BMA(char* string, char* searchString, int charJump[]);
+
+
 
 /**
  * Vyhledavani podretezce v ratezci
