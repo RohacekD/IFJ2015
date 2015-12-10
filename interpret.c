@@ -574,7 +574,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				dest->data.boolVal = getVarVal(oper1);
 			}
 			else if (dest->type == VAR_TYPE_STRING) {
-				strCopyString(&oper1->data.stringVal, &dest->data.stringVal);
+				strCopyString(&dest->data.stringVal, &oper1->data.stringVal);
 			}
 			dest->init = true;//dest je nyni inicializovan
 		}
@@ -682,8 +682,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			return ERR_RUNTIME_REST;
 		}
 		strFree(&dest->data.stringVal);
-		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal);
+		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal,&retErr);
 		dest->init = true;//dest je nyni inicializovan
+                
+                if(retErr) return ERR_RUNTIME_REST;
 
 		break;
 	case I_LENGTH:

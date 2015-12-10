@@ -1,5 +1,6 @@
 //jednoducha knihovna pro praci s nekonecne dlouhymi retezci
 #include "str.h"
+#include "error.h"
 
 #define STR_LEN_INC 8
 // konstanta STR_LEN_INC udava, na kolik bytu provedeme pocatecni alokaci pameti
@@ -122,10 +123,14 @@ int strCharToString(string* s, char* c)
 	return 1;
 }
 
-string substr(string s, int i, int n){
+string substr(string s, int i, int n, ERR_CODES *err){
+    *err = STR_SUCCESS;
     string new;
     strInit(&new);
-    if(i<0){
+    
+    if(i<0 || i>= s.length){
+        strFree(&new);
+        *err = STR_ERROR;
         return new; //zde by mel nastat pravdepodobne runtime error
     }
     
