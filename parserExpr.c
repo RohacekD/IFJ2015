@@ -1114,9 +1114,16 @@ ERR_CODES genInsFuncParams(tParamListPtr params, tTabSymListElemPtr startTabSymL
 
 	//nejprve provedeme kontrolu pro prazdne parametry
 	//je-li seznam parametru prazdny musi byt na vrcholu zasobniku )
+
 	if(params->first==NULL && actParamData->type==PREC_STACK_TERMINAL && actParamData->key==TERMINAL_CLOSE_BRACKET){
 		return ERR_OK;
 	}
+	//je li na vrcholu zasobniku ) musime zkontrolovat, jestli ma byt opravdu seznam param prazdny
+	if(actParamData->type==PREC_STACK_TERMINAL && actParamData->key==TERMINAL_CLOSE_BRACKET && params->first!=NULL){
+		//nema byt prazdny chyba
+		return ERR_SEM_COM;
+	}
+
 
 	tTabSymElemData* actParam= tabSymListSearch(startTabSymListElem,tabSym, actParamData->id);
 	tTabSymVarDataType codeOfDataType;

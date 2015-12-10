@@ -424,9 +424,12 @@ int parseFunction() {
        
     //volani funkce pro zpracovani <Kdata_types> - kontrola, zda mi prisel datovy typ
     if ((result = kDataTypes(&returnType, token->typ)) != 1 || token->typ == KEYW_AUTO) {
-        //uvolnim token
         freeTokenMem(&token);
-        return result;
+        if (token->typ == KEYW_AUTO) {
+            return ERR_SYNTAX;
+        }
+        else
+            return result;
     }
     //uvolnim token
     freeTokenMem(&token);
@@ -752,9 +755,12 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
     //upravene pravidlo 9: <arguments> -> <argument>
     //-----------------------------------------------------------
     if ((result = kDataTypes(&paramType, token->typ)) != 1 || token->typ == KEYW_AUTO) {
-        //uvolnim token
         freeTokenMem(&token);
-        return result;
+        if (token->typ == KEYW_AUTO) {
+            return ERR_SYNTAX;
+        }
+        else
+            return result;
     }
     //----------------------------------------------------------
     
@@ -884,9 +890,12 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
         
         //--------------------------------------------------------
         if ((result = kDataTypes(&paramType, token->typ)) != 1 || token->typ == KEYW_AUTO) {
-            //uvolnim token
             freeTokenMem(&token);
-             return result;
+            if (token->typ == KEYW_AUTO) {
+                return ERR_SYNTAX;
+            }
+            else
+                return result;
         }
         //--------------------------------------------------------
         
