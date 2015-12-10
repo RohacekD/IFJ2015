@@ -407,7 +407,8 @@ int parseFunction() {
     //promenna do ktere ukladam vytvorene informace o funkci
     tFuncInfo *funcInfo = NULL;
     //pro kazdou funkci tvorim novy seznam parametru
-    tParamListPtr paramList = NULL;    
+    tParamListPtr paramList = NULL;
+    tTabSym *localTabSym = NULL;
     
     //nactu prvni token, prisel chybny token
     if((result = getToken(&token, f)) != 1) {
@@ -482,54 +483,62 @@ int parseFunction() {
             //uvolnim token
             freeTokenMem(&token);
             
-            //vytvorim si lokalni tabulku symbolu 
-            //do ni uz budu ukladat parametry funkce
-            tTabSym *localTabSym = tabSymCreate(TAB_SYM_LOC);
-            
-            //vytvorim promennou $ret, po ktere Dominik z celeho srdce touzi
-            char *retId = "$ret";
-            string *ret;
-            if ((ret = (string*)malloc(sizeof(string))) == NULL){
-                freeIdName(idName);
-                return ERR_INTERNAL;
+            if (funcID_info == NULL){
+                //vytvorim si lokalni tabulku symbolu 
+                //do ni uz budu ukladat parametry funkce
+                localTabSym = tabSymCreate(TAB_SYM_LOC);
+
+                //vytvorim promennou $ret, po ktere Dominik z celeho srdce touzi
+                char *retId = "$ret";
+                string *ret;
+                if ((ret = (string*)malloc(sizeof(string))) == NULL){
+                    freeIdName(idName);
+                    return ERR_INTERNAL;
+                }
+                if (strInit(ret) == 1){
+                    freeIdName(idName);
+                    return ERR_INTERNAL;
+                }
+
+                if (strConConstString(ret, retId) == 1) {
+                    freeIdName(idName); freeIdName(ret);               
+                    return ERR_INTERNAL;
+                }
+
+                if ((retGlobal = copyIdName(ret)) == NULL) {
+                    freeIdName(idName); freeIdName(ret);
+                }
+
+                tVariableInfo *retInfo;
+
+                if ((retInfo = tabSymCreateVariableInfo(returnType)) == NULL) {
+                    freeIdName(idName); freeIdName(ret);
+                    return ERR_INTERNAL;
+                }
+
+                if (tabSymInsertVar(localTabSym, ret, retInfo) == 0) {
+                    freeIdName(idName); freeIdName(ret);
+                    return ERR_INTERNAL;
+                }
+                freeIdName(ret);
+
+                
+                if ((paramList = initList(paramList)) == 0) {
+                    return ERR_INTERNAL;
+                }
             }
-            if (strInit(ret) == 1){
-                freeIdName(idName);
-                return ERR_INTERNAL;
+            else {
+                localTabSym = funcID_info->info.func->locTab;
+                paramList = funcID_info->info.func->params;
             }
-    
-            if (strConConstString(ret, retId) == 1) {
-                freeIdName(idName); freeIdName(ret);               
-                return ERR_INTERNAL;
-            }
-            
-            if ((retGlobal = copyIdName(ret)) == NULL) {
-                freeIdName(idName); freeIdName(ret);
-            }
-            
-            tVariableInfo *retInfo;
-            
-            if ((retInfo = tabSymCreateVariableInfo(returnType)) == NULL) {
-                freeIdName(idName); freeIdName(ret);
-                return ERR_INTERNAL;
-            }
-            
-            if (tabSymInsertVar(localTabSym, ret, retInfo) == 0) {
-                freeIdName(idName); freeIdName(ret);
-                return ERR_INTERNAL;
-            }
-            freeIdName(ret);
             
             //-------------------------------------------------------------
             //volani funkce pro zpracovani <arguments>
-            if ((paramList = initList(paramList)) == 0) {
-                return ERR_INTERNAL;
-            }
-
             if((result = parseArguments(paramList, funcID_info, localTabSym)) != ERR_OK) {
                 freeIdName(idName);
-                paramListFree(paramList);
-                tabSymFree(localTabSym);
+                if (funcID_info == NULL) {
+                    paramListFree(paramList); tabSymFree(localTabSym);
+                }
                 //navratim chybovy kod
                 return result;
             }
@@ -539,8 +548,9 @@ int parseFunction() {
             //jsme u <body> -> bud ';'(deklarace), nebo '{' (definice)
             if ((result = getToken(&token, f)) != 1) {
                 freeIdName(idName);
-                paramListFree(paramList);
-                tabSymFree(localTabSym);
+                if (funcID_info == NULL) {
+                    paramListFree(paramList); tabSymFree(localTabSym);
+                }
                 return ERR_LEX;
             }
             
@@ -548,21 +558,19 @@ int parseFunction() {
             if(token->typ == SEMICOLON) {
                 //uvolnim token
                 freeTokenMem(&token);
-                if (funcID_info == NULL) {
                 
+                if (funcID_info == NULL) {
                     //vytvoreni informaci o funkci pro globalni tabulku symbolu
                     if((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType, 
                             localTabSym, NULL, NULL, false)) == NULL) {
                         freeIdName(idName);
-                        paramListFree(paramList);
-                        tabSymFree(localTabSym);
+                        paramListFree(paramList); tabSymFree(localTabSym);
                         return ERR_INTERNAL;
                     }
 
                     if((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
                         freeIdName(idName);
-                        paramListFree(paramList);
-                        tabSymFree(localTabSym);
+                        paramListFree(paramList); tabSymFree(localTabSym);
                         return ERR_INTERNAL;
                     }
                 }
@@ -581,9 +589,7 @@ int parseFunction() {
                 //zkontroluji, zda se uz dana funkce nebyla definovana
                 if (funcID_info != NULL) {
                     if (funcID_info->info.func->defined == true) {
-                        freeIdName(idName);
-                        paramListFree(paramList);
-                        tabSymFree(localTabSym);
+                        freeIdName(idName); 
                         return ERR_SEM_DEF;
                     }
                 }
@@ -592,8 +598,9 @@ int parseFunction() {
                 tTabSymList *blockList;
                 if ((blockList = tabSymListCreate()) == NULL) {
                     freeIdName(idName);
-                    paramListFree(paramList);
-                    tabSymFree(localTabSym);
+                    if (funcID_info == NULL) {
+                        paramListFree(paramList); tabSymFree(localTabSym);
+                    }
                     return ERR_INTERNAL;
                 } 
                 
@@ -601,14 +608,10 @@ int parseFunction() {
                 tInsTape *instructionTape;
                 if ((instructionTape = insTapeCreate()) == NULL) {
                     freeIdName(idName);
-                    paramListFree(paramList);
-                    tabSymFree(localTabSym);
+                    if (funcID_info == NULL) {
+                        paramListFree(paramList); tabSymFree(localTabSym);
+                    }
                     return ERR_INTERNAL;
-                }
-                
-                //pokud uz byla funkce deklarovana, tak pouziji znamy seznam parametru
-                if(funcID_info != NULL) {
-                    paramList = funcID_info->info.func->params;
                 }
                 
                 //vlozim zbytecnou instrukci z duvodu rekurze, kdy funkce vola sebe sama
@@ -618,16 +621,18 @@ int parseFunction() {
                 if ((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType,
                         localTabSym, NULL, instructionTape, true)) == NULL) {
                     freeIdName(idName);
-                    paramListFree(paramList);
-                    tabSymFree(localTabSym);
+                    if (funcID_info == NULL) {
+                        paramListFree(paramList); tabSymFree(localTabSym);
+                    }
                     return ERR_INTERNAL;
                 }
                 
                 //vlozim informace o funkci do globalni tabulky symbolu
                 if ((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
                     freeIdName(idName);
-                    paramListFree(paramList);
-                    tabSymFree(localTabSym);
+                    if (funcID_info == NULL) {
+                        paramListFree(paramList); tabSymFree(localTabSym);
+                    }
                     return ERR_INTERNAL;
                 }
                 
@@ -638,26 +643,16 @@ int parseFunction() {
                 }
                 //--------------------------------------------------------
                 
-                //telo funkce probehlo v poradku, doplnim informace do globalni tabulky symbolu
-                //pokud uz byla funkce deklarovana, tak pouziji znamy seznam parametru
-                if(funcID_info != NULL) {
-                    paramList = funcID_info->info.func->params;
-                }
-                
                 //vytvorim informace o funkci
                 if ((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType,
                         localTabSym, blockList, instructionTape, true)) == NULL) {
                     freeIdName(idName);
-                    paramListFree(paramList);
-                    tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
                 
                 //vlozim informace o funkci do globalni tabulky symbolu
                 if ((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
                     freeIdName(idName);
-                    paramListFree(paramList);
-                    tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
                 
@@ -669,8 +664,9 @@ int parseFunction() {
             //token neni ; ani {
             freeTokenMem(&token);
             freeIdName(idName);
-            paramListFree(paramList);
-            tabSymFree(localTabSym);
+            if (funcID_info == NULL) {
+                paramListFree(paramList); tabSymFree(localTabSym);
+            }
             return ERR_SYNTAX;
         }
         //token neni oteviraci zavorka
