@@ -80,7 +80,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	tVariablePtr oper3;
 	tVariablePtr dest;
 	ERR_CODES retErr;//pro pripad volani jine pasky
-
+        
+        int tmp1,tmp2;
 	tTabSym* tab;
 	tInsTapeInsPtr ins = *instruction;
 	tInsTapeInsPtr insToCall;
@@ -695,11 +696,19 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		}
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (dest->type != VAR_TYPE_STRING || oper1->type != VAR_TYPE_STRING ||
-			oper2->type != VAR_TYPE_INT || oper3->type != VAR_TYPE_INT) {
+			oper2->type == VAR_TYPE_STRING || oper3->type == VAR_TYPE_STRING) {
 			return ERR_RUNTIME_REST;
 		}
+                
+                if(oper2->type == VAR_TYPE_INT) tmp1 = oper2->data.intVal;
+                if(oper3->type == VAR_TYPE_INT) tmp2 = oper3->data.intVal;                 
+                if(oper2->type == VAR_TYPE_DOUBLE) tmp1 = (int)floor(oper2->data.doubleVal);
+                if(oper3->type == VAR_TYPE_DOUBLE) tmp2 = (int)floor(oper3->data.doubleVal);
+                if(oper2->type == VAR_TYPE_BOOL) tmp1 = oper2->data.doubleVal;
+                if(oper3->type == VAR_TYPE_BOOL) tmp2 = oper3->data.doubleVal;
+                
 		strFree(&dest->data.stringVal);
-		dest->data.stringVal = substr(oper1->data.stringVal, oper2->data.intVal, oper3->data.intVal,&retErr);
+		dest->data.stringVal = substr(oper1->data.stringVal, tmp1, tmp2,&retErr);
 		dest->init = true;//dest je nyni inicializovan
                 
                 if(retErr) return ERR_RUNTIME_REST;
