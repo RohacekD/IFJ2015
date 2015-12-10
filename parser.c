@@ -1965,7 +1965,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 
                 freeIdName(idName);
                 
-                //generovani instrukce pro deklaraci
+                //generovani instrukce pro definici 
                 if (insTapeInsertLast(instructionTape, I_DECLARE, (void *) declarationID, NULL, NULL) == 0) {
                     return ERR_INTERNAL;
                 }
