@@ -345,7 +345,7 @@ void parse() {
         if (findMain->info.func->params->first != NULL || findMain->info.func->retType != TAB_SYM_VAR_NO_AUTO_INTEGER) {
             tabSymFree(globalTable);
             fclose(f);
-            FatalError(ERR_SEM_COM, ERR_MESSAGES[ERR_SEM_COM]);
+            FatalError(ERR_SEM_DEF, ERR_MESSAGES[ERR_SEM_DEF]);
         }
         
         tTabSym *localTable = NULL; //ukazatel na lokalni tabulku symbolu
