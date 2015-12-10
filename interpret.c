@@ -644,7 +644,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			return ERR_SEM_COM;
 		}
 		dest->data.intVal = find(oper1->data.stringVal.str, oper2->data.stringVal.str);
-		if (dest->data.intVal > oper1->data.stringVal.length) {
+		if (dest->data.intVal == oper1->data.stringVal.length) {
 			dest->data.intVal = -1;
 		}
 		dest->init = true;//dest je nyni inicializovan
