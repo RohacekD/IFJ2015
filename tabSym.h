@@ -233,7 +233,7 @@ int tabSymInsertFunc(tTabSym* table, string* key, tFuncInfo* funcInfo);
 void tabSymFree(tTabSym* table);
 
 /**
- * Vytvori nazev docasne promenne. ($tmpI)
+ * Vytvori nazev docasne promenne. (tmpI)
  * @param table[in]	-	ukzatel na tabulku symbolu,
  * 				kde	bude pouzit vygenerovany symbol
  * @return	Ukazatel na vygenerovany symbol. Pokud chyba NULL.
@@ -330,7 +330,7 @@ tTabSymElemData* tabSymListSearch(tTabSymListElemPtr startTabSymListElem, tTabSy
 string* tabSymListGetPointerToKey(tTabSymListElemPtr startTabSymListElem, tTabSym* locTable, string* key);
 
 /**
- * Vytvori nazev docasne promenne. ($tmpI) Zohlednuje $tmp vsech rodicu i loctable.
+ * Vytvori nazev docasne promenne. (tmpI) Zohlednuje tmp vsech rodicu i loctable.
  * Zvysuje counter tabulky symbolu v generateFor.
  * @param generateFor[in]	-	ukazatel na element listu tabulek symbolu
  * @param locTable[in]		-	lokalni tabulka symbolu
@@ -340,7 +340,7 @@ string* tabSymListGetPointerToKey(tTabSymListElemPtr startTabSymListElem, tTabSy
 string* tabSymListCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* locTable);
 
 /**
- * Vrati nazev naposledy vytvoreneho $tmp v generateFor. (jedna se pouze o vygenerovany nazev)
+ * Vrati nazev naposledy vytvoreneho tmp v generateFor. (jedna se pouze o vygenerovany nazev)
  * @param generateFor[in]	-	ukazatel na element listu tabulek symbolu
  * @param locTable[in]		-	lokalni tabulka symbolu
  * @return	Ukazatel na nazev posledne vygenerovaneho symbolu. Pokud chyba NULL.

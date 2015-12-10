@@ -230,7 +230,7 @@ int semHandleNewToken(tTabSym* table, tTabSym* insertToTable, tTabSymListElemPtr
 		case TYPE_BOOL:
 			/*
 			 * jedna se o konstantu
-			 * je nutne vytvorit novy $tmp
+			 * je nutne vytvorit novy tmp
 			 */
 			dataType = TAB_SYM_VAR_NO_AUTO_BOOLEAN;
 			value.boolVal=token->value.boolVal;
@@ -1410,55 +1410,54 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 	if((leftOperCodeOfDataType==TAB_SYM_VAR_STRING && rightOperCodeOfDataType!=TAB_SYM_VAR_STRING) ||
 			(rightOperCodeOfDataType==TAB_SYM_VAR_STRING && leftOperCodeOfDataType!=TAB_SYM_VAR_STRING)){
 		//pokud je jeden z operandu string musi byt i ten druhy string
-		//chyba nesmi byt string
 		return ERR_SEM_COM;
 	}
 
 	tTabSymVarDataType dataTypeOfResult=TAB_SYM_VAR_INTEGER;	//datovy typ vysledku	implicitne pro logicke
 
-		//implicitni konverze
-		if(leftOperCodeOfDataType!=TAB_SYM_VAR_STRING && rightOperCodeOfDataType!=TAB_SYM_VAR_STRING){
-			//provadime implicitni konverze, nesmi byt ani jeden z operandu string
+	//implicitni konverze
+	if(leftOperCodeOfDataType!=TAB_SYM_VAR_STRING && rightOperCodeOfDataType!=TAB_SYM_VAR_STRING){
+		//provadime implicitni konverze, nesmi byt ani jeden z operandu string
 
-			dataTypeOfResult=leftOperCodeOfDataType;	//implicitne nastavime na typ leveho
+		dataTypeOfResult=leftOperCodeOfDataType;	//implicitne nastavime na typ leveho
 
-			if(leftOperCodeOfDataType!=rightOperCodeOfDataType){
-				//operandy se nerovnaji
-				if(leftOperCodeOfDataType==TAB_SYM_VAR_BOOLEAN){
-					/*levy je boolean vysledny typ je typ praveho
-					 * Vysvetleni:
-					 * LEVY		PRAVY	|	KONVERZE NA
-					 * ---------------------------------
-					 * BOOL		BOOL	|	BOOL			//nemame kvuli zanoreni v podmince
-					 * BOOL		INT		|	INT
-					 * BOOL		DOUBLE	|	DOUBLE
-					 */
-					dataTypeOfResult=rightOperCodeOfDataType;
-				}
-				if(leftOperCodeOfDataType==TAB_SYM_VAR_DOUBLE){
-					/*levy je double vysledny typ je typ double
-					 * Vysvetleni:
-					 * LEVY		PRAVY	|	KONVERZE NA
-					 * ---------------------------------
-					 * DOUBLE	BOOL	|	DOUBLE
-					 * DOUBLE	INT		|	DOUBLE
-					 * DOUBLE	DOUBLE	|	DOUBLE			//nemame kvuli zanoreni v podmince
-					 */
-					dataTypeOfResult=TAB_SYM_VAR_DOUBLE;
-				}
-				if(leftOperCodeOfDataType==TAB_SYM_VAR_INTEGER && rightOperCodeOfDataType==TAB_SYM_VAR_DOUBLE){
-					/*levy je integer a pravy double.
-					 * Vysvetleni:
-					 * LEVY		PRAVY	|	KONVERZE NA
-					 * ---------------------------------
-					 * INT		BOOL	|	INT
-					 * INT		INT		|	INT				//nemame kvuli zanoreni v podmince
-					 * INT		DOUBLE	|	DOUBLE
-					 */
-					dataTypeOfResult=TAB_SYM_VAR_DOUBLE;
-				}
+		if(leftOperCodeOfDataType!=rightOperCodeOfDataType){
+			//operandy se nerovnaji
+			if(leftOperCodeOfDataType==TAB_SYM_VAR_BOOLEAN){
+				/*levy je boolean vysledny typ je typ praveho
+				 * Vysvetleni:
+				 * LEVY		PRAVY	|	KONVERZE NA
+				 * ---------------------------------
+				 * BOOL		BOOL	|	BOOL			//nemame kvuli zanoreni v podmince
+				 * BOOL		INT		|	INT
+				 * BOOL		DOUBLE	|	DOUBLE
+				 */
+				dataTypeOfResult=rightOperCodeOfDataType;
+			}
+			if(leftOperCodeOfDataType==TAB_SYM_VAR_DOUBLE){
+				/*levy je double vysledny typ je typ double
+				 * Vysvetleni:
+				 * LEVY		PRAVY	|	KONVERZE NA
+				 * ---------------------------------
+				 * DOUBLE	BOOL	|	DOUBLE
+				 * DOUBLE	INT		|	DOUBLE
+				 * DOUBLE	DOUBLE	|	DOUBLE			//nemame kvuli zanoreni v podmince
+				 */
+				dataTypeOfResult=TAB_SYM_VAR_DOUBLE;
+			}
+			if(leftOperCodeOfDataType==TAB_SYM_VAR_INTEGER && rightOperCodeOfDataType==TAB_SYM_VAR_DOUBLE){
+				/*levy je integer a pravy double.
+				 * Vysvetleni:
+				 * LEVY		PRAVY	|	KONVERZE NA
+				 * ---------------------------------
+				 * INT		BOOL	|	INT
+				 * INT		INT		|	INT				//nemame kvuli zanoreni v podmince
+				 * INT		DOUBLE	|	DOUBLE
+				 */
+				dataTypeOfResult=TAB_SYM_VAR_DOUBLE;
 			}
 		}
+	}
 
 
 	//vytvorime novy neterminal, ktery bude slouzit, jako vysledek

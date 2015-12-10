@@ -246,7 +246,7 @@ string* tabSymCreateTmpSymbol(tTabSym* table) {
 	char buffer[BUFFER_SIZE];
 	int flag;
 	//Notice that only when this returned value is non-negative and less than n, the string has been completely written.
-	flag = snprintf(buffer, BUFFER_SIZE, "$tmp%u", table->tmpCounter++);//vytvoreni nazvu docasne promenne
+	flag = snprintf(buffer, BUFFER_SIZE, "%u", table->tmpCounter++);//vytvoreni nazvu docasne promenne
 	if (flag < 0 || flag >= BUFFER_SIZE) {
 		//chyba pri vytvareni nazvu
 		return NULL;
@@ -424,7 +424,7 @@ string* tabSymListCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* locTa
 	index+=locTable->tmpCounter;
 
 	//Notice that only when this returned value is non-negative and less than n, the string has been completely written.
-	flag = snprintf(buffer, BUFFER_SIZE, "$tmp%u", index);//vytvoreni nazvu docasne promenne
+	flag = snprintf(buffer, BUFFER_SIZE, "%u", index);//vytvoreni nazvu docasne promenne
 	if (flag < 0 || flag >= BUFFER_SIZE) {
 		//chyba pri vytvareni nazvu
 		return NULL;
@@ -463,7 +463,7 @@ string* tabSymListLastCreateTmpSymbol(tTabSymListElemPtr generateFor, tTabSym* l
 		//nebyl zatim zadny vygenerovany.
 		return NULL;
 	}
-	//snizime counter a vygenerujeme $tmp nazev
+	//snizime counter a vygenerujeme tmp nazev
 	(*chooseCounter)--;
 	return tabSymListCreateTmpSymbol(generateFor, locTable);
 }
