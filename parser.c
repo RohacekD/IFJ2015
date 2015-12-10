@@ -469,7 +469,7 @@ int parseFunction() {
             //v tuto chvili uz muzu zkontrolovat, zda sedi navratovy typ funkce
             if(funcID_info->info.func->retType != (tTabSymVarNoAutoDataType)returnType) {
                 freeIdName(idName);
-                return ERR_SEM_COM; //nesouhlasi navratovy typ
+                return ERR_SEM_DEF; //nesouhlasi navratovy typ
             }
         }
         
@@ -742,7 +742,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
             //list argumentu neni prazdny, chyba
             if(data->info.func->params->first != NULL) {
                 freeTokenMem(&token);
-                return ERR_SEM_COM;
+                return ERR_SEM_DEF;
             }
         }
         freeTokenMem(&token);
@@ -832,12 +832,12 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
     else {
         if (data->info.func->params->act == NULL) {
             freeIdName(idName);
-            return ERR_SEM_COM;
+            return ERR_SEM_DEF;
         }
         if (((tTabSymVarNoAutoDataType)paramType != data->info.func->params->act->dataType) ||
                 (strcmp(idName->str, data->info.func->params->act->idName->str) != 0)) {
             freeIdName(idName);
-            return ERR_SEM_COM;
+            return ERR_SEM_DEF;
         }
     }
     
@@ -868,7 +868,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
         freeTokenMem(&token);
         //zkontroluji, zda neni dana funkce uz deklarovana s vice parametry
         if (data != NULL && data->info.func->params->act->next != NULL) {
-            return ERR_SEM_COM;
+            return ERR_SEM_DEF;
         }
         return ERR_OK;
     }
