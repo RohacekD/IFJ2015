@@ -409,6 +409,7 @@ int parseFunction() {
     //pro kazdou funkci tvorim novy seznam parametru
     tParamListPtr paramList = NULL;
     tTabSym *localTabSym = NULL;
+    tInsTape *instructionTape;
     
     //nactu prvni token, prisel chybny token
     if((result = getToken(&token, f)) != 1) {
@@ -526,10 +527,21 @@ int parseFunction() {
                 if ((paramList = initList(paramList)) == 0) {
                     return ERR_INTERNAL;
                 }
+                
+                //vytvoreni instrukcni pasky
+                if ((instructionTape = insTapeCreate()) == NULL) {
+                    freeIdName(idName); freeIdName(ret);
+                    paramListFree(paramList); tabSymFree(localTabSym);
+                    return ERR_INTERNAL;
+                }
+                
+                //vlozim zbytecnou instrukci z duvodu rekurze, kdy funkce vola sebe sama
+                insTapeInsertFirst(instructionTape, I_LABEL, NULL, NULL, NULL);
             }
             else {
                 localTabSym = funcID_info->info.func->locTab;
                 paramList = funcID_info->info.func->params;
+                instructionTape = funcID_info->info.func->instTape;
             }
             
             //-------------------------------------------------------------
@@ -562,7 +574,7 @@ int parseFunction() {
                 if (funcID_info == NULL) {
                     //vytvoreni informaci o funkci pro globalni tabulku symbolu
                     if((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType, 
-                            localTabSym, NULL, NULL, false)) == NULL) {
+                            localTabSym, NULL, instructionTape, false)) == NULL) {
                         freeIdName(idName);
                         paramListFree(paramList); tabSymFree(localTabSym);
                         return ERR_INTERNAL;
@@ -603,19 +615,6 @@ int parseFunction() {
                     }
                     return ERR_INTERNAL;
                 } 
-                
-                //vytvoreni instrukcni pasky
-                tInsTape *instructionTape;
-                if ((instructionTape = insTapeCreate()) == NULL) {
-                    freeIdName(idName);
-                    if (funcID_info == NULL) {
-                        paramListFree(paramList); tabSymFree(localTabSym);
-                    }
-                    return ERR_INTERNAL;
-                }
-                
-                //vlozim zbytecnou instrukci z duvodu rekurze, kdy funkce vola sebe sama
-                insTapeInsertFirst(instructionTape, I_LABEL, NULL, NULL, NULL);
                 
                 //vytvorim informace o funkci
                 if ((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType,
