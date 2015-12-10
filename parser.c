@@ -1956,7 +1956,20 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                     return ERR_INTERNAL;
                 }
                 
+                string *declarationID;
+                
+                if ((declarationID = tabSymListGetPointerToKey(blockListElem, localTable, idName)) == NULL) {
+                    freeIdName(idName);
+                    return ERR_INTERNAL;
+                }
+                
                 freeIdName(idName);
+                
+                //generovani instrukce pro deklaraci
+                if (insTapeInsertLast(instructionTape, I_DECLARE, (void *) declarationID, NULL, NULL) == 0) {
+                    return ERR_INTERNAL;
+                }
+                
                 freeTokenMem(&token);
                 return ERR_OK;
             }
