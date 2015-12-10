@@ -181,7 +181,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = (int)getVarVal(oper1) - (int)getVarVal(oper2);
+			dest->data.intVal = getVarVal(oper1) - getVarVal(oper2);
 		}
 		else if (dest->type == VAR_TYPE_DOUBLE) {
 			dest->data.doubleVal = getVarVal(oper1) - getVarVal(oper2);
@@ -253,11 +253,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				if (dest->type == VAR_TYPE_INT) {
 					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)==0) ? 1: 0;
 				}
-				else if (dest->type == VAR_TYPE_DOUBLE) {
-					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) == 0) ? 1: 0;
-				}
-				else if (dest->type == VAR_TYPE_BOOL) {
-					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) == 0) ? true : false;
+				else {
+					return ERR_INTERNAL;
 				}
 			}
 		}
@@ -288,11 +285,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				if (dest->type == VAR_TYPE_INT) {
 					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)!=0) ? 1 : 0;
 				}
-				else if (dest->type == VAR_TYPE_DOUBLE) {
-					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) != 0) ? 1 : 0;
-				}
-				else if (dest->type == VAR_TYPE_BOOL) {
-					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) != 0) ? true : false;
+				else {
+					return ERR_INTERNAL;
 				}
 			}
 		}
@@ -323,11 +317,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				if (dest->type == VAR_TYPE_INT) {
 					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)>0) ? 1: 0;
 				}
-				else if (dest->type == VAR_TYPE_DOUBLE) {
-					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)>0) ? 1: 0;
-				}
-				else if (dest->type == VAR_TYPE_BOOL) {
-					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)>0) ? true: false;
+				else {
+					return ERR_INTERNAL;
 				}
 			}
 		}
@@ -358,11 +349,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				if (dest->type == VAR_TYPE_INT) {
 					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) >= 0) ? 1 : 0;
 				}
-				else if (dest->type == VAR_TYPE_DOUBLE) {
-					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) >= 0) ? 1 : 0;
-				}
-				else if (dest->type == VAR_TYPE_BOOL) {
-					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) >= 0) ? true : false;
+				else {
+					return ERR_INTERNAL;
 				}
 			}
 		}
@@ -393,11 +381,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				if (dest->type == VAR_TYPE_INT) {
 					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)<0) ? 1 : 0;
 				}
-				else if (dest->type == VAR_TYPE_DOUBLE) {
-					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)<0) ? 1 : 0;
-				}
-				else if (dest->type == VAR_TYPE_BOOL) {
-					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal)<0) ? true : false;
+				else {
+					return ERR_INTERNAL;
 				}
 			}
 		}
@@ -428,11 +413,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 				if (dest->type == VAR_TYPE_INT) {
 					dest->data.intVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) <= 0) ? 1 : 0;
 				}
-				else if (dest->type == VAR_TYPE_DOUBLE) {
-					dest->data.doubleVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) <= 0) ? 1 : 0;
-				}
-				else if (dest->type == VAR_TYPE_BOOL) {
-					dest->data.boolVal = (strCmpString(&oper1->data.stringVal, &oper2->data.stringVal) <= 0) ? true : false;
+				else {
+					return ERR_INTERNAL;
 				}
 			}
 		}
