@@ -189,7 +189,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			oper2->type == VAR_TYPE_STRING)
 			return ERR_SEM_COM;
 		if (dest->type == VAR_TYPE_INT) {
-			dest->data.intVal = getVarVal(oper1) - getVarVal(oper2);
+			dest->data.intVal = (int)getVarVal(oper1) - (int)getVarVal(oper2);
 		}
 		else if (dest->type == VAR_TYPE_DOUBLE) {
 			dest->data.doubleVal = getVarVal(oper1) - getVarVal(oper2);
@@ -252,11 +252,11 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
-				dest->data.intVal = (int)getVarVal(oper1) == (int)getVarVal(oper2);
+				dest->data.intVal = getVarVal(oper1) == getVarVal(oper2);
 			}
-			else if (dest->type == VAR_TYPE_DOUBLE) {
+			/*else if (dest->type == VAR_TYPE_DOUBLE) {
 				dest->data.doubleVal = getVarVal(oper1) == getVarVal(oper2);
-			}
+			}*/
 			else if (dest->type == VAR_TYPE_BOOL) {
 				dest->data.boolVal = getVarVal(oper1) == getVarVal(oper2);
 			}
@@ -284,11 +284,11 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
-				dest->data.intVal = (int)getVarVal(oper1) != (int)getVarVal(oper2);
+				dest->data.intVal = getVarVal(oper1) != getVarVal(oper2);
 			}
-			else if (dest->type == VAR_TYPE_DOUBLE) {
+			/*else if (dest->type == VAR_TYPE_DOUBLE) {
 				dest->data.doubleVal = getVarVal(oper1) != getVarVal(oper2);
-			}
+			}*/
 			else if (dest->type == VAR_TYPE_BOOL) {
 				dest->data.boolVal = getVarVal(oper1) != getVarVal(oper2);
 			}
@@ -316,11 +316,11 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
-				dest->data.intVal = (int)getVarVal(oper1) > (int)getVarVal(oper2);
+				dest->data.intVal = getVarVal(oper1) > getVarVal(oper2);
 			}
-			else if (dest->type == VAR_TYPE_DOUBLE) {
+			/*else if (dest->type == VAR_TYPE_DOUBLE) {
 				dest->data.doubleVal = getVarVal(oper1) > getVarVal(oper2);
-			}
+			}*/
 			else if (dest->type == VAR_TYPE_BOOL) {
 				dest->data.boolVal = getVarVal(oper1) > getVarVal(oper2);
 			}
@@ -348,11 +348,11 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
-				dest->data.intVal = (int)getVarVal(oper1) >= (int)getVarVal(oper2);
+				dest->data.intVal = getVarVal(oper1) >= getVarVal(oper2);
 			}
-			else if (dest->type == VAR_TYPE_DOUBLE) {
+			/*else if (dest->type == VAR_TYPE_DOUBLE) {
 				dest->data.doubleVal = getVarVal(oper1) >= getVarVal(oper2);
-			}
+			}*/
 			else if (dest->type == VAR_TYPE_BOOL) {
 				dest->data.boolVal = getVarVal(oper1) >= getVarVal(oper2);
 			}
@@ -380,11 +380,11 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
-				dest->data.intVal = (int)getVarVal(oper1) < (int)getVarVal(oper2);
+				dest->data.intVal = getVarVal(oper1) < getVarVal(oper2);
 			}
-			else if (dest->type == VAR_TYPE_DOUBLE) {
+			/*else if (dest->type == VAR_TYPE_DOUBLE) {
 				dest->data.doubleVal = getVarVal(oper1) < getVarVal(oper2);
-			}
+			}*/
 			else if (dest->type == VAR_TYPE_BOOL) {
 				dest->data.boolVal = getVarVal(oper1) < getVarVal(oper2);
 			}
@@ -412,11 +412,11 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING && oper2->type != VAR_TYPE_STRING) {
 			if (dest->type == VAR_TYPE_INT) {
-				dest->data.intVal = (int)getVarVal(oper1) <= (int)getVarVal(oper2);
+				dest->data.intVal = getVarVal(oper1) <= getVarVal(oper2);
 			}
-			else if (dest->type == VAR_TYPE_DOUBLE) {
+			/*else if (dest->type == VAR_TYPE_DOUBLE) {
 				dest->data.doubleVal = getVarVal(oper1) <= getVarVal(oper2);
-			}
+			}*/
 			else if (dest->type == VAR_TYPE_BOOL) {
 				dest->data.boolVal = getVarVal(oper1) <= getVarVal(oper2);
 			}
