@@ -704,8 +704,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
                 if(oper3->type == VAR_TYPE_INT) tmp2 = oper3->data.intVal;                 
                 if(oper2->type == VAR_TYPE_DOUBLE) tmp1 = (int)floor(oper2->data.doubleVal);
                 if(oper3->type == VAR_TYPE_DOUBLE) tmp2 = (int)floor(oper3->data.doubleVal);
-                if(oper2->type == VAR_TYPE_BOOL) tmp1 = oper2->data.doubleVal;
-                if(oper3->type == VAR_TYPE_BOOL) tmp2 = oper3->data.doubleVal;
+                if(oper2->type == VAR_TYPE_BOOL) tmp1 = oper2->data.boolVal;
+                if(oper3->type == VAR_TYPE_BOOL) tmp2 = oper3->data.boolVal;
                 
 		strFree(&dest->data.stringVal);
 		dest->data.stringVal = substr(oper1->data.stringVal, tmp1, tmp2,&retErr);
