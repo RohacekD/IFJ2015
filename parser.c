@@ -1194,6 +1194,19 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
                 return ERR_LEX;
             }
             
+            //vytorim novy blok, cimz vytvorim novy rozsah platnosti
+            // nova lokalni tabulka
+            tTabSym *blockLocalTable;
+            tTabSymListElemPtr newElementFor = NULL;
+            
+            if((newElementFor = prepareBlockList(&blockLocalTable, blockList, blockListElem, localTable)) == NULL) {
+                return ERR_INTERNAL;
+            }
+            
+            if(insTapeInsertLast(instructionTape, I_CBF, (void*) blockLocalTable, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
             //v promenne dataType je ulozeny datovy typ promenne
             if ((result = kDataTypes(&dataType, token->typ)) != 1) {
                 //uvolnim token
@@ -1204,7 +1217,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             
             //jsem ve stavu -  for(<declaration>
             //-----------------------------------
-            if ((result = parseDeclaration(dataType, localTable, instructionTape, blockListElem)) != ERR_OK) {
+            if ((result = parseDeclaration(dataType, blockLocalTable, instructionTape, newElementFor)) != ERR_OK) {
                 return result;
             }
             //---------------------------------
@@ -1219,18 +1232,18 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             
             //jsem ve stavu - for(<declaration>;expr
             //***********************************
-            if ((result = parseExpression( blockListElem , localTable, instructionTape, &expressionType, f)) != ERR_OK) {
+            if ((result = parseExpression(newElementFor, blockLocalTable, instructionTape, &expressionType, f)) != ERR_OK) {
                 return result;
             }
             //***********************************
             
             string *lastGeneratedTMPfor;
-            if ((lastGeneratedTMPfor = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
+            if ((lastGeneratedTMPfor = tabSymListLastCreateTmpSymbol(newElementFor, blockLocalTable)) == NULL) {
                 return ERR_INTERNAL;
             }
             
             string *keyFor1;
-            if ((keyFor1 = tabSymListGetPointerToKey(blockListElem, localTable, lastGeneratedTMPfor)) == NULL) {
+            if ((keyFor1 = tabSymListGetPointerToKey(newElementFor, blockLocalTable, lastGeneratedTMPfor)) == NULL) {
                 freeIdName(lastGeneratedTMPfor); 
                 return ERR_INTERNAL;
             }
@@ -1290,7 +1303,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             }
             
             //---------------------------------------------
-            if((result = parseAssignment(token, localTable, instructionTape, blockListElem)) != ERR_OK) {
+            if((result = parseAssignment(token, blockLocalTable, instructionTape, newElementFor)) != ERR_OK) {
                 return result;
             }
             //---------------------------------------------
@@ -1324,7 +1337,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             insTapeActualize(instructionTape, I_GOTO, (void *) labBlock, NULL, NULL);
             
             //-----------------------------------------------
-            if ((result = parseBlock(localTable, blockList, blockListElem, instructionTape)) != ERR_OK) {
+            if ((result = parseBlock(blockLocalTable, newElementFor->childList, newElementFor, instructionTape)) != ERR_OK) {
                 return result;
             }
             //-----------------------------------------------
@@ -1346,6 +1359,9 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
             insTapeGoto(instructionTape, stepOver);
             insTapeActualize(instructionTape, I_IFNZERO, (void *)keyFor1, (void *) labEndCycle, NULL);
             
+            if (insTapeInsertLast(instructionTape, I_DBF, NULL, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
             
             return ERR_OK;
             
