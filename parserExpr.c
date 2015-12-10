@@ -1416,19 +1416,9 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 
 	tTabSymVarDataType dataTypeOfResult=TAB_SYM_VAR_INTEGER;	//datovy typ vysledku	implicitne pro logicke
 
-	if(rule==S_F_E_PLUS_E || rule==S_F_E_MINUS_E || rule==S_F_E_MUL_E || rule==S_F_E_DIV_E ||
-			rule==S_F_E_AND_E|| rule==S_F_E_OR_E){
-		//aritmeticke a logicke && a ||
-		/**
-		* Provedeme semantickou kontrolu,
-		* prijmame pouze int || double || boolean
-		*/
-		if(leftOperCodeOfDataType==TAB_SYM_VAR_STRING || rightOperCodeOfDataType==TAB_SYM_VAR_STRING){
-			//chyba nesmi byt string
-			return ERR_SEM_COM;
-		}
-		if(rule!=S_F_E_AND_E && rule!=S_F_E_OR_E){
-			//aritmeticke
+		//implicitni konverze
+		if(leftOperCodeOfDataType!=TAB_SYM_VAR_STRING && rightOperCodeOfDataType!=TAB_SYM_VAR_STRING){
+			//provadime implicitni konverze, nesmi byt ani jeden z operandu string
 
 			dataTypeOfResult=leftOperCodeOfDataType;	//implicitne nastavime na typ leveho
 
@@ -1469,7 +1459,7 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 				}
 			}
 		}
-	}
+
 
 	//vytvorime novy neterminal, ktery bude slouzit, jako vysledek
 	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, dataTypeOfResult, stack);
