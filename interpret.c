@@ -577,19 +577,19 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 			strFree(&ret);
 			//a ulozime ji do urcene promenne
 			if (dest->type == VAR_TYPE_INT) {
-				if (oper1->type != VAR_TYPE_STRING) {
+				if (oper1->type == VAR_TYPE_STRING) {
 					return ERR_SEM_COM;
 				}
 				dest->data.intVal = (int)getVarVal(oper1);
 			}
 			else if (dest->type == VAR_TYPE_DOUBLE) {
-				if (oper1->type != VAR_TYPE_STRING) {
+				if (oper1->type == VAR_TYPE_STRING) {
 					return ERR_SEM_COM;
 				}
 				dest->data.doubleVal = getVarVal(oper1);
 			}
 			else if (dest->type == VAR_TYPE_BOOL) {
-				if (oper1->type != VAR_TYPE_STRING) {
+				if (oper1->type == VAR_TYPE_STRING) {
 					return ERR_SEM_COM;
 				}
 				dest->data.boolVal = getVarVal(oper1);
@@ -609,19 +609,19 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
-			if (oper1->type != VAR_TYPE_STRING) {
+			if (oper1->type == VAR_TYPE_STRING) {
 				return ERR_SEM_COM;
 			}
 			dest->data.intVal = (int)getVarVal(oper1);
 		}
 		else if (dest->type == VAR_TYPE_DOUBLE) {
-			if (oper1->type != VAR_TYPE_STRING) {
+			if (oper1->type == VAR_TYPE_STRING) {
 				return ERR_SEM_COM;
 			}
 			dest->data.doubleVal = getVarVal(oper1);
 		}
 		else if (dest->type == VAR_TYPE_BOOL) {
-			if (oper1->type != VAR_TYPE_STRING) {
+			if (oper1->type == VAR_TYPE_STRING) {
 				return ERR_SEM_COM;
 			}
 			dest->data.boolVal = getVarVal(oper1);
