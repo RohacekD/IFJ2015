@@ -60,13 +60,22 @@ void deleteTopFrame(tStack*);
 void insertNewVariable(tFrameContainer*, tVariablePtr, string*);
 
 /*
- * Hleda varaible podle stringu skrz passable framy
+ * Hleda varaible podle stringu skrz passable framy ktera je deklarovana
  * @param stack[in] frameStack
  * @param s[in] jmeno hledane promenne
  * @param var[out] zde vrati ukazatel na promennou pokud ji najde jinak NULL
  * @return 1 pokud se hledani zdarailo jinak 0
  */
 int findVariable(const tStack* , string *, tVariablePtr*); 
+
+/*
+* Hleda varaible podle stringu skrz passable framy
+* @param stack[in] frameStack
+* @param s[in] jmeno hledane promenne
+* @param var[out] zde vrati ukazatel na promennou pokud ji najde jinak NULL
+* @return 1 pokud se hledani zdarailo jinak 0
+*/
+int findVariableToDeclare(const tStack* stack, string* s, tVariablePtr* var);
 /**
  * Hlada variable v druhem nejvyssim funkcim ramci 
  * jedna se o pomocnou funkci pro predavani parametru

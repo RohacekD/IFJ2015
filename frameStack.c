@@ -124,7 +124,7 @@ int findVariable(const tStack* stack, string* s, tVariablePtr* var) {
     else{
         while (elem->frameContainer.passable) {
                 BSTSearchTree((elem->frameContainer.frame), s, &node);
-                if (node != NULL){
+                if (node != NULL && ((tVariablePtr)node->data)->deklared){
                     *var=(tVariablePtr)(node->data);
                     return 1;//jiz jsme nasli promennou
                 }
@@ -139,6 +139,36 @@ int findVariable(const tStack* stack, string* s, tVariablePtr* var) {
     }
     else return 0;
 } 
+
+int findVariableToDeclare(const tStack* stack, string* s, tVariablePtr* var) {
+	tBSTNodePtr node = NULL;
+	*var = NULL;
+	if (stack == NULL || s == NULL || !stack->Top) {
+		return 0;
+	}
+
+	tSElemPtr elem = stack->Top;
+	if (!elem->frameContainer.passable) {
+		BSTSearchTree((elem->frameContainer.frame), s, &node);
+	}
+	else {
+		while (elem->frameContainer.passable) {
+			BSTSearchTree((elem->frameContainer.frame), s, &node);
+			if (node != NULL) {
+				*var = (tVariablePtr)(node->data);
+				return 1;//jiz jsme nasli promennou
+			}
+			if (!elem->rptr) return 0;//dosli jsme na konec stacku
+			elem = elem->rptr;//iterace stackem
+		}
+		BSTSearchTree((elem->frameContainer.frame), s, &node);
+	}
+	if (node != NULL) {
+		*var = (tVariablePtr)(node->data);
+		return 1; //jiz jsme nasli promennou
+	}
+	else return 0;
+}
 
 int findVariableInSubFrame(const tStack* stack, string* s, tVariablePtr* var) {
     tBSTNodePtr node = NULL;
