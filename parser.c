@@ -1934,17 +1934,6 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 return ERR_SEM_DEF;
             }
             
-            //vytvoreni informaci o promenne
-            if ((variableInfo = tabSymCreateVariableInfo(dataType)) == NULL) {
-                freeIdName(idName); 
-                return ERR_INTERNAL;
-            }
-            
-            //vlozeni promenne do lokalni tabulky symbolu
-            if ((tabSymInsertVar(localTable, idName, variableInfo)) == 0) {
-                freeIdName(idName); 
-                return ERR_INTERNAL;
-            }
             
             //cast <decInit>
             
@@ -1955,6 +1944,18 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             
             //pouze definice promenne
             if(token->typ == SEMICOLON) {
+                //vytvoreni informaci o promenne
+                if ((variableInfo = tabSymCreateVariableInfo(dataType)) == NULL) {
+                    freeIdName(idName); 
+                    return ERR_INTERNAL;
+                }
+            
+                //vlozeni promenne do lokalni tabulky symbolu
+                if ((tabSymInsertVar(localTable, idName, variableInfo)) == 0) {
+                    freeIdName(idName); 
+                    return ERR_INTERNAL;
+                }
+                
                 freeIdName(idName);
                 freeTokenMem(&token);
                 return ERR_OK;
@@ -1970,7 +1971,19 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                      return result;
                  }
                 //****************************************************
-                 
+                
+                //vytvoreni informaci o promenne
+                if ((variableInfo = tabSymCreateVariableInfo(dataType)) == NULL) {
+                    freeIdName(idName); 
+                    return ERR_INTERNAL;
+                }
+
+                //vlozeni promenne do lokalni tabulky symbolu
+                if ((tabSymInsertVar(localTable, idName, variableInfo)) == 0) {
+                    freeIdName(idName); 
+                    return ERR_INTERNAL;
+                }
+                
                 string *lastGeneratedTMP;
                 string *key, *key2;
                 //vyhledame klic korespondujici k danemu identifikatoru tabulce symbolu
