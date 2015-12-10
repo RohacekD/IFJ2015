@@ -606,7 +606,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		break;
 	case I_ASSIGN:
 		findVariable(stack, (string*)ins->adr1, &oper1);
-		findVariable(stack, (string*)ins->adr3, &dest);
+		findVariableToDeclare(stack, (string*)ins->adr3, &dest);
+		dest->deklared = true;
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			if (oper1->type == VAR_TYPE_STRING) {
