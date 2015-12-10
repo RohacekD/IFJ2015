@@ -1126,8 +1126,11 @@ ERR_CODES genInsFuncParams(tParamListPtr params, tTabSymListElemPtr startTabSymL
 		if(errCode!=ERR_OK){
 			return errCode;
 		}
+
 		//semanticka kontrola typu
-		if((tTabSymVarDataType)params->act->dataType!=codeOfDataType){
+		if(((tTabSymVarDataType)params->act->dataType==TAB_SYM_VAR_STRING && codeOfDataType!=TAB_SYM_VAR_STRING) ||
+							((tTabSymVarDataType)params->act->dataType!=TAB_SYM_VAR_STRING && codeOfDataType==TAB_SYM_VAR_STRING)){
+			// nelze provest implicitni konverzi mezi stringem a dalsimi typy
 			return ERR_SEM_COM;
 		}
 		//ziskame pointery primo do tabulky symbolu
@@ -1220,7 +1223,9 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 				return errCode;
 			}
 			//semanticka kontrola typu
-			if((tTabSymVarDataType)params->act->dataType!=codeOfDataType){
+			if(((tTabSymVarDataType)params->act->dataType==TAB_SYM_VAR_STRING && codeOfDataType!=TAB_SYM_VAR_STRING) ||
+					((tTabSymVarDataType)params->act->dataType!=TAB_SYM_VAR_STRING && codeOfDataType==TAB_SYM_VAR_STRING)){
+				// nelze provest implicitni konverzi mezi stringem a dalsimi typy
 				return ERR_SEM_COM;
 			}
 			//ziskame pointery primo do tabulky symbolu a ulozime do pool
@@ -1412,7 +1417,7 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 		return ERR_SEM_COM;
 	}
 
-	tTabSymVarDataType dataTypeOfResult=TAB_SYM_VAR_INTEGER;	//datovy typ vysledku	implicitne pro logicke
+	tTabSymVarDataType dataTypeOfResult=TAB_SYM_VAR_INTEGER;	//datovy typ vysledku implicitne pro logicke
 
 	//implicitni konverze
 	if(leftOperCodeOfDataType!=TAB_SYM_VAR_STRING && rightOperCodeOfDataType!=TAB_SYM_VAR_STRING){
