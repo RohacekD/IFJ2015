@@ -423,9 +423,9 @@ int parseFunction() {
     }
        
     //volani funkce pro zpracovani <Kdata_types> - kontrola, zda mi prisel datovy typ
-    if ((result = kDataTypes(&returnType, token->typ)) != 1 || token->typ == KEYW_AUTO) {
+    if ((result = kDataTypes(&returnType, token->typ)) != 1 || returnType == TAB_SYM_VAR_AUTO) {
         freeTokenMem(&token);
-        if (token->typ == KEYW_AUTO) {
+        if (returnType == TAB_SYM_VAR_AUTO) {
             return ERR_SYNTAX;
         }
         else
@@ -537,9 +537,23 @@ int parseFunction() {
                     paramListFree(paramList); tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
-                
                 //vlozim zbytecnou instrukci z duvodu rekurze, kdy funkce vola sebe sama
                 insTapeInsertFirst(instructionTape, I_LABEL, NULL, NULL, NULL);
+                
+                //vytvoreni informaci o funkci pro globalni tabulku symbolu, kvuli kontrole, 
+                //zda nema parametr stejny nazev jako funkce
+                if((funcInfo = tabSymCreateFuncInfo(NULL, (tTabSymVarNoAutoDataType)returnType, 
+                        NULL, NULL, NULL, false)) == NULL) {
+                    freeIdName(idName);
+                    paramListFree(paramList); tabSymFree(localTabSym);
+                    return ERR_INTERNAL;
+                }
+
+                if((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
+                    freeIdName(idName);
+                    paramListFree(paramList); tabSymFree(localTabSym);
+                    return ERR_INTERNAL;
+                }
             }
             else {
                 localTabSym = funcID_info->info.func->locTab;
@@ -695,7 +709,7 @@ int parseFunction() {
  * 7. <Kdata_types> -> keyw_double
  * @param variableType[out]     -   datovy typ tokenu
  * @param tokenType[in]         -   typ prijimaneho tokenu
- * @return      funkce vraci 1, pokud je vse v poradku
+ * @return      funkce vraci 1, pokud je vse v poradku, jinak kod chyby
  */
 int kDataTypes(tTabSymVarDataType *variableType, TokenTypes tokenType) {
     
@@ -725,7 +739,7 @@ int kDataTypes(tTabSymVarDataType *variableType, TokenTypes tokenType) {
  * @param data[in]           -   NULL, jestli se identifikator funkce v globalni tabulce nenachazi
  *                               jinak odkaz na dany prvek
  * @param localTabel[out]    -  odkaz na lokalni tabulku, do ktere ukladame parametry
- * @return 
+ * @return          pokud probehlo vse v poradku, tak ERR_OK, jinak kod chyby
  */
 int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localTable) {
     int result;
@@ -754,9 +768,9 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
     
     //upravene pravidlo 9: <arguments> -> <argument>
     //-----------------------------------------------------------
-    if ((result = kDataTypes(&paramType, token->typ)) != 1 || token->typ == KEYW_AUTO) {
+    if ((result = kDataTypes(&paramType, token->typ)) != 1 || paramType == TAB_SYM_VAR_AUTO) {
         freeTokenMem(&token);
-        if (token->typ == KEYW_AUTO) {
+        if (paramType == TAB_SYM_VAR_AUTO) {
             return ERR_SYNTAX;
         }
         else
@@ -781,7 +795,7 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
  *                                  jinak odkaz na dany prvek
  * @param paramType[in]         -   datovy typ promenne
  * @param localTabel[out]       -  odkaz na lokalni tabulku, do ktere ukladame parametry
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      pokud probehlo vse v poradku, tak ERR_OK, jinak kod chyby
  */
 int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarDataType paramType, tTabSym *localTable) {
     tToken token;
@@ -856,7 +870,7 @@ int parseArgument(tParamListPtr paramList, tTabSymElemData *data, tTabSymVarData
  * funkce zpracovava providla:
  * 11. <argumentNext> -> epsilon
  * 12. <argumentNext> -> , <argument>
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      pokud probehlo vse v poradku, tak ERR_OK, jinak kod chyby
  */
 int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localTable) {
     tToken token;
@@ -889,9 +903,9 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
         }
         
         //--------------------------------------------------------
-        if ((result = kDataTypes(&paramType, token->typ)) != 1 || token->typ == KEYW_AUTO) {
+        if ((result = kDataTypes(&paramType, token->typ)) != 1 || paramType == TAB_SYM_VAR_AUTO) {
             freeTokenMem(&token);
-            if (token->typ == KEYW_AUTO) {
+            if (paramType == TAB_SYM_VAR_AUTO) {
                 return ERR_SYNTAX;
             }
             else
@@ -922,7 +936,7 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
  * @param blockList         -   ukazatel na list tabulek bloku
  * @param parent            -   ukazatel na rodicovsky prvek 
  * @param instructionTape   -   ukazatel na pasku instrukci
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      pokud probehlo vse v poradku, tak ERR_OK, jinak kod chyby
  */
 int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
                         tTabSymListElemPtr parent, tInsTape *instructionTape) {
@@ -1055,7 +1069,7 @@ int parseStatementList(tTabSym *localTable, tTabSymList *blockList,
  * @param instructionTape   -   ukazatel na instrukcni pasku
  * @param blockList         -   ukazatel na list tabulek bloku
  * @param blockListElem     -   aktualni element v listu tabulek symbolu pro bloky
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      pokud probehlo vse v poradku, tak ERR_OK, jinak kod chyby
  */
 int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionTape,
                     tTabSymList *blockList,tTabSymListElemPtr blockListElem) {
@@ -1877,7 +1891,7 @@ int parseStatement(tTabSym *localTable, tToken tokenOrig, tInsTape *instructionT
  * @param localTable        -   ukazatel na lokalni tabulku symbolu
  * @param instructionTape   -   ukazatel na pasku instrukci
  * @param blockListElem     -   aktualni element v listu tabulek bloku
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      pokud probehlo vse v poradku, tak ERR_OK, jinak kod chyby
  */
 int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                     tInsTape *instructionTape, tTabSymListElemPtr blockListElem) {
@@ -1920,17 +1934,6 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 return ERR_SEM_DEF;
             }
             
-            //vytvoreni informaci o promenne
-            if ((variableInfo = tabSymCreateVariableInfo(dataType)) == NULL) {
-                freeIdName(idName); 
-                return ERR_INTERNAL;
-            }
-            
-            //vlozeni promenne do lokalni tabulky symbolu
-            if ((tabSymInsertVar(localTable, idName, variableInfo)) == 0) {
-                freeIdName(idName); 
-                return ERR_INTERNAL;
-            }
             
             //cast <decInit>
             
@@ -1941,6 +1944,18 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             
             //pouze definice promenne
             if(token->typ == SEMICOLON) {
+                //vytvoreni informaci o promenne
+                if ((variableInfo = tabSymCreateVariableInfo(dataType)) == NULL) {
+                    freeIdName(idName); 
+                    return ERR_INTERNAL;
+                }
+            
+                //vlozeni promenne do lokalni tabulky symbolu
+                if ((tabSymInsertVar(localTable, idName, variableInfo)) == 0) {
+                    freeIdName(idName); 
+                    return ERR_INTERNAL;
+                }
+                
                 freeIdName(idName);
                 freeTokenMem(&token);
                 return ERR_OK;
@@ -1956,7 +1971,19 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                      return result;
                  }
                 //****************************************************
-                 
+                
+                //vytvoreni informaci o promenne
+                if ((variableInfo = tabSymCreateVariableInfo(dataType)) == NULL) {
+                    freeIdName(idName); 
+                    return ERR_INTERNAL;
+                }
+
+                //vlozeni promenne do lokalni tabulky symbolu
+                if ((tabSymInsertVar(localTable, idName, variableInfo)) == 0) {
+                    freeIdName(idName); 
+                    return ERR_INTERNAL;
+                }
+                
                 string *lastGeneratedTMP;
                 string *key, *key2;
                 //vyhledame klic korespondujici k danemu identifikatoru tabulce symbolu
@@ -2124,7 +2151,7 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
  * @param instructionTape           -   ukazatel na pasku instrukci
  * @param blockList                 -   list tabulek symbolu pro bloky
  * @param blockListElem             -   aktualni element v listu tabulek bloku
- * @return          pokud probehlo vse v poradku, tak 1
+ * @return          pokud probehlo vse v poradku, tak ERR_OK, jinak kod chyby
  */
 int parseBlock(tTabSym *localTable, tTabSymList *blockList,
                 tTabSymListElemPtr blockListElem, tInsTape *instructionTape) {
@@ -2185,15 +2212,13 @@ int parseBlock(tTabSym *localTable, tTabSymList *blockList,
 }
 
 
-
-//!!!!!!!!!!!   TO CHECK  !!!!!!!!!!!!
 /**
  * zpracovava pravidla:
  * 40. <assignment> = ID<specID>
  * 41. <assignment> = <inc_dec>ID
  * @param tokenType
  * @param localTable
- * @return          pokud probehlo vse v poradku, tak 1
+ * @return          pokud probehlo vse v poradku, tak ERR_OK, jinak kod chyby
  */
 
 int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instructionTape,
@@ -2444,7 +2469,6 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
     }
 }
 
-//!!!!! PRIPRAVENO K TESTOVANI !!!!!:
 /**
  * * zpracovava nasledujici pravidla:
  * 32.  <cin> -> epsilon
@@ -2452,7 +2476,7 @@ int parseAssignment(tToken tokenOrig, tTabSym *localTable, tInsTape *instruction
  * @param instructionTape           -   odkaz na instrukcni pasku
  * @param localTable                -   odkaz na lokalni tabulku symbolu
  * @param blockListElem             -   aktualni element v tabulce symbolu pro bloky
- * @return              pokud probehlo vse v poradku, tak 1
+ * @return              pokud probehlo vse v poradku, tak ERR_OK, jinak kod chyby
  */
 int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr blockListElem) {
     int result;
@@ -2527,8 +2551,6 @@ int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr 
 }
 
 
-//!!!!! PRIPRAVENO K TESTOVANI !!!!!
-
 /**
  * zpracovava nasledujici pravidla
  *34. <cout> -> epsilon
@@ -2536,7 +2558,7 @@ int parseCin(tInsTape *instructionTape, tTabSym *localTable, tTabSymListElemPtr 
  * @param instructionTape       -   ukazatel na instrukcni pasku
  * @param blockListElem         -   aktualni element z tabulky symbolu pro bloky
  * @param localTable            -   ukazatel a lokalni tabulku
- * @return      pokud probehlo vse v poradku, tak 1
+ * @return      pokud probehlo vse v poradku, tak ERR_OK, jinak kod chyby
  */
 int parseCout(tInsTape *instructionTape, tTabSymListElemPtr blockListElem, tTabSym *localTable) {
     tToken token;
