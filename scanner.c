@@ -634,6 +634,7 @@ int getToken(tToken *Token, FILE* source) {
 					}
 				}
 				else {//mam 8 cislic
+                                        pom = c;
 					int val;
 					if (strBinToInt(&escape, &val) && val >= 1 && val <= 255) {
 						if (strAddChar(&s, (char)val)) {//precteny znak pridam do stringu
@@ -687,6 +688,7 @@ int getToken(tToken *Token, FILE* source) {
 					}
 				}
 				else {
+                                    pom = c;
 					int val;
 					if (strOctToInt(&escape, &val) && val >= 1 && val <= 255) {
 						if (strAddChar(&s, (char)val)) {
@@ -741,6 +743,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 				else {
 					int val;
+                                        pom = c;
 					if (strHexToInt(&escape, &val) && val >= 1 && val <= 255) {
 						if (strAddChar(&s, (char)val)) {
 							freeTokenMem(&tok);
