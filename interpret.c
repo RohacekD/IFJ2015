@@ -548,7 +548,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	case I_CBF:
 		pushNewFrame(stack, true);
 		tab = (tTabSym*)ins->adr1;
-		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
+		tTabSymToFrame(tab->root, &stack->Top->frameContainer, false);
 		break;
 		//volani fce
 	case I_CF:
@@ -563,7 +563,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		pushNewFrame(stack, false);
 		tab = (tTabSym*)ins->adr1;
 		insToCall = (tInsTapeInsPtr)ins->adr2;
-		tTabSymToFrame(tab->root, &stack->Top->frameContainer);
+		tTabSymToFrame(tab->root, &stack->Top->frameContainer, true);
 		//do ramce volane fce nastavime parametry a zavolame fci, pokud neporjde tak vratime error
 		if ((retErr=setParams(&ins, stack)) != ERR_OK || (retErr=executeTape(insToCall)) != ERR_OK)
 			return retErr;
@@ -721,6 +721,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		break;
     case I_LABEL://jen navesti nic nedelej
             break;
+	case I_DECLARE:
+		findVariableToDeclare(stack, (string*)ins->adr1, &oper1);
+		oper1->deklared = true;
+		break;
 	default:
 		break;
 	}
@@ -764,7 +768,7 @@ int setParams(tInsTapeInsPtr* ins, tStack* stack) {
 /*
  * Projde cely strom pomoci preorder
  */
-void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer) {
+void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer, bool isFunction) {
 	if (node) {
 		tVariablePtr var;
 		tVariableType type;
@@ -799,8 +803,12 @@ void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer) {
 		else {
 			return;
 		}
+		var->deklared = isFunction;
+		if (isdigit((int)node->key->str[0])) {
+			var->deklared = true;
+		}
 		insertNewVariable(frameContainer, var,node->key);
-		tTabSymToFrame(node->l, frameContainer);
-		tTabSymToFrame(node->r, frameContainer);
+		tTabSymToFrame(node->l, frameContainer, isFunction);
+		tTabSymToFrame(node->r, frameContainer, isFunction);
 	}
 }

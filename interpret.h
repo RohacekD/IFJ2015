@@ -21,7 +21,7 @@ int executeTape(tInsTapeInsPtr);
  */
 int executeIns(tInsTapeInsPtr* , tStack* );
 
-void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer);
+void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer, bool isFunction);
 
 int setParams(tInsTapeInsPtr* ins, tStack* stack);
 

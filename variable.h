@@ -28,6 +28,7 @@ typedef struct tVariableStr{
 	tVariableType type;
 	tVariableData data;
 	bool init;
+	bool deklared;
 } *tVariablePtr;
 
 /*
