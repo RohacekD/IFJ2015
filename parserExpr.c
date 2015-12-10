@@ -820,6 +820,9 @@ ERR_CODES genInsTermToNoterm(tTabSymListElemPtr startTabSymListElem, tTabSym* ta
 
 	//vytvorime novy neterminal, ktery bude slouzit, jako cilova adresa
 	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, codeOfDataType, stack);
+	if(adr3==NULL){
+		return ERR_INTERNAL;
+	}
 
 	if(adr1==NULL || adr3==NULL){
 		return ERR_INTERNAL;
@@ -842,7 +845,7 @@ ERR_CODES genInsTermToNoterm(tTabSymListElemPtr startTabSymListElem, tTabSym* ta
  * @param insTape[in]				-	Paska instrukci, na kterou vlozi nove instrukce.
  * @return	Vraci ERR_CODES
  */
-ERR_CODES genInsUnaryMinus(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTabSym* insertToTable, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
+ERR_CODES genInsUnaryMinus(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tPrecStack* stack, tPrecStack* stackForGen, tInsTape* insTape){
 	//prvni je minus dame jej pryc
 	precStackPop(stackForGen);
 
@@ -878,15 +881,16 @@ ERR_CODES genInsUnaryMinus(tTabSymListElemPtr startTabSymListElem, tTabSym* tabS
 		codeOfDataType=TAB_SYM_VAR_INTEGER;
 	}
 
-
 	//ziskame pointery primo do tabulky symbolu
 	string* adr1=tabSymListGetPointerToKey(startTabSymListElem, tabSym, topElemData->id);
 
-	//vytvorime novy neterminal, ktery bude slouzit, jako cilova adresa
-	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, codeOfDataType, stack);
+	//ulozime neterminal na vrchol stacku
+	if(stack!=NULL && precStackPushElementOfKind(stack, PREC_STACK_NONTERMINAL, 0, topElemData->id)==0){
+		return ERR_INTERNAL;
+	}
 
 	//vlozime instrukci na pasku
-	if(insTapeInsertLast(insTape, I_UMINUS, adr1, NULL, adr3)==0){
+	if(insTapeInsertLast(insTape, I_UMINUS, adr1, NULL, adr1)==0){
 		return ERR_INTERNAL;
 	}
 	return ERR_OK;
@@ -938,7 +942,10 @@ ERR_CODES genInsNot(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tTa
 	string* adr1=tabSymListGetPointerToKey(startTabSymListElem, tabSym, topElemData->id);
 
 	//vytvorime novy neterminal, ktery bude slouzit, jako cilova adresa(vysledkem je bool)
-	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, TAB_SYM_VAR_BOOLEAN, stack);
+	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, TAB_SYM_VAR_INTEGER, stack);
+	if(adr3==NULL){
+		return ERR_INTERNAL;
+	}
 
 	//vlozime instrukci na pasku
 	if(insTapeInsertLast(insTape, I_LOG_NOT, adr1, NULL, adr3)==0){
@@ -1005,6 +1012,9 @@ ERR_CODES genInsPrefix(ruleAutomateStates rule, tTabSymListElemPtr startTabSymLi
 
 	//vytvorime novy neterminal, ktery bude slouzit, jako cilova adresa
 	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, codeOfDataType, stack);
+	if(adr3==NULL){
+		return ERR_INTERNAL;
+	}
 
 	tInstructTypes insType;
 	if(rule==S_F_DEC_I){
@@ -1076,6 +1086,9 @@ ERR_CODES genInsPostfix(ruleAutomateStates rule, tTabSymListElemPtr startTabSymL
 
 	//vytvorime novy neterminal, ktery bude slouzit, jako cilova adresa
 	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, codeOfDataType, stack);
+	if(adr3==NULL){
+			return ERR_INTERNAL;
+	}
 
 	tInstructTypes insType;
 	if(rule==S_F_I_DEC){
@@ -1265,6 +1278,9 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 
 		//vytvorime novy neterminal, ktery bude slouzit, jako return pro funkci (vysledkem je string)
 		string* saveTo=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, dataTypeOfResult, stack);
+		if(saveTo==NULL){
+			return ERR_INTERNAL;
+		}
 		//vygenerujeme prislusne instrukce
 		switch (buildInKind) {
 			case BUILD_IN_FUNC_ID_CONCAT:
@@ -1319,6 +1335,9 @@ ERR_CODES genInsFunc(tTabSymListElemPtr startTabSymListElem, tTabSym* tabSym, tT
 	dataTypeOfResult=funcInfo->retType;	// datovy typ pro ulozeni hodnoty funkce
 	//vytvorime novy neterminal, ktery bude slouzit, jako return pro funkci (vysledkem je string)
 	string* saveTo=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, dataTypeOfResult, stack);
+	if(saveTo==NULL){
+		return ERR_INTERNAL;
+	}
 
 	//call function adr1 - locTab adr2 - ins adr3 - adresa kam ulozit vysledek fce(u main NULL)
 	if(insTapeInsertLast(insTape, I_CF, funcInfo->locTab, funcInfo->instTape->first, saveTo)==0){
@@ -1374,6 +1393,7 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 	if(topElemData==NULL){
 		return ERR_INTERNAL;
 	}
+
 	//ziskame pointery leveho operandu primo do tabulky symbolu
 	string* adr1=tabSymListGetPointerToKey(startTabSymListElem, tabSym, topElemData->id);
 
@@ -1398,15 +1418,15 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 	precStackPop(stackForGen);
 
 	//ziskame data o neterminalu/pravem operandu
-	topElemData=precStackTop(stackForGen);
-	if(topElemData==NULL){
+	tPrecStackData* topElemDataNext=precStackTop(stackForGen);
+	if(topElemDataNext==NULL){
 		return ERR_INTERNAL;
 	}
 	//ziskame pointery leveho operandu primo do tabulky symbolu
-	string* adr2=tabSymListGetPointerToKey(startTabSymListElem, tabSym, topElemData->id);
+	string* adr2=tabSymListGetPointerToKey(startTabSymListElem, tabSym, topElemDataNext->id);
 
 	//hledame symbol neterminalu v tabulce
-	tTabSymElemData* rightOperandData= tabSymListSearch(startTabSymListElem,tabSym, topElemData->id);
+	tTabSymElemData* rightOperandData= tabSymListSearch(startTabSymListElem,tabSym, topElemDataNext->id);
 	if(rightOperandData==NULL){
 		/*
 		 * chyba nenalezeno, ale jedna se o interni chybu, protoze,
@@ -1438,13 +1458,11 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 		return ERR_SEM_COM;
 	}
 
-	tTabSymVarDataType dataTypeOfResult=TAB_SYM_VAR_INTEGER;	//datovy typ vysledku implicitne pro logicke
 
 	//implicitni konverze
 	if(leftOperCodeOfDataType!=TAB_SYM_VAR_STRING && rightOperCodeOfDataType!=TAB_SYM_VAR_STRING){
 		//provadime implicitni konverze, nesmi byt ani jeden z operandu string
 
-		dataTypeOfResult=leftOperCodeOfDataType;	//implicitne nastavime vysledek na typ leveho
 
 		if(leftOperCodeOfDataType!=rightOperCodeOfDataType){
 			//operandy se nerovnaji
@@ -1458,7 +1476,6 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 				 * BOOL		DOUBLE	|	DOUBLE
 				 */
 				leftOperandData->type=rightOperCodeOfDataType;	//prepiseme jeho dataovy typ
-				dataTypeOfResult=rightOperCodeOfDataType;
 			}
 			if(leftOperCodeOfDataType==TAB_SYM_VAR_DOUBLE){
 				/*levy je double vysledny typ je typ double
@@ -1470,7 +1487,6 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 				 * DOUBLE	DOUBLE	|	DOUBLE			//nemame kvuli zanoreni v podmince
 				 */
 				rightOperandData->type=TAB_SYM_VAR_DOUBLE;
-				dataTypeOfResult=TAB_SYM_VAR_DOUBLE;
 			}
 			if(leftOperCodeOfDataType==TAB_SYM_VAR_INTEGER){
 				/*levy je integer
@@ -1486,7 +1502,6 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 				if(rightOperCodeOfDataType==TAB_SYM_VAR_DOUBLE){
 					//levy je integer a pravy double.
 					leftOperandData->type=TAB_SYM_VAR_DOUBLE;	//prepiseme jeho dataovy typ
-					dataTypeOfResult=TAB_SYM_VAR_DOUBLE;
 				}else{
 					rightOperandData->type=TAB_SYM_VAR_INTEGER;
 				}
@@ -1495,20 +1510,6 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 		}
 	}
 
-
-
-
-
-	//nyni je nutne jeste upravit vysledek pro logicke operace, mohlo dojit k prepsani
-	if(rule==S_F_E_EQU_E || rule==S_F_E_NEQU_E || rule==S_F_E_LESS_E || rule==S_F_E_GREATER_E || rule==S_F_E_LESSEQU_E
-			|| rule==S_F_E_GREATEREQU_E || rule==S_F_E_AND_E  || rule==S_F_E_OR_E){
-		//pro jistotu vracime implicitni hodnotu
-		dataTypeOfResult=TAB_SYM_VAR_INTEGER;
-	}
-
-
-	//vytvorime novy neterminal, ktery bude slouzit, jako vysledek
-	string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, dataTypeOfResult, stack);
 	tInstructTypes insType;
 
 	switch (rule) {
@@ -1554,10 +1555,38 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 			break;
 	}
 
-	//vlozime instrukci na pasku
-	if(insTapeInsertLast(insTape, insType, adr1, adr2, adr3)==0){
-		return ERR_INTERNAL;
+
+	if(rule==S_F_E_EQU_E || rule==S_F_E_NEQU_E || rule==S_F_E_LESS_E || rule==S_F_E_GREATER_E || rule==S_F_E_LESSEQU_E
+				|| rule==S_F_E_GREATEREQU_E || rule==S_F_E_AND_E  || rule==S_F_E_OR_E){
+		//pro logicke operace vytvorime novy tmp
+		//vytvorime novy neterminal, ktery bude slouzit, jako vysledek
+		string* adr3=createNewNoterminal(startTabSymListElem, tabSym, insertToTable, TAB_SYM_VAR_INTEGER, stack);
+		if(adr3==NULL){
+			return ERR_INTERNAL;
+		}
+		//vlozime instrukci na pasku
+		if(insTapeInsertLast(insTape, insType, adr1, adr2, adr3)==0){
+			return ERR_INTERNAL;
+		}
+	}else{
+		//pro ostatni recyklujeme levy
+		//ulozime neterminal na vrchol stacku
+
+		string leftOperSymbol;	//pri znovu pouziti tmp promenne
+		strInit(&leftOperSymbol);
+		strCopyString(&leftOperSymbol, adr1);
+
+		if(stack!=NULL && precStackPushElementOfKind(stack, PREC_STACK_NONTERMINAL, 0, &leftOperSymbol)==0){
+			strFree(&leftOperSymbol);
+			return ERR_INTERNAL;
+		}
+
+		if(insTapeInsertLast(insTape, insType, adr1, adr2, adr1)==0){
+			strFree(&leftOperSymbol);
+			return ERR_INTERNAL;
+		}
 	}
+
 	return ERR_OK;
 }
 
@@ -1579,7 +1608,7 @@ ERR_CODES manageRule(ruleAutomateStates rule, tTabSymListElemPtr startTabSymList
 		case S_F_I:
 			return genInsTermToNoterm(startTabSymListElem, tabSym, insertToTable, stack, stackForGen, insTape);
 		case S_F_MINUS_E:
-			return genInsUnaryMinus(startTabSymListElem, tabSym, insertToTable, stack, stackForGen,insTape);
+			return genInsUnaryMinus(startTabSymListElem, tabSym, stack, stackForGen,insTape);
 			break;
 		case S_F_NOT_E:
 			return genInsNot(startTabSymListElem, tabSym, insertToTable, stack, stackForGen, insTape);
@@ -1622,6 +1651,46 @@ ERR_CODES manageRule(ruleAutomateStates rule, tTabSymListElemPtr startTabSymList
 			break;
 	}
 
+}
+
+/**
+ * Slouzi pro vytvoreni tmp promene, pro parser
+ * @param stack[in]			-	Odtud vezme z vrcholu neterminal
+ * @param tableListElem[in]	-	Slouzi pro najiti symbolu v hiararchii tabulek.
+ * @param table[in]			-	Slouzi pro najiti symbolu v hiararchii tabulek.
+ * @param insertToTable[in]	-	Do teto tabulky vlozi nove vygenerovnay tmp.
+ * @param tape[in]			-	Na tuto pasku generuje instrukci prirazeni do nove vygenerovane tmp.
+ * @return vraci ERR_CODES
+ */
+ERR_CODES genEndInstruction(tPrecStack* stack, tTabSymListElemPtr tableListElem, tTabSym* table, tTabSym* insertToTable, tInsTape* tape){
+	//vezmeme neterminal z vrcholu zasobniku
+	ERR_CODES errRet;
+	tPrecStackData* topElemData=precStackTop(stack);
+	tTabSymElemData* dataOfLast;
+	//zjistime jeho datovy typ
+	if((dataOfLast = tabSymListSearch(tableListElem, table, topElemData->id)) == NULL) {
+		return ERR_INTERNAL;
+	}
+	tTabSymVarDataType expDataTypeFor;
+	errRet=getDataTypeOfSymbol(dataOfLast, &expDataTypeFor);
+	if(errRet!=ERR_OK){
+		return errRet;
+	}
+
+
+	//vytvorime novy neterminal, ktery bude slouzit, jako cilova adresa
+	string* adr3=createNewNoterminal(tableListElem, table, insertToTable, expDataTypeFor, NULL);
+	if(adr3==NULL){
+		return ERR_INTERNAL;
+	}
+	//ziskame pointery leveho operandu primo do tabulky symbolu
+	string* adr1=tabSymListGetPointerToKey(tableListElem, table, topElemData->id);
+
+	//vlozime instrukci na pasku
+	if(insTapeInsertLast(tape, I_ASSIGN, adr1, NULL, adr3)==0){
+		return ERR_INTERNAL;
+	}
+	return ERR_OK;
 }
 
 int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* tape,
@@ -1759,8 +1828,8 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 			if(a==TERMINAL_ENDMARK && b==TERMINAL_CLOSE_BRACKET){
 				//pokud je na vrchu zasobniku $ a prichazi )
 				ungetToken(&token);	//pro dalsi zpracovani
-
-				errRet=ERR_OK;
+				//musime jeste vygenerovat konecnou instrukci pro parser
+				errRet=genEndInstruction(&stack, tableListElem, table, insertToTable, tape);
 			}else{
 				//chyba
 				errRet=ERR_SYNTAX;
@@ -1770,6 +1839,11 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 		precStackTopTerminal(&stack, &a);
 	} while (b!=TERMINAL_ENDMARK || a!=TERMINAL_ENDMARK);//b = $ and top = $
 
+	//musime jeste vygenerovat konecnou instrukci pro parser
+	errRet=genEndInstruction(&stack, tableListElem, table, insertToTable, tape);
+	if(errRet!=ERR_OK){
+		goto ERROR_HANDLER;
+	}
 	ungetToken(&token);	//pro dalsi zpracovani
 	precStackDispose(&stack);
 	precStackFree(&revertedTopStack);
