@@ -32,6 +32,7 @@ enum states {
 	STRING_HEX_DEC_NUMBER,
 	INT_PART,
 	FLOAT_OR_INT,
+	FLOAT_CHECK,//float cast musi mit aspon jednu platnou cislici
 	FLOAT_PART,
 	EXPONENT,
 	EXPONENT_CHECK,
@@ -219,7 +220,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else if (c == '.') {
-				state = FLOAT_PART;
+				state = FLOAT_CHECK;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
 					freeTokenMem(&tok);
@@ -255,7 +256,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else if (c == '.') {
-				state = FLOAT_PART;
+				state = FLOAT_CHECK;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
 					freeTokenMem(&tok);
@@ -286,6 +287,25 @@ int getToken(tToken *Token, FILE* source) {
 				return 1;
 			}
 			break;
+		case FLOAT_CHECK:
+			if (c >= '0' && c <= '9') {
+				state = FLOAT_PART;
+				if (strAddChar(&s, c)) {
+					strFree(&s);
+					freeTokenMem(&tok);
+					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
+				}
+			}
+			else {
+				pom = c;
+				errorFlag = 1;
+				Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n", ERR_MESSAGES[ERR_LEX], line, character);
+				strFree(&s);
+				freeTokenMem(&tok);
+				return 42;
+			}
+			break;
+
 		case FLOAT_PART:
 			if (c >= '0' && c <= '9') {
 				state = FLOAT_PART;
