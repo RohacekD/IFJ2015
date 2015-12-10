@@ -423,9 +423,9 @@ int parseFunction() {
     }
        
     //volani funkce pro zpracovani <Kdata_types> - kontrola, zda mi prisel datovy typ
-    if ((result = kDataTypes(&returnType, token->typ)) != 1 || token->typ == KEYW_AUTO) {
+    if ((result = kDataTypes(&returnType, token->typ)) != 1 || returnType == TAB_SYM_VAR_AUTO) {
         freeTokenMem(&token);
-        if (token->typ == KEYW_AUTO) {
+        if (returnType == TAB_SYM_VAR_AUTO) {
             return ERR_SYNTAX;
         }
         else
@@ -754,9 +754,9 @@ int parseArguments(tParamListPtr paramList, tTabSymElemData *data, tTabSym *loca
     
     //upravene pravidlo 9: <arguments> -> <argument>
     //-----------------------------------------------------------
-    if ((result = kDataTypes(&paramType, token->typ)) != 1 || token->typ == KEYW_AUTO) {
+    if ((result = kDataTypes(&paramType, token->typ)) != 1 || paramType == TAB_SYM_VAR_AUTO) {
         freeTokenMem(&token);
-        if (token->typ == KEYW_AUTO) {
+        if (paramType == TAB_SYM_VAR_AUTO) {
             return ERR_SYNTAX;
         }
         else
@@ -889,9 +889,9 @@ int argumentNext(tParamListPtr paramList, tTabSymElemData *data, tTabSym *localT
         }
         
         //--------------------------------------------------------
-        if ((result = kDataTypes(&paramType, token->typ)) != 1 || token->typ == KEYW_AUTO) {
+        if ((result = kDataTypes(&paramType, token->typ)) != 1 || paramType == TAB_SYM_VAR_AUTO) {
             freeTokenMem(&token);
-            if (token->typ == KEYW_AUTO) {
+            if (paramType == TAB_SYM_VAR_AUTO) {
                 return ERR_SYNTAX;
             }
             else
