@@ -6,6 +6,7 @@
 #include "tabSym.h"
 #include "scanner.h"
 #include <ctype.h>
+#include <math.h>
 /*
  * Dostane instrukci a od te zacne vykonavat program.
  * Vykonava skokove instrukce ve svem tele

@@ -1839,6 +1839,12 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 		precStackTopTerminal(&stack, &a);
 	} while (b!=TERMINAL_ENDMARK || a!=TERMINAL_ENDMARK);//b = $ and top = $
 
+	if(precStackTop(&stack)->type==PREC_STACK_ENDMARK){
+		//jedna se o prazdny vyraz
+		errRet=ERR_SYNTAX;	//chyba
+		goto ERROR_HANDLER;
+	}
+
 	//musime jeste vygenerovat konecnou instrukci pro parser
 	errRet=genEndInstruction(&stack, tableListElem, table, insertToTable, tape);
 	if(errRet!=ERR_OK){
