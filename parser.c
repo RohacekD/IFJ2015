@@ -753,9 +753,6 @@ int parseFunction() {
             //token neni ; ani {
             freeTokenMem(&token);
             freeIdName(idName);
-            if (funcID_info == NULL) {
-                paramListFree(paramList); tabSymFree(localTabSym);
-            }
             return ERR_SYNTAX;
         }
         //token neni oteviraci zavorka
