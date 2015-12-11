@@ -1475,7 +1475,7 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 				 * BOOL		INT		|	INT
 				 * BOOL		DOUBLE	|	DOUBLE
 				 */
-				leftOperandData->type=rightOperCodeOfDataType;	//prepiseme jeho dataovy typ
+				leftOperandData->info.var->dataType=rightOperCodeOfDataType;	//prepiseme jeho dataovy typ
 			}
 			if(leftOperCodeOfDataType==TAB_SYM_VAR_DOUBLE){
 				/*levy je double vysledny typ je typ double
@@ -1486,7 +1486,7 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 				 * DOUBLE	INT		|	DOUBLE
 				 * DOUBLE	DOUBLE	|	DOUBLE			//nemame kvuli zanoreni v podmince
 				 */
-				rightOperandData->type=TAB_SYM_VAR_DOUBLE;
+				rightOperandData->info.var->dataType=TAB_SYM_VAR_DOUBLE;
 			}
 			if(leftOperCodeOfDataType==TAB_SYM_VAR_INTEGER){
 				/*levy je integer
@@ -1501,9 +1501,9 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 
 				if(rightOperCodeOfDataType==TAB_SYM_VAR_DOUBLE){
 					//levy je integer a pravy double.
-					leftOperandData->type=TAB_SYM_VAR_DOUBLE;	//prepiseme jeho dataovy typ
+					leftOperandData->info.var->dataType=TAB_SYM_VAR_DOUBLE;	//prepiseme jeho datovy typ
 				}else{
-					rightOperandData->type=TAB_SYM_VAR_INTEGER;
+					rightOperandData->info.var->dataType=TAB_SYM_VAR_INTEGER;
 				}
 
 			}
@@ -1663,6 +1663,11 @@ ERR_CODES manageRule(ruleAutomateStates rule, tTabSymListElemPtr startTabSymList
  * @return vraci ERR_CODES
  */
 ERR_CODES genEndInstruction(tPrecStack* stack, tTabSymListElemPtr tableListElem, tTabSym* table, tTabSym* insertToTable, tInsTape* tape){
+	//provedeme koncovou kontrolu na prazdny prikaz
+	if(precStackEmpty(stack) ||precStackTop(stack)->type!=PREC_STACK_NONTERMINAL){
+		//jedna se o prazdny vyraz
+		return ERR_SYNTAX;	//chyba
+	}
 	//vezmeme neterminal z vrcholu zasobniku
 	ERR_CODES errRet;
 	tPrecStackData* topElemData=precStackTop(stack);
@@ -1828,6 +1833,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 			if(a==TERMINAL_ENDMARK && b==TERMINAL_CLOSE_BRACKET){
 				//pokud je na vrchu zasobniku $ a prichazi )
 				ungetToken(&token);	//pro dalsi zpracovani
+
 				//musime jeste vygenerovat konecnou instrukci pro parser
 				errRet=genEndInstruction(&stack, tableListElem, table, insertToTable, tape);
 			}else{
@@ -1838,12 +1844,6 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 		}
 		precStackTopTerminal(&stack, &a);
 	} while (b!=TERMINAL_ENDMARK || a!=TERMINAL_ENDMARK);//b = $ and top = $
-
-	if(precStackTop(&stack)->type==PREC_STACK_ENDMARK){
-		//jedna se o prazdny vyraz
-		errRet=ERR_SYNTAX;	//chyba
-		goto ERROR_HANDLER;
-	}
 
 	//musime jeste vygenerovat konecnou instrukci pro parser
 	errRet=genEndInstruction(&stack, tableListElem, table, insertToTable, tape);
