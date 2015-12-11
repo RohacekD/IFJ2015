@@ -1839,7 +1839,7 @@ int parseExpression(tTabSymListElemPtr tableListElem, tTabSym* table, tInsTape* 
 		precStackTopTerminal(&stack, &a);
 	} while (b!=TERMINAL_ENDMARK || a!=TERMINAL_ENDMARK);//b = $ and top = $
 
-	if(precStackTop(stack)->type==PREC_STACK_ENDMARK){
+	if(precStackTop(&stack)->type==PREC_STACK_ENDMARK){
 		//jedna se o prazdny vyraz
 		errRet=ERR_SYNTAX;	//chyba
 		goto ERROR_HANDLER;
