@@ -12,7 +12,7 @@
 CC = gcc -std=c99 -Wall -Wextra
 BASICOPTS = -g
 CFLAGS = $(BASICOPTS)
-
+LIBS = -lm
 
 # Define the target directories.
 TARGETDIR_IFJ215=.
@@ -44,7 +44,7 @@ LDLIBS_IFJ215 = $(USERLIBS_IFJ215)
 
 # Link or archive
 $(TARGETDIR_IFJ215)/ifj215: $(TARGETDIR_IFJ215) $(OBJS_IFJ215) $(DEPLIBS_IFJ215)
-	$(LINK.c) $(CFLAGS_IFJ215) $(CPPFLAGS_IFJ215) -o $@ $(OBJS_IFJ215) $(LDLIBS_IFJ215)
+	$(LINK.c) $(CFLAGS_IFJ215) $(CPPFLAGS_IFJ215) -o $@ $(OBJS_IFJ215) $(LDLIBS_IFJ215) $(LIBS)
 
 
 # Compile source files into .o files
@@ -64,16 +64,16 @@ $(TARGETDIR_IFJ215)/insTape.o: $(TARGETDIR_IFJ215) insTape.c
 	$(COMPILE.c) $(CFLAGS_IFJ215) $(CPPFLAGS_IFJ215) -o $@ insTape.c
 
 $(TARGETDIR_IFJ215)/tabSym.o: $(TARGETDIR_IFJ215) tabSym.c
-	$(COMPILE.c) $(CFLAGS_IFJ215) $(CPPFLAGS_IFJ215) -o $@ tabSym.c
+	$(COMPILE.c) $(CFLAGS_IFJ215) $(CPPFLAGS_IFJ215) -o $@ tabSym.c 
 
 $(TARGETDIR_IFJ215)/variable.o: $(TARGETDIR_IFJ215) variable.c
-	$(COMPILE.c) $(CFLAGS_IFJ215) $(CPPFLAGS_IFJ215) -o $@ variable.c
+	$(COMPILE.c) $(CFLAGS_IFJ215) $(CPPFLAGS_IFJ215) -o $@ variable.c 
 
 $(TARGETDIR_IFJ215)/paramList.o: $(TARGETDIR_IFJ215) paramList.c
 	$(COMPILE.c) $(CFLAGS_IFJ215) $(CPPFLAGS_IFJ215) -o $@ paramList.c
 
 $(TARGETDIR_IFJ215)/frameStack.o: $(TARGETDIR_IFJ215) frameStack.c
-	$(COMPILE.c) $(CFLAGS_IFJ215) $(CPPFLAGS_IFJ215) -o $@ frameStack.c
+	$(COMPILE.c) $(CFLAGS_IFJ215) $(CPPFLAGS_IFJ215) -o $@ frameStack.c 
 
 $(TARGETDIR_IFJ215)/interpret.o: $(TARGETDIR_IFJ215) interpret.c
 	$(COMPILE.c) $(CFLAGS_IFJ215) $(CPPFLAGS_IFJ215) -o $@ interpret.c

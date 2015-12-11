@@ -78,6 +78,7 @@ tTabSymListElemPtr prepareBlockList(tTabSym** blockLocalTable, tTabSymList* bloc
     
     //vlozeni nove lokalni tabulky symbolu do listu tabulek symbolu pro bloky
     if((newElement = tabSymListInsertTable(blockList, *blockLocalTable, blockListElem)) == NULL) {
+        tabSymFree(*blockLocalTable);
         return NULL;
     }
 
@@ -86,9 +87,11 @@ tTabSymListElemPtr prepareBlockList(tTabSym** blockLocalTable, tTabSymList* bloc
     if(newElement->parentElement == NULL) {
         tTabSymList *newList;
         tTabSymListElemPtr localTableElem;
-        if ((newList = tabSymListCreate()) == NULL)
+        if ((newList = tabSymListCreate()) == NULL) {
             return NULL;
+        }
         if ((localTableElem = tabSymListInsertTable(newList, localTable, NULL)) == NULL) {
+            tabSymListFree(newList);
             return NULL;
         }
         newElement->parentElement = localTableElem;
@@ -106,105 +109,216 @@ int prepareGlobalTable() {
     tFuncInfo *lengthInfo, *subsInfo, *concatInfo, *findInfo, *sortInfo;
     
     //inicializace seznamu parametru
-    if (((lengthParam = initList()) == NULL ) || ((subsParam = initList()) == NULL) || 
-            ((concatParam =initList()) == NULL) ||
-        ((findParam = initList()) == 0) || ((sortParam = initList()) == 0))   return 0;
+    if ((lengthParam = initList()) == NULL )
+        return 0;
+    if ((subsParam = initList()) == NULL)  {
+        paramListFree(lengthParam);
+        return 0;
+    } 
+    if ((concatParam =initList()) == NULL) {
+        paramListFree(lengthParam); paramListFree(subsParam);
+        return 0;
+    }
+    if ((findParam = initList()) == NULL) {
+        paramListFree(lengthParam); paramListFree(subsParam);
+        paramListFree(concatParam);
+        return 0;
+    }
+    if ((sortParam = initList()) == NULL) {
+        paramListFree(lengthParam); paramListFree(subsParam);
+        paramListFree(concatParam); paramListFree(findParam);
+        return 0;
+    }
     
+    //-----------------------------------------------------------------------------------------------------------------
     //vlozeni predpisu pro funkci:  int length (string s)
     char *lengthID = "length";
     string *length = NULL;
-    if ((length = (string*)malloc(sizeof(string))) == NULL) return 0;
-    if (strInit(length) == 1) return 0;
-    
-    if (strConConstString(length, lengthID) == 1) return 0;
+    if ((length = (string*)malloc(sizeof(string))) == NULL) {
+        paramListFree(lengthParam); paramListFree(subsParam);
+        paramListFree(concatParam); paramListFree(findParam); paramListFree(sortParam);
+        return 0;
+    }
+        
+    if (strInit(length) == 1) {
+        paramListFree(lengthParam); paramListFree(subsParam);
+        paramListFree(concatParam); paramListFree(findParam); paramListFree(sortParam);
+        free(length);
+        return 0;
+    }
+    if (strConConstString(length, lengthID) == 1) {
+        paramListFree(lengthParam); paramListFree(subsParam);
+        paramListFree(concatParam); paramListFree(findParam); paramListFree(sortParam);
+        free(length);
+        return 0;
+    }
     if ((insertEl(lengthParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0) {
+        paramListFree(lengthParam); paramListFree(subsParam);
+        paramListFree(concatParam); paramListFree(findParam); paramListFree(sortParam);
+        freeIdName(length);
         return 0;
     }
     if ((lengthInfo = tabSymCreateFuncInfo(lengthParam, TAB_SYM_VAR_NO_AUTO_INTEGER, NULL, NULL, NULL, true)) == NULL) {
+        paramListFree(lengthParam); paramListFree(subsParam);
+        paramListFree(concatParam); paramListFree(findParam); paramListFree(sortParam);
+        freeIdName(length);
         return 0;
     }
-    if (tabSymInsertFunc(globalTable, length, lengthInfo) == 0)
+    if (tabSymInsertFunc(globalTable, length, lengthInfo) == 0) {
+        paramListFree(lengthParam); paramListFree(subsParam);
+        paramListFree(concatParam); paramListFree(findParam); paramListFree(sortParam);
+        freeIdName(length); free(lengthInfo);
         return 0;
+    }
     freeIdName(length);
     //-------------------------------------------------------------------
     //vlozeni predpisu pro funkci: string substr(string s, int i, int n)
     char *substrID = "substr";
     string *substr = NULL;
-    if ((substr = (string*)malloc(sizeof(string))) == NULL) return 0;
-    if (strInit(substr) == 1) return 0;
+    if ((substr = (string*)malloc(sizeof(string))) == NULL)  {
+        paramListFree(subsParam);  paramListFree(sortParam);
+        paramListFree(concatParam); paramListFree(findParam);
+        return 0;
+    }
+    if (strInit(substr) == 1) {
+        paramListFree(subsParam);  paramListFree(sortParam);
+        paramListFree(concatParam); paramListFree(findParam);
+        free(substr);
+        return 0;
+    }
     
     if (strConConstString(substr, substrID) == 1) {
+        paramListFree(subsParam);  paramListFree(sortParam);
+        paramListFree(concatParam); paramListFree(findParam);
+        free(substr);
         return 0;
     }
     if ((insertEl(subsParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 || 
          (insertEl(subsParam, NULL, TAB_SYM_VAR_NO_AUTO_INTEGER)) == 0  ||
              (insertEl(subsParam, NULL, TAB_SYM_VAR_NO_AUTO_INTEGER)) == 0) {
+        paramListFree(subsParam);  paramListFree(sortParam);
+        paramListFree(concatParam); paramListFree(findParam);
+        freeIdName(substr);
         return 0;
     }
     if ((subsInfo = tabSymCreateFuncInfo(subsParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+        paramListFree(subsParam);  paramListFree(sortParam);
+        paramListFree(concatParam); paramListFree(findParam);
+        freeIdName(substr);
         return 0;
     }
-    if (tabSymInsertFunc(globalTable, substr, subsInfo) == 0)
+    if (tabSymInsertFunc(globalTable, substr, subsInfo) == 0) {
+        paramListFree(subsParam);  paramListFree(sortParam);
+        paramListFree(concatParam); paramListFree(findParam);
+        freeIdName(substr); free(subsInfo);
         return 0;
+    }
     freeIdName(substr);
     //-------------------------------------------------------------------
     //vlozeni predpisu pro funkci: string concat(string s1, string s2)
     char *concatID = "concat";
     string *concat;
-    if ((concat = (string*)malloc(sizeof(string))) == NULL) return 0;
-    if (strInit(concat) == 1) return 0;
+    if ((concat = (string*)malloc(sizeof(string))) == NULL) {
+        paramListFree(sortParam); paramListFree(concatParam); paramListFree(findParam);
+        return 0;
+    }
+    if (strInit(concat) == 1) {
+        paramListFree(sortParam); paramListFree(concatParam); paramListFree(findParam);
+        free(concat);
+        return 0;
+    }
     
     if (strConConstString(concat, concatID) == 1) {
+        paramListFree(sortParam); paramListFree(concatParam); paramListFree(findParam);
         return 0;
     }
     if ((insertEl(concatParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 || 
          (insertEl(concatParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 ) {
+        paramListFree(sortParam); paramListFree(concatParam); paramListFree(findParam);
+        freeIdName(concat);
         return 0;
     }
     if ((concatInfo = tabSymCreateFuncInfo(concatParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+        paramListFree(sortParam); paramListFree(concatParam); paramListFree(findParam);
+        freeIdName(concat);
         return 0;
     }
-    if (tabSymInsertFunc(globalTable, concat, concatInfo) == 0)
+    if (tabSymInsertFunc(globalTable, concat, concatInfo) == 0) {
+        paramListFree(sortParam); paramListFree(concatParam); paramListFree(findParam);
+        freeIdName(concat); free(concatInfo);
         return 0;
+    }
     freeIdName(concat);
     //-------------------------------------------------------------------
     //vlozeni predpisu pro funkci: string find(string s, string search)
     char *findID = "find";
     string *find;
-    if ((find = (string*)malloc(sizeof(string))) == NULL) return 0;
-    if (strInit(find) == 1) return 0;
+    if ((find = (string*)malloc(sizeof(string))) == NULL) {
+        paramListFree(sortParam); paramListFree(findParam);
+        return 0;
+    }
+    if (strInit(find) == 1) {
+        paramListFree(sortParam); paramListFree(findParam);
+        free(find);
+        return 0;
+    }
     
     if (strConConstString(find, findID) == 1) {
+        paramListFree(sortParam); paramListFree(findParam);
+        free(find);
         return 0;
     }
     if ((insertEl(findParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 || 
          (insertEl(findParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0 ) {
+        paramListFree(sortParam); paramListFree(findParam);
+        freeIdName(find);
         return 0;
     }
     if ((findInfo = tabSymCreateFuncInfo(findParam, TAB_SYM_VAR_NO_AUTO_INTEGER, NULL, NULL, NULL, true)) == NULL) {
+        paramListFree(sortParam); paramListFree(findParam);
+        freeIdName(find);
         return 0;
     }
-    if (tabSymInsertFunc(globalTable, find, findInfo) == 0)
+    if (tabSymInsertFunc(globalTable, find, findInfo) == 0) {
+        paramListFree(sortParam); paramListFree(findParam);
+        freeIdName(find); free(findInfo);
         return 0;
+    }
     freeIdName(find);
      //-------------------------------------------------------------------
     //vlozeni predpisu pro funkci: string sort(string s)
     char *sortID = "sort";
     string *sort;
-    if ((sort = (string*)malloc(sizeof(string))) == NULL) return 0;
-    if (strInit(sort) == 1) return 0;
+    if ((sort = (string*)malloc(sizeof(string))) == NULL) {
+        paramListFree(sortParam);
+        return 0;
+    }
+    if (strInit(sort) == 1) {
+        paramListFree(sortParam);
+        free(sort);
+        return 0;
+    }
     
     if (strConConstString(sort, sortID) == 1) {
+        paramListFree(sortParam);
+        free(sort);
         return 0;
     }
     if ((insertEl(sortParam, NULL, TAB_SYM_VAR_NO_AUTO_STRING)) == 0) {
+        paramListFree(sortParam);
+        freeIdName(sort);
         return 0;
     }
     if ((sortInfo = tabSymCreateFuncInfo(sortParam, TAB_SYM_VAR_NO_AUTO_STRING, NULL, NULL, NULL, true)) == NULL) {
+        paramListFree(sortParam);
+        freeIdName(sort);
         return 0;
     }
-    if (tabSymInsertFunc(globalTable, sort, sortInfo) == 0)
+    if (tabSymInsertFunc(globalTable, sort, sortInfo) == 0) {
+        paramListFree(sortParam);
+        freeIdName(sort); free(sortInfo);
         return 0;
+    }
     freeIdName(sort);
     //cela funkce probehla uspesne
     return 1;
@@ -496,44 +610,46 @@ int parseFunction() {
                 char *retId = "$ret";
                 string *ret;
                 if ((ret = (string*)malloc(sizeof(string))) == NULL){
-                    freeIdName(idName);
+                    freeIdName(idName); tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
                 if (strInit(ret) == 1){
-                    freeIdName(idName);
+                    freeIdName(idName); free(ret); tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
 
                 if (strConConstString(ret, retId) == 1) {
-                    freeIdName(idName); freeIdName(ret);               
+                    freeIdName(idName); freeIdName(ret); tabSymFree(localTabSym);              
                     return ERR_INTERNAL;
                 }
 
                 if ((retGlobal = copyIdName(ret)) == NULL) {
-                    freeIdName(idName); freeIdName(ret);
+                    freeIdName(idName); freeIdName(ret); tabSymFree(localTabSym);
+                    return ERR_INTERNAL;
                 }
 
                 tVariableInfo *retInfo;
 
                 if ((retInfo = tabSymCreateVariableInfo(returnType)) == NULL) {
-                    freeIdName(idName); freeIdName(ret);
+                    freeIdName(idName); freeIdName(ret); tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
 
                 if (tabSymInsertVar(localTabSym, ret, retInfo) == 0) {
-                    freeIdName(idName); freeIdName(ret);
+                    freeIdName(idName); freeIdName(ret); tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
                 freeIdName(ret);
 
                 
                 if ((paramList = initList(paramList)) == 0) {
+                    freeIdName(idName); tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
                 
                 //vytvoreni instrukcni pasky
                 if ((instructionTape = insTapeCreate()) == NULL) {
-                    freeIdName(idName); freeIdName(ret);
+                    freeIdName(idName); 
                     paramListFree(paramList); tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
@@ -542,15 +658,15 @@ int parseFunction() {
                 
                 //vytvoreni informaci o funkci pro globalni tabulku symbolu, kvuli kontrole, 
                 //zda nema parametr stejny nazev jako funkce
-                if((funcInfo = tabSymCreateFuncInfo(NULL, (tTabSymVarNoAutoDataType)returnType, 
-                        NULL, NULL, NULL, false)) == NULL) {
-                    freeIdName(idName);
+                if((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType, 
+                        localTabSym, NULL, instructionTape, false)) == NULL) {
+                    freeIdName(idName); insTapeFree(instructionTape);
                     paramListFree(paramList); tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
 
                 if((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
-                    freeIdName(idName);
+                    freeIdName(idName); free(funcInfo);
                     paramListFree(paramList); tabSymFree(localTabSym);
                     return ERR_INTERNAL;
                 }
@@ -565,9 +681,6 @@ int parseFunction() {
             //volani funkce pro zpracovani <arguments>
             if((result = parseArguments(paramList, funcID_info, localTabSym)) != ERR_OK) {
                 freeIdName(idName);
-                if (funcID_info == NULL) {
-                    paramListFree(paramList); tabSymFree(localTabSym);
-                }
                 //navratim chybovy kod
                 return result;
             }
@@ -577,9 +690,6 @@ int parseFunction() {
             //jsme u <body> -> bud ';'(deklarace), nebo '{' (definice)
             if ((result = getToken(&token, f)) != 1) {
                 freeIdName(idName);
-                if (funcID_info == NULL) {
-                    paramListFree(paramList); tabSymFree(localTabSym);
-                }
                 return ERR_LEX;
             }
             
@@ -588,21 +698,6 @@ int parseFunction() {
                 //uvolnim token
                 freeTokenMem(&token);
                 
-                if (funcID_info == NULL) {
-                    //vytvoreni informaci o funkci pro globalni tabulku symbolu
-                    if((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType, 
-                            localTabSym, NULL, instructionTape, false)) == NULL) {
-                        freeIdName(idName);
-                        paramListFree(paramList); tabSymFree(localTabSym);
-                        return ERR_INTERNAL;
-                    }
-
-                    if((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
-                        freeIdName(idName);
-                        paramListFree(paramList); tabSymFree(localTabSym);
-                        return ERR_INTERNAL;
-                    }
-                }
                 
                 //nyni uz muzu uvolnit string, ktery nese informace o id funkce
                 //tento identifikator funkce uz je ulozen v globalni tabulce symbolu
@@ -627,30 +722,8 @@ int parseFunction() {
                 tTabSymList *blockList;
                 if ((blockList = tabSymListCreate()) == NULL) {
                     freeIdName(idName);
-                    if (funcID_info == NULL) {
-                        paramListFree(paramList); tabSymFree(localTabSym);
-                    }
                     return ERR_INTERNAL;
                 } 
-                
-                //vytvorim informace o funkci
-                if ((funcInfo = tabSymCreateFuncInfo(paramList, (tTabSymVarNoAutoDataType)returnType,
-                        localTabSym, NULL, instructionTape, true)) == NULL) {
-                    freeIdName(idName);
-                    if (funcID_info == NULL) {
-                        paramListFree(paramList); tabSymFree(localTabSym);
-                    }
-                    return ERR_INTERNAL;
-                }
-                
-                //vlozim informace o funkci do globalni tabulky symbolu
-                if ((result = tabSymInsertFunc(globalTable, idName, funcInfo)) == 0) {
-                    freeIdName(idName);
-                    if (funcID_info == NULL) {
-                        paramListFree(paramList); tabSymFree(localTabSym);
-                    }
-                    return ERR_INTERNAL;
-                }
                 
                 //--------------------------------------------------------
                 //pripravu jsem dokoncil, muzu provadet telo funkce
