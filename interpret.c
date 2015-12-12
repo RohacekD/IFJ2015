@@ -665,6 +665,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		if (dest->data.intVal == oper1->data.stringVal.length) {
 			dest->data.intVal = -1;
 		}
+                //vyjimka pro situaci, kdy jsou oba retezce prazdne
+                if(oper1->data.stringVal.length == 0 && oper2->data.stringVal.length == 0) dest->data.intVal = 0;
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_CONCAT:
