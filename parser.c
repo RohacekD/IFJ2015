@@ -2194,7 +2194,11 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             }
 
             freeIdName(idNameAuto);
-
+            
+            if (insTapeInsertLast(instructionTape, I_DECLARE, (void *)key, NULL, NULL) == 0) {
+                return ERR_INTERNAL;
+            }
+            
             //chci ziskat nazev posledni docasne vygenerovane promenne
             if((lastGeneratedTMP = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
                 return ERR_INTERNAL;
