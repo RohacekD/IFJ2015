@@ -76,6 +76,7 @@ int strConConstString(string *s1, char *s2){
 		}
 		i++;
 	}
+	s1->length=s1->length+i;
 	return STR_SUCCESS;
 }
 
@@ -100,6 +101,9 @@ char *strGetStr(string *s)
 int strGetLength(string *s)
 // vrati delku daneho retezce
 {
+	s->length = 0;
+	while (s.str[s->length] != 0)
+		s->length++;
 	return s->length;
 }
 /**
@@ -128,10 +132,10 @@ string substr(string s, int i, int n, ERR_CODES *err){
     string new;
     strInit(&new);
     
-    if(i<0 || i>= s.length){
-        strFree(&new);
-        *err = STR_ERROR;
-        return new; //zde by mel nastat pravdepodobne runtime error
+    if(i<0 || i>= length(s)){
+    	strFree(&new);
+    	*err = STR_ERROR;
+    	return new; //zde by mel nastat pravdepodobne runtime error
     }
     
     if(n<0){
@@ -160,5 +164,5 @@ string concat(string s1, string s2){
 }
 
 int length(string s){
-    return s.length;
+	return strGetLength(&s);
 }
