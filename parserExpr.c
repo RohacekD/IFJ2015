@@ -1572,17 +1572,11 @@ ERR_CODES genInsBinaryOpers(ruleAutomateStates rule, tTabSymListElemPtr startTab
 		//pro ostatni recyklujeme levy
 		//ulozime neterminal na vrchol stacku
 
-		string leftOperSymbol;	//pri znovu pouziti tmp promenne
-		strInit(&leftOperSymbol);
-		strCopyString(&leftOperSymbol, adr1);
-
-		if(stack!=NULL && precStackPushElementOfKind(stack, PREC_STACK_NONTERMINAL, 0, &leftOperSymbol)==0){
-			strFree(&leftOperSymbol);
+		if(stack!=NULL && precStackPushElementOfKind(stack, PREC_STACK_NONTERMINAL, 0, adr1)==0){
 			return ERR_INTERNAL;
 		}
 
 		if(insTapeInsertLast(insTape, insType, adr1, adr2, adr1)==0){
-			strFree(&leftOperSymbol);
 			return ERR_INTERNAL;
 		}
 	}
