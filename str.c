@@ -102,7 +102,7 @@ int strGetLength(string *s)
 // vrati delku daneho retezce
 {
 	s->length = 0;
-	while (s.str[s->length] != 0)
+	while (s->str[s->length] != 0)
 		s->length++;
 	return s->length;
 }
