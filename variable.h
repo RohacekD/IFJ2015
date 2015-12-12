@@ -5,6 +5,11 @@
 #include "tabSym.h"
 #include <stdbool.h>
 
+/*
+ * Funkce pro ziskani hodnoty promenne
+ * @param tVariablePtr[in] promenna pro prevedeni
+ * @return (int|double|bool)
+ */
 #define getVarVal(var)		\
 ((var->type == VAR_TYPE_INT) ? (var->data.intVal) : (var->type == VAR_TYPE_BOOL) ? (var->data.boolVal) : (var->data.doubleVal))
 

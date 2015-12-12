@@ -844,10 +844,14 @@ int setParams(tInsTapeInsPtr* ins, tStack* stack) {
 	tVariablePtr dest;
 
 	tInsTapeInsPtr istruction = *ins;
+	//dokud bude nasledujici instrukce I_SP se posouvej paskou
 	while (istruction->rptr->type == I_SP) {
 		istruction = istruction->rptr;
+		//adr1 je z framu volajici fuknce
 		findVariableInSubFrame(stack, (string*)istruction->adr1, &oper1);
+		//s destinace je v aktualnim funkcnim ramci
 		findVariable(stack, (string*)istruction->adr3, &dest);
+		//zdrojova promenna musi byt inicializovana
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1);
@@ -878,10 +882,12 @@ void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer, bool isFu
 	if (node) {
 		tVariablePtr var;
 		tVariableType type;
+		//vetev pro promennou, ukladam jen dat. typ
 		if (((tTabSymElemData*)node->data)->type == TAB_SYM_VARIABLE){
 			type = tTabSymToVarNotatation(((tTabSymElemData*)node->data)->info.var->dataType);
 			variableCreate(&var, type);
 		}
+		//pro konstantu kopirujeme hodnotu
 		else if (((tTabSymElemData*)node->data)->type == TAB_SYM_CONSTANT) {
 			type = tTabSymToVarNotatation(((tTabSymElemData*)node->data)->info.constant->dataType);
 			variableCreate(&var, type);
@@ -909,11 +915,15 @@ void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer, bool isFu
 		else {
 			return;
 		}
+		//jestli bylo deklarovano zalezi jestli jde o funkcni ramec nebo pokud 
+		//vytvarime temp. promennou
 		var->deklared = isFunction;
 		if (isdigit((int)node->key->str[0])) {
 			var->deklared = true;
 		}
+		//vytvorenou promennou vlozime na frame
 		insertNewVariable(frameContainer, var,node->key);
+		//pruchod preorder
 		tTabSymToFrame(node->l, frameContainer, isFunction);
 		tTabSymToFrame(node->r, frameContainer, isFunction);
 	}
