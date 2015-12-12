@@ -498,9 +498,8 @@ void parse() {
         //uvolneni globalni tabulky po vygenerovani vsech instrukci a uzavreni souboru
         tabSymFree(globalTable);
         freeIdName(retGlobal);
-        fclose(f);
-        //TODO;
-        exit(0);
+        
+        return;
     }
 }
 
@@ -2152,8 +2151,12 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
             
             if(token->typ != SET_OPER) {
                 freeIdName(idNameAuto);
+                if (token->typ == SEMICOLON){
+                    freeTokenMem(&token);
+                    return ERR_SEM_AUTO;
+                }
                 freeTokenMem(&token);
-                return ERR_SEM_AUTO;
+                return ERR_SYNTAX;
             }
             
             freeTokenMem(&token);
