@@ -132,7 +132,7 @@ string substr(string s, int i, int n, ERR_CODES *err){
     string new;
     strInit(&new);
     
-    if(i<0 || i>= length(s)){
+    if(i<0 || i>= strGetLength(&s)){
     	strFree(&new);
     	*err = STR_ERROR;
     	return new; //zde by mel nastat pravdepodobne runtime error
