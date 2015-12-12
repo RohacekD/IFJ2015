@@ -35,11 +35,41 @@ int strToDouble(string*, double*);
  * @return	1 - pokud prevod probehne v poradku, jinak 0.
  */
 int strToInt(string* forConversion, int* val);
-
+/**
+* Prevede obsah string na int. Pokud je obsah platnym celym binarnim cislem.
+* @param forConversion	-	string, ktery bude preveden na int
+* @param val	-	ukazatel pomoci, ktereho vraci prevedenou hodnotu (v pripade chyby neprepisuje)
+* @return	1 - pokud prevod probehne v poradku, jinak 0.
+*/
 int strBinToInt(string* forConversion, int* val);
+/**
+* Prevede obsah string na int. Pokud je obsah platnym celym hexadecimalnim cislem.
+* @param forConversion	-	string, ktery bude preveden na int
+* @param val	-	ukazatel pomoci, ktereho vraci prevedenou hodnotu (v pripade chyby neprepisuje)
+* @return	1 - pokud prevod probehne v poradku, jinak 0.
+*/
 int strHexToInt(string* forConversion, int* val);
+/**
+* Prevede obsah string na int. Pokud je obsah platnym celym oktalovym cislem.
+* @param forConversion	-	string, ktery bude preveden na int
+* @param val	-	ukazatel pomoci, ktereho vraci prevedenou hodnotu (v pripade chyby neprepisuje)
+* @return	1 - pokud prevod probehne v poradku, jinak 0.
+*/
 int strOctToInt(string* forConversion, int* val);
+/**
+* Prevede string na string bez escape sekvenci
+* @deprecated
+* @param string	-	string, ktery bude preveden na int
+* @return	1 - pokud prevod probehne v poradku, jinak 0.
+*/
 int unescapeStr(string*);
+/**
+* porovna string vuci klicovym slovum. Definovanym v poli keyWords
+* 
+* @uses keyWords[][]
+* @param string	-	string ktery bude porovnan s klicovymi slovy
+* @return TokenTypes typ tokenu (TYPE_IDENTIFICATOR|[KEYW_AUTO-KEYW_RETURN])
+*/
 int isKeyWord(string*);
 
 /*
