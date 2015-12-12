@@ -9,8 +9,10 @@ int executeTape(tInsTapeInsPtr ins) {
 	tInsTapeInsPtr instruction;
 	instruction = ins;
 
+	//pro navratove kody executeIns
 	ERR_CODES ret;
 
+	//toto vytiskne pasku kazde fce na stdout
 	//printTape(ins);
 
 	/*Prvotni inicializace stacku*/
@@ -20,8 +22,10 @@ int executeTape(tInsTapeInsPtr ins) {
 		}
 		SInit(frameStack);
 	}
+	//pro skokove instrukce
 	tVariablePtr oper1;
 	while (instruction && instruction->type!=I_RETURN) {
+		//zpracovani skokovych instrukci
 		if ((instruction)->type == I_IFZERO) {
 			findVariable(frameStack, (string*)(instruction)->adr1, &oper1);
 			if (getVarVal(oper1) == 0) {
@@ -46,12 +50,17 @@ int executeTape(tInsTapeInsPtr ins) {
 			}
 		}
 		else {
+			//zprcovani ostatnich instrukci
+			//kontrola navratoveho kodu
 			ret = executeIns(&instruction, frameStack);
 			if (ret != ERR_OK) {
+				//pokud nastala chyba, prvni uroven rekurze smaze frame stack
+				//zde by slo udelat stack dump
 				if(frameStack)
 					SDispose(frameStack);
 				free(frameStack);
 				frameStack = NULL;
+				//frame stack vycisten
 				return ret;
 			}
 		}
@@ -81,12 +90,14 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 	tVariablePtr dest;
 	ERR_CODES retErr;//pro pripad volani jine pasky
         
-        int tmp1,tmp2;
+    int tmp1,tmp2;
 	tTabSym* tab;
 	tInsTapeInsPtr ins = *instruction;
 	tInsTapeInsPtr insToCall;
 	switch (ins->type)
 	{
+	//standardni vstup se rozhoduje o typu vstupu dle 
+	//typu promenne na adrese ins->adr3
 	case I_CIN:
 		findVariable(stack, (string*)ins->adr3, &dest);
 		string strInput;
@@ -142,6 +153,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
                 dest->init = true;
 		break;
 	case I_COUT:
+		//standardni vystup vytiskne ins->adr1
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type == VAR_TYPE_INT) {
@@ -159,6 +171,8 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		fflush(stdout);
 		break;
 	case I_PLUS:
+		//scitani dvou promennych
+		//string nelze scitat proto nesmi zadna z adres byt tohoto typu
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -180,6 +194,9 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_MINUS:
+		//odecitani dvou promennych
+		//adr3 = adr1-adr2
+		//string nelze odcitat proto nesmi zadna z adres byt tohoto typu
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -201,6 +218,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_DIV:
+		//deleni dvou promennych
+		//adr3 = adr1/adr2
+		//pokud je adr2==0 vrati ERR_RUNTIME_ZERO_DIV
+		//string nelze delit proto nesmi zadna z adres byt tohoto typu
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -225,6 +246,9 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_MUL:
+		//nasobeni dvou promennych
+		//adr3 = adr1*adr2
+		//string nelze nasobit proto nesmi zadna z adres byt tohoto typu
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -246,6 +270,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_EQUAL:
+		//porovnani dvou promennych
+		//adr3 = adr1==adr2
+		//lze porovnat int==int, double==double, int==double(vice versa)
+		//string==string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -278,6 +306,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_NOTEQUAL:
+		//nonekvivalence dvou promennych
+		//adr3 = adr1!=adr2
+		//lze porovnat int!=int, double!=double, int!=double(vice versa)
+		//string!=string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -310,6 +342,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_GREATER:
+		//porovnani dvou promennych
+		//adr3 = adr1>adr2
+		//lze porovnat int>int, double>double, int>double(vice versa)
+		//string>string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -342,6 +378,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_GEQUAL:
+		//porovnani dvou promennych
+		//adr3 = adr1>=adr2
+		//lze porovnat int>=int, double>=double, int>=double(vice versa)
+		//string>=string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -374,6 +414,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_LESSER:
+		//porovnani dvou promennych
+		//adr3 = adr1<adr2
+		//lze porovnat int<int, double<double, int<double(vice versa)
+		//string<string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -406,6 +450,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_LEQUAL:
+		//porovnani dvou promennych
+		//adr3 = adr1<=adr2
+		//lze porovnat int<=int, double<=double, int<=double(vice versa)
+		//string<=string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -438,6 +486,9 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_UMINUS:
+		//vynasobi adr1*(-1)
+		//adr3 = -1*adr1
+		//nelze vyoperovat string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
@@ -453,6 +504,9 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_INC:
+		//inkremetntuje adr1
+		//adr3 = adr1 +1
+		//nelze pouzit string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
@@ -468,6 +522,9 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_DEC:
+		//dekrementuje adr1
+		//adr3 = adr1 +1
+		//nelze pouzit string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
@@ -486,6 +543,10 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_LOG_NOT:
+		//aplikuje logicky not na operand adr1
+		//melo by byt pouzito na nic jineho nez bool?
+		//adr3 = !adr1
+		//nelze pouzit string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
@@ -504,6 +565,9 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_LOG_AND:
+		//aplikuje logicky and na operand adr1
+		//adr3 = adr1 && adr2
+		//nelze pouzit string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -525,6 +589,9 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_LOG_OR:
+		//aplikuje logicky or na operand adr1
+		//adr3 = adr1 || adr2
+		//nelze pouzit string
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
@@ -547,23 +614,30 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		break;
 		//vytoreni blokoveho ramce
 	case I_CBF:
+		//vytvori na zasobnik ramcu novy blokovy ramec
 		pushNewFrame(stack, true);
 		tab = (tTabSym*)ins->adr1;
 		tTabSymToFrame(tab->root, &stack->Top->frameContainer, false);
 		break;
 		//volani fce
 	case I_CF:
+		//volani fce
         oper1 = NULL;
 		dest = NULL;
+		//urcuje zda funkce je main
+		//diky tomu ze IFJ2015 nevraci navratovy kod fce 
+		//neni nutno nekam return main nekam davat
 		bool isMain = (ins->adr3 == NULL);
 		if (!isMain) {//nejsme v main
 			//najdeme kam budeme vracet navratovou hodnotu
 			findVariable(stack, (string*)ins->adr3, &dest);
 		}
 		
+		//vytvori novy nepruchozi ramec
 		pushNewFrame(stack, false);
 		tab = (tTabSym*)ins->adr1;
 		insToCall = (tInsTapeInsPtr)ins->adr2;
+		//prekopiruje lokalni tabulku symbolu na ramec fce
 		tTabSymToFrame(tab->root, &stack->Top->frameContainer, true);
 		//do ramce volane fce nastavime parametry a zavolame fci, pokud neporjde tak vratime error
 		if ((retErr=setParams(&ins, stack)) != ERR_OK || (retErr=executeTape(insToCall)) != ERR_OK)
@@ -606,9 +680,11 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		deleteFunctionsFrames(stack);
 		break;
 	case I_ASSIGN:
+		//priradi hodnotu adr1 do adr3
+		//adr3=adr1
+		//dochazi k inicializaci adr3
 		findVariable(stack, (string*)ins->adr1, &oper1);
-		findVariableToDeclare(stack, (string*)ins->adr3, &dest);
-		dest->deklared = true;
+		findVariable(stack, (string*)ins->adr3, &dest);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			if (oper1->type == VAR_TYPE_STRING) {
@@ -637,89 +713,106 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_DBF:
+		//smaze ramec bloku ze zasobniku
 		deleteTopFrame(stack);
 		break;
 	case I_SORT:
+		//vestavena funkce razeni znaku ve stringu
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (oper1->type != VAR_TYPE_STRING || dest->type != VAR_TYPE_STRING)
 			return ERR_SEM_COM;
+		//zkopirujeme trideny string do ciloveho
 		strCopyString(&dest->data.stringVal, &oper1->data.stringVal);
+		//az pote ho seradime
 		heapSort(dest->data.stringVal.str);
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_FIND:
+		//vestavena fce vyhledavani retezce v retezci
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 
+		//prisna typova kontrola u fce
 		if (oper1->type != VAR_TYPE_STRING ||
 			oper2->type != VAR_TYPE_STRING ||
 			dest->type != VAR_TYPE_INT) {
 			return ERR_SEM_COM;
 		}
+		//samotne volani fce
 		dest->data.intVal = find(oper1->data.stringVal.str, oper2->data.stringVal.str);
 		if (dest->data.intVal == oper1->data.stringVal.length) {
 			dest->data.intVal = -1;
 		}
-                //vyjimka pro situaci, kdy jsou oba retezce prazdne
-                if(oper1->data.stringVal.length == 0 && oper2->data.stringVal.length == 0) dest->data.intVal = 0;
+        //vyjimka pro situaci, kdy jsou oba retezce prazdne
+        if(oper1->data.stringVal.length == 0 && oper2->data.stringVal.length == 0) dest->data.intVal = 0;
 		dest->init = true;//dest je nyni inicializovan
 		break;
 	case I_CONCAT:
+		//vestavena fce konkatenace dvou retezcu
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
+		//prisna typova kontrola u fce
 		if (oper1->type != VAR_TYPE_STRING || oper2->type != VAR_TYPE_STRING || dest->type != VAR_TYPE_STRING){
 			return ERR_SEM_COM;
 		}
 		else {
+			//strFree protoze fce concat() provadi init => predchazeni mem. leaku
 			strFree(&dest->data.stringVal);
 			dest->data.stringVal = concat(oper1->data.stringVal, oper2->data.stringVal);
 		}
 		dest->init = true;//dest je nyni inicializovan
 		break;
-	case I_SUBSTR://tato instrukce cte i nasledujici ktera musi byt typu I_SUBSTR_DEST
+	case I_SUBSTR:
+		//vestavena fce pro vybrani substringu
+		//tato instrukce cte i nasledujici ktera musi byt typu I_SUBSTR_DEST
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr2, &oper2);
 		findVariable(stack, (string*)ins->adr3, &oper3);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (!oper2->init) return ERR_RUNTIME_INIT_VAR;
 		if (!oper3->init) return ERR_RUNTIME_INIT_VAR;
+		//posuneme se na dalsi instrukci
 		*instruction = ins->rptr;
 		ins = *instruction;
+		//ktera musi byt I_SUBSTR_DEST
 		if (ins->type != I_SUBSTR_DEST) {
 			return ERR_RUNTIME_REST;
 		}
 		findVariable(stack, (string*)ins->adr3, &dest);
+		//datova kontrola parametru
 		if (dest->type != VAR_TYPE_STRING || oper1->type != VAR_TYPE_STRING ||
 			oper2->type == VAR_TYPE_STRING || oper3->type == VAR_TYPE_STRING) {
 			return ERR_RUNTIME_REST;
 		}
-                
-                if(oper2->type == VAR_TYPE_INT) tmp1 = oper2->data.intVal;
-                if(oper3->type == VAR_TYPE_INT) tmp2 = oper3->data.intVal;                 
-                if(oper2->type == VAR_TYPE_DOUBLE) tmp1 = (int)floor(oper2->data.doubleVal);
-                if(oper3->type == VAR_TYPE_DOUBLE) tmp2 = (int)floor(oper3->data.doubleVal);
-                if(oper2->type == VAR_TYPE_BOOL) tmp1 = oper2->data.boolVal;
-                if(oper3->type == VAR_TYPE_BOOL) tmp2 = oper3->data.boolVal;
-                
+        //ulozeni do tempovych promennych + zaokrouhleni dle podminek zadani
+        if(oper2->type == VAR_TYPE_INT) tmp1 = oper2->data.intVal;
+        if(oper3->type == VAR_TYPE_INT) tmp2 = oper3->data.intVal;                 
+        if(oper2->type == VAR_TYPE_DOUBLE) tmp1 = (int)floor(oper2->data.doubleVal);
+        if(oper3->type == VAR_TYPE_DOUBLE) tmp2 = (int)floor(oper3->data.doubleVal);
+        if(oper2->type == VAR_TYPE_BOOL) tmp1 = oper2->data.boolVal;
+        if(oper3->type == VAR_TYPE_BOOL) tmp2 = oper3->data.boolVal;
+        
+		//substr alokuje vlastni string proto ten nas dealokujeme
 		strFree(&dest->data.stringVal);
 		dest->data.stringVal = substr(oper1->data.stringVal, tmp1, tmp2,&retErr);
 		dest->init = true;//dest je nyni inicializovan
-                
-                if(retErr) return ERR_RUNTIME_REST;
+        if(retErr) return ERR_RUNTIME_REST;
 
 		break;
 	case I_LENGTH:
+		//vestavena fce pro delku retezce
 		findVariable(stack, (string*)ins->adr1, &oper1);
 		findVariable(stack, (string*)ins->adr3, &dest);
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
+		//typova kontrola vstupu vs vystupu
 		if (dest->type == VAR_TYPE_INT && oper1->type==VAR_TYPE_STRING) {
 			dest->data.intVal = length(oper1->data.stringVal);
 		}
@@ -734,6 +827,7 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
     case I_LABEL://jen navesti nic nedelej
             break;
 	case I_DECLARE:
+		//probiha deklrarace promenne
 		findVariableToDeclare(stack, (string*)ins->adr1, &oper1);
 		oper1->deklared = true;
 		break;
@@ -750,10 +844,14 @@ int setParams(tInsTapeInsPtr* ins, tStack* stack) {
 	tVariablePtr dest;
 
 	tInsTapeInsPtr istruction = *ins;
+	//dokud bude nasledujici instrukce I_SP se posouvej paskou
 	while (istruction->rptr->type == I_SP) {
 		istruction = istruction->rptr;
+		//adr1 je z framu volajici fuknce
 		findVariableInSubFrame(stack, (string*)istruction->adr1, &oper1);
+		//s destinace je v aktualnim funkcnim ramci
 		findVariable(stack, (string*)istruction->adr3, &dest);
+		//zdrojova promenna musi byt inicializovana
 		if (!oper1->init) return ERR_RUNTIME_INIT_VAR;
 		if (dest->type == VAR_TYPE_INT) {
 			dest->data.intVal = (int)getVarVal(oper1);
@@ -784,10 +882,12 @@ void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer, bool isFu
 	if (node) {
 		tVariablePtr var;
 		tVariableType type;
+		//vetev pro promennou, ukladam jen dat. typ
 		if (((tTabSymElemData*)node->data)->type == TAB_SYM_VARIABLE){
 			type = tTabSymToVarNotatation(((tTabSymElemData*)node->data)->info.var->dataType);
 			variableCreate(&var, type);
 		}
+		//pro konstantu kopirujeme hodnotu
 		else if (((tTabSymElemData*)node->data)->type == TAB_SYM_CONSTANT) {
 			type = tTabSymToVarNotatation(((tTabSymElemData*)node->data)->info.constant->dataType);
 			variableCreate(&var, type);
@@ -815,11 +915,15 @@ void tTabSymToFrame(tBSTNodePtr node, tFrameContainer* frameContainer, bool isFu
 		else {
 			return;
 		}
+		//jestli bylo deklarovano zalezi jestli jde o funkcni ramec nebo pokud 
+		//vytvarime temp. promennou
 		var->deklared = isFunction;
 		if (isdigit((int)node->key->str[0])) {
 			var->deklared = true;
 		}
+		//vytvorenou promennou vlozime na frame
 		insertNewVariable(frameContainer, var,node->key);
+		//pruchod preorder
 		tTabSymToFrame(node->l, frameContainer, isFunction);
 		tTabSymToFrame(node->r, frameContainer, isFunction);
 	}
