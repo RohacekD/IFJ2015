@@ -1,5 +1,9 @@
 #include "scanner.h"
 
+//globalni promenna
+//fronta tokenu pro moznost vraceni z5 do vstupniho proudu
+//je globalni aby tuto frontu mohl uvolnit kodkoli
+//spolu s operacemi nad ni postavenymi tvori "singleton"
 tTokenQueue *TQueue = NULL;
 
 /*
@@ -38,7 +42,10 @@ enum states {
 	EXPONENT_CHECK,
 	EXPONENT_PLUS_MINUS_CHECK
 };
-/* @var int citac radku*/
+/*
+ * @var int citac radku
+ * pouzivano pro chybove vypisy
+ */
 int line = 1;
 /* @var int citac znaku na radku*/
 int character = 0;
@@ -53,6 +60,7 @@ int getToken(tToken *Token, FILE* source) {
 			return 1;
 		}
 	}
+	//alokace pameti pro cteny token
 	tToken tok = (tToken)malloc(sizeof(struct stToken));
 	*Token = tok;
 	/* @var c int actual character*/
@@ -67,19 +75,21 @@ int getToken(tToken *Token, FILE* source) {
 	if (strInit(&s)) {
 		FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 	}
+	//string kam se ukladaji sekvence pro escape sekvence
 	string escape;
 
-
+	//nastavime vychozi stav
 	int state = START;
 	while (1) {
 		if (pom > 0) {//pozustatek z minuleho cteni
 			c = pom;
-			pom = -1;
+			pom = -1;//-1 je jedina hodnota kterou by nemela pomocna promenna nabyt pokud v ni opravdu je pozustatek
+			//pokud je v ni opravdu EOF tak pomoci getc() ho stejne dostanu znovu
 		}
 		else {
 			c = getc(source);
 			character++;
-			if (c == '\n') {
+			if (c == '\n') {//pokud ctu dalsi radek tak vynuluji citadlo znaku a inkrementuji citadlo radku
 				line++;
 				character = 0;
 			}
@@ -88,18 +98,16 @@ int getToken(tToken *Token, FILE* source) {
 		switch (state)
 		{
 		case START:
-			if (c == 35) {
-				state = STRING;
-			}
-			else if (isspace(c)) {
+			//pocatecni bile znaky nic nezmeni
+			if (isspace(c)) {
 				state = START;
 			}
+			//zacatek identifikatoru
 			else if (isalpha(c) || c == '_') {
 				state = IDENTIFICATOR;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
 					freeTokenMem(&tok);
-					
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
@@ -109,10 +117,10 @@ int getToken(tToken *Token, FILE* source) {
 				if (strAddChar(&s, c)) {
 					strFree(&s);
 					freeTokenMem(&tok);
-					
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
+			//platna cislice na zacatku retezce znamena celou cast cisla
 			else if (c >= '1' && c <= '9') {
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
@@ -121,31 +129,41 @@ int getToken(tToken *Token, FILE* source) {
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
+			//strednik ulozi token strednik
 			else if (c == ';') {
 				tok->typ = SEMICOLON;
 				strFree(&s);
 				return 1;
 			}
+			//zacatek escape sekvenci rozsireni BASE
 			else if (c == '\\') {
 				state = ESCAPE;
 			}
+			//string zacina uvozovkami
 			else if (c == '\"') {
 				state = STRING;
 			}
+			//lomeno muze byt operatro nebo zacatek komentare
 			else if (c == '/') {
 				state = DIVISION_COMMENT;
 			}
+			//unarni minus, odcitani nebo dekremenrace
 			else if (c == '-') {
+				//jsem schopny rozlisit jen dekrementaci a minus
+				//unarni minus ani rozdil mezi postfix/prefix neurcim
 				state = DECREMENT_OPERATOR;
 			}
+			//scitani nebo inkrementace
 			else if (c == '+') {
 				state = INCREMENT_OPERATOR;
 			}
+			//nasobeni znamena jedine nasobeni
 			else if (c == '*') {
 				tok->typ = MULTIPLY;
 				strFree(&s);
 				return 1;
 			}
+			//toto mohou byt opertary se dvema znaky i jednim
 			else if (c == '!' || c == '<' || c == '>' || c == '=') {
 				state = TWO_CHAR_OPER;
 				if (strAddChar(&s, c)) {
@@ -154,6 +172,7 @@ int getToken(tToken *Token, FILE* source) {
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
+			//zaovrky ihned ulozime jako token
 			else if (c == ')') {
 				tok->typ = PARENTHESIS_CLOSING;
 				strFree(&s);
@@ -174,17 +193,21 @@ int getToken(tToken *Token, FILE* source) {
 				strFree(&s);
 				return 1;
 			}
+			//logicky or
 			else if (c == '|') {
 				state = LOGICAL_OR;
 			}
+			//logicky and
 			else if (c == '&') {
 				state = LOGICAL_AND;
 			}
+			//carka (comma) operator ulozime do tokenu
 			else if (c == ',') {
 				tok->typ = COMMA;
 				strFree(&s);
 				return 1;
 			}
+			//konec souboru cas vyhlasit chyby pokud nastaly jinak ulozit do tokenu EOF
 			else if (c==EOF) {
 				tok->typ = END_OF_FILE;
 				strFree(&s);
@@ -194,7 +217,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 				return 1;
 			}
-			else {
+			else {//pokud na zacatku tokenu prislo cokoli jineho tak scanner nevi co se deje
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Unknown symbol.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
@@ -203,6 +226,8 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			break;
 		case INT_PART:
+			//cteni cele casti cisla
+			//cislice ukladam
 			if (c >= '0' && c <= '9') {
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
@@ -211,6 +236,7 @@ int getToken(tToken *Token, FILE* source) {
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
+			//zacatek exponentu
 			else if (c == 'e' || c == 'E') {
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
@@ -219,7 +245,9 @@ int getToken(tToken *Token, FILE* source) {
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
+			//zacatek desetine casti
 			else if (c == '.') {
+				//vlozen testovaci stav pro podminku ze za des. teckou musi byt cislice
 				state = FLOAT_CHECK;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
@@ -227,8 +255,9 @@ int getToken(tToken *Token, FILE* source) {
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
+			//uloz cele cislo
 			else {
-				int val = 42;
+				int val;
 				if (!strToInt(&s, &val)) {
 					freeTokenMem(&tok);
 					strFree(&s);
@@ -247,7 +276,7 @@ int getToken(tToken *Token, FILE* source) {
 			if (c == '0') {
 				state = FLOAT_OR_INT;
 			}
-			else if (c >= '1' && c<='9') {
+			else if (c >= '1' && c<='9') {//pokud nasleduje cislice ctu cele cislo
 				state = INT_PART;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
@@ -256,6 +285,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else if (c == '.') {
+				//zacatek desetine casti
 				state = FLOAT_CHECK;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
@@ -264,6 +294,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else if (c == 'e' || c == 'E') {
+				//zacatek exponentu
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
@@ -272,7 +303,8 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else {
-				int val = 42;
+				//konec celeho cisla
+				int val;
 				if (!strToInt(&s, &val)) {
 					errorFlag = 1;
 					Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n",ERR_MESSAGES[ERR_LEX], line, character);
@@ -288,6 +320,7 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			break;
 		case FLOAT_CHECK:
+			//tento stav slouzi ke kontrole neprazdnosti desetine casti
 			if (c >= '0' && c <= '9') {
 				state = FLOAT_PART;
 				if (strAddChar(&s, c)) {
@@ -296,10 +329,11 @@ int getToken(tToken *Token, FILE* source) {
 					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
 				}
 			}
+			//pokud za teckou neni cislice je to chyba
 			else {
 				pom = c;
 				errorFlag = 1;
-				Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n", ERR_MESSAGES[ERR_LEX], line, character);
+				Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal. Desetina cast nesmi byt prazdna.\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
 				freeTokenMem(&tok);
 				return 42;
@@ -308,6 +342,7 @@ int getToken(tToken *Token, FILE* source) {
 
 		case FLOAT_PART:
 			if (c >= '0' && c <= '9') {
+				//ulozi cislo a pokracuje ve cteni
 				state = FLOAT_PART;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
@@ -316,6 +351,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else if (c == 'e' || c == 'E') {
+				//zacatek exponentu
 				state = EXPONENT_CHECK;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
@@ -324,7 +360,8 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else {
-				double val = 42;
+				//konec desetineho cisla, ulozme jej
+				double val;
 				if (!strToDouble(&s, &val)) {
 					errorFlag = 1;
 					Warning("%sLine - %d:%d\t-  Nepodarilo se nacist ciselny literal.\n",ERR_MESSAGES[ERR_LEX], line, character);
@@ -341,6 +378,7 @@ int getToken(tToken *Token, FILE* source) {
 			break;
 		case EXPONENT_CHECK:
 			if (c >= '0' && c <= '9') {
+				//prislo cislo, ulozi jej a pokracuje jiz ve cteni exponentu
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
@@ -349,6 +387,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else if (c == '+' || c == '-') {
+				//znamenko na zacatku exponentu
 				state = EXPONENT_PLUS_MINUS_CHECK;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
@@ -368,6 +407,8 @@ int getToken(tToken *Token, FILE* source) {
 			break;
 		case EXPONENT_PLUS_MINUS_CHECK:
 			if (c >= '0' && c <= '9') {
+				//spravne bylo za znamenkem exponentu cislo
+				//pokracuji ve cteni expoenntu
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
@@ -376,6 +417,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else {
+				//nemuzem napsat znamenko exponentu a neudat jeho hodnotu
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Exponent musi obsahovat validni cislici.\n",ERR_MESSAGES[ERR_LEX], line, character);
 				pom = c;
@@ -386,6 +428,7 @@ int getToken(tToken *Token, FILE* source) {
 			break;
 		case EXPONENT:
 			if (c >= '0' && c <= '9') {
+				//cte cisla dokud prichazi
 				state = EXPONENT;
 				if (strAddChar(&s, c)) {
 					strFree(&s);
@@ -394,6 +437,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 			}
 			else {
+				//prislo cokoli jineho nez cislo
 				double val = 42;
 				if (!strToDouble(&s, &val)) {
 					errorFlag = 1;
@@ -404,24 +448,29 @@ int getToken(tToken *Token, FILE* source) {
 				}
 				tok->typ = TYPE_DOUBLE;
 				tok->value.doubleVal = val;
-				pom = c;
+				pom = c;//dalsi znak patri dalsimu tokenu
 				strFree(&s);
 				return 1;
 			}
 			break;
 		case ESCAPE:
+			//escape sekvence celociselne konstanty
 			switch (c) {
+				//binarni escape sekvence
 			case 'b':
 			case 'B':
 				state = BINARY_NUMBER;
 				break;
+				//oktalova escape sekvence
 			case '0':
 				state = OCTAL_NUMBER;
 				break;
+				//hexadecimalni escape sekvence
 			case 'x':
 			case 'X':
 				state = HEX_DEC_NUMBER;
 				break;
+				//cokoli jineho je chybou
 			default:
 				errorFlag = 1;
 				Warning("%sLine - %d:%d\t-  Ocekavan symbol pro ciselnou soustavu.\n",ERR_MESSAGES[ERR_LEX], line, character);
@@ -432,6 +481,7 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			break;
 		case BINARY_NUMBER:
+			//escape sekvence obsahujici binarni cislo
 			if (c == '0' || c == '1') {
 				//zahazuji nevyznamne nuly
 				if (!(c == '0' && strGetLength(&s) == 0)) {
@@ -457,6 +507,7 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			break;
 		case OCTAL_NUMBER:
+			//escape sekvence obsahujici oktalove cislo
 			if (c >= '0' && c <= '7') {
 				//zahazuji nevyznamne nuly
 				if (!(c == '0' && strGetLength(&s) == 0)) {
@@ -482,6 +533,7 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			break;
 		case HEX_DEC_NUMBER:
+			//escape sekvence obsahujici hexadecimalni cislo
 			if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
 				//zahazuji nevyznamne nuly
 				if (!(c == '0' && strGetLength(&s)==0)) {
@@ -507,6 +559,9 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			break;
 		case LOGICAL_AND:
+			//logicky and
+			//v IFJ2015 neexistuje binarni and proto jediny prijatelny znak
+			//v tuto chvili je &
 			if (c == '&') {
 				tok->typ = LOG_AND_OPER;
 				strFree(&s);
@@ -518,10 +573,13 @@ int getToken(tToken *Token, FILE* source) {
 				Warning("%sLine - %d:%d\t-  Binarni and neni podporovan v IFJ2015.\n",ERR_MESSAGES[ERR_LEX], line, character-1);
 				strFree(&s);
 				freeTokenMem(&tok);
-				return 42;//tady leak neni
+				return 42;
 			}
 			break;
 		case LOGICAL_OR:
+			//logicky or
+			//v IFJ2015 neexistuje binarni or proto jediny prijatelny znak
+			//v tuto chvili je |
 			if (c == '|') {
 				tok->typ = LOG_OR_OPER;
 				strFree(&s);
@@ -546,10 +604,6 @@ int getToken(tToken *Token, FILE* source) {
 				return 42;
 			}
 			else if (c == '\\') {
-				/*if (strAddChar(&s, c)) {
-					FatalError(99, ERR_MESSAGES[ERR_ALLOC]);
-				}*/
-				
 				state = STRING_ESCAPE;
 			}
 			else if (c == '"') {//konec retezce uloz ho
@@ -575,7 +629,9 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			break;
 		case STRING_ESCAPE:
+			//escape sekvence ve stringu
 			switch (c) {
+				//binarni escape sekvence
 			case 'b':
 			case 'B':
 				if (strInit(&escape)) {
@@ -585,6 +641,7 @@ int getToken(tToken *Token, FILE* source) {
 				}
 				state = STRING_BINARY_NUMBER;
 				break;
+				//oktalova escape sekvence
 			case '0':
 				if (strInit(&escape)) {
 					strFree(&s);
@@ -595,6 +652,7 @@ int getToken(tToken *Token, FILE* source) {
 				break;
 			case 'x':
 			case 'X':
+				//hexadecimalni escape sekvence
 				if (strInit(&escape)) {
 					strFree(&s);
 					freeTokenMem(&tok);
@@ -603,6 +661,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = STRING_HEX_DEC_NUMBER;
 				break;
 			case '\\':
+				//escape sekvence backslash
 				if (strAddChar(&s, '\\')) {
 					strFree(&s);
 					freeTokenMem(&tok);
@@ -611,6 +670,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = STRING;
 				break;
 			case 'n':
+				//escape sekvence noveho radku
 				if (strAddChar(&s, '\n')) {
 					strFree(&s);
 					freeTokenMem(&tok);
@@ -619,6 +679,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = STRING;
 				break;
 			case 't':
+				//escape sekvence tabulatoru
 				if (strAddChar(&s, '\t')) {
 					strFree(&s);
 					freeTokenMem(&tok);
@@ -627,6 +688,7 @@ int getToken(tToken *Token, FILE* source) {
 				state = STRING;
 				break;
 			case '\"':
+				//escape sekvence uvozovek
 				if (strAddChar(&s, '\"')) {
 					strFree(&s);
 					freeTokenMem(&tok);
@@ -635,8 +697,9 @@ int getToken(tToken *Token, FILE* source) {
 				state = STRING;
 				break;
 			default:
+				//cokoliv jineho je chybnym zapsani escape sekvence
 				errorFlag = 1;
-				Warning("%sLine - %d:%d\t-  Ocekavan symbol pro ciselnou soustavu.\n", ERR_MESSAGES[ERR_LEX], line, character);
+				Warning("%sLine - %d:%d\t-  Ocekavana escape sekvence\n", ERR_MESSAGES[ERR_LEX], line, character);
 				strFree(&s);
 				freeTokenMem(&tok);
 				return 42;
@@ -840,7 +903,7 @@ int getToken(tToken *Token, FILE* source) {
 					tok->value.boolVal = true;
 				}
 				strFree(&s);
-				return 1;//todo
+				return 1;
 			}
 			break;
 		case DIVISION_COMMENT:
@@ -854,7 +917,7 @@ int getToken(tToken *Token, FILE* source) {
 				tok->typ = DIVISION;
 				pom = c;
 				strFree(&s);
-				return 1;//todo return success
+				return 1;
 			}
 			break;
 		case LINE_COMMENT:
@@ -900,23 +963,10 @@ int getToken(tToken *Token, FILE* source) {
 				state = BLOCK_COMMENT;
 			}
 			break;
-		/*case NESTED_BLOCK_COMMENT_CHECK:
-			if (c == '*') {
-				strFree(&s);
-				freeTokenMem(&tok);
-				return 42;//TODO: error 
-			}
-			else if (c == EOF) {
-				Warning("%sLine - %d:%d\t-  Necekany konec souboru.\n", ERR_MESSAGES[ERR_LEX], line, character);
-				strFree(&s);
-				freeTokenMem(&tok);
-				return 42;
-			}
-			else {
-				state = BLOCK_COMMENT;
-			}
-			break;*/
+		//dvouznakove operatry
 		case TWO_CHAR_OPER:
+			//jako druhy znak muze jen rovna se
+			//dle prvniho znaku rozhodneme co ulozime
 			if (c == '=') {
 				switch (s.str[0]) {
 				case '!':
@@ -935,6 +985,7 @@ int getToken(tToken *Token, FILE* source) {
 					break;
 				}
 			}
+			//pokud prislo cokoli jineho tak dle prvniho znaku rozhodneme co ulozime
 			else {
 				pom = c;
 				switch (s.str[0]) {
@@ -958,11 +1009,13 @@ int getToken(tToken *Token, FILE* source) {
 			return 1;
 			break;
 		case DECREMENT_OPERATOR:
+			//druhe minus v rade znamena dekrementaci
 			if (c == '-') {
 				tok->typ = DECREMENTATION;
 				strFree(&s);
 				return 1;
 			}
+			//cokoli jineho znamena pouze minus
 			else {
 				pom = c;
 				tok->typ = MINUS;
@@ -971,11 +1024,13 @@ int getToken(tToken *Token, FILE* source) {
 			}
 			break;
 		case INCREMENT_OPERATOR:
+			//druhe plus v rade je inkrementace
 			if (c == '+') {
 				tok->typ = INCREMENTATION;
 				strFree(&s);
 				return 1;
 			}
+			//pouze scitani
 			else {
 				pom = c;
 				tok->typ = PLUS;
