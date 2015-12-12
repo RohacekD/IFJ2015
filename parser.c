@@ -2076,6 +2076,10 @@ int parseDeclaration(tTabSymVarDataType dataType, tTabSym *localTable,
                 
                 freeIdName(idName);
                 
+                if (insTapeInsertLast(instructionTape, I_DECLARE, (void *) key, NULL, NULL) == 0) {
+                    return ERR_INTERNAL;
+                }
+                
                 //chci ziskat nazev posledn id docasne vygenerovane promenne
                 if((lastGeneratedTMP = tabSymListLastCreateTmpSymbol(blockListElem, localTable)) == NULL) {
                     return ERR_INTERNAL;
