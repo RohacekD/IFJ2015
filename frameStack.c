@@ -13,9 +13,12 @@ void SDispose(tStack *Stack) {
     //ukazatel na posledni neni dale potreba
     Stack->Last = NULL;
     tSElemPtr tmp = NULL;
+	tFrameContainer frame;
     while (Stack->Top != NULL) {
         //postupny mazani, dokud existuji nejake prvky
         tmp = Stack->Top->rptr;
+		STop(Stack, &frame);
+		BSTFree(&(frame.frame), variableDelete);
         free(Stack->Top);
         Stack->Top = tmp;
     }
@@ -24,7 +27,7 @@ void SDispose(tStack *Stack) {
 void SPush(tStack *Stack, tFrameContainer *val) {
     tSElemPtr tmp = NULL;
     //naalokuju pamet pro novy prvek
-    tmp = malloc(sizeof (struct tSElem));
+    tmp = (tSElemPtr)malloc(sizeof (struct tSElem));
 
     if (tmp == NULL) {
         //alokace failnula

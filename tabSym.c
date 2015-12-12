@@ -68,7 +68,7 @@ tConstantInfo* tabSymCreateConstantInfo(tTabSymVarNoAutoDataType dataType,
 tFuncInfo* tabSymCreateFuncInfo(tParamListPtr params,
 		tTabSymVarNoAutoDataType retType, tTabSym* locTab,
 		tTabSymList* tabBlockList, tInsTape* instTape, bool defined) {
-	tFuncInfo* funcData = malloc(sizeof(tFuncInfo));
+	tFuncInfo* funcData = (tFuncInfo*)malloc(sizeof(tFuncInfo));
 	if (funcData != NULL) {
 		funcData->params = params;
 		funcData->retType = retType;
@@ -88,7 +88,7 @@ tFuncInfo* tabSymCreateFuncInfo(tParamListPtr params,
  */
 tTabSymElemData* createElemData(tTabSymDataType type, void* info) {
 	//alokujeme pamet
-	tTabSymElemData* elemData = malloc(sizeof(tTabSymElemData));
+	tTabSymElemData* elemData = (tTabSymElemData*)malloc(sizeof(tTabSymElemData));
 	if (elemData == NULL) {
 		//chyba
 		return NULL;
@@ -251,7 +251,7 @@ string* tabSymCreateTmpSymbol(tTabSym* table) {
 		//chyba pri vytvareni nazvu
 		return NULL;
 	}
-	string* newString = malloc(sizeof(string));
+	string* newString = (string*)malloc(sizeof(string));
 	if (newString == NULL) {
 		//chyba pri alokaci
 		return NULL;
@@ -264,7 +264,7 @@ string* tabSymCreateTmpSymbol(tTabSym* table) {
 }
 
 tTabSymList* tabSymListCreate(){
-	tTabSymList* newTabSymList=malloc(sizeof(tTabSymList));
+	tTabSymList* newTabSymList=(tTabSymList*)malloc(sizeof(tTabSymList));
 	if(newTabSymList==NULL){
 		return NULL;
 	}
@@ -281,7 +281,7 @@ tTabSymList* tabSymListCreate(){
  */
 tTabSymListElemPtr tabSymListInsertTable(tTabSymList* tabList, tTabSym* table, tTabSymListElemPtr parentElement){
 
-	tTabSymListElemPtr newElement=malloc(sizeof(struct tTabSymListElem));
+	tTabSymListElemPtr newElement=(tTabSymListElemPtr)malloc(sizeof(struct tTabSymListElem));
 	if(newElement==NULL){
 		//chyba
 		return NULL;

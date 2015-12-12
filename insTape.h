@@ -15,6 +15,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "str.h"
 
 //todo: vsechny instrukce musi mit variantu 
 //pokud jde o operaci vyuzivajici 3 adresy tak oper1,oper2,vysledek

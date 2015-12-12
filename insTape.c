@@ -419,6 +419,9 @@ const char* insToName(tInstructTypes ins) {
 	case I_LABEL:
 		return "I_LABEL";
 		break;
+	case I_DECLARE:
+		return "I_DECLARE";
+		break;
 	default:
 		return "neznama instrukce?";
 		break;
@@ -429,7 +432,89 @@ void printTape(tInsTapeInsPtr ins) {
 	tInsTapeInsPtr instruction;
 	instruction = ins;
 	while (instruction!=NULL) {
-		printf("->%s\n", insToName(instruction->type));
+		printf("->%s\t", insToName(instruction->type));
+		switch (instruction->type)
+		{
+			case I_CIN:
+				break;
+			case I_COUT:
+				printf("%s", ((string*)instruction->adr1)->str);
+				break;
+			case I_PLUS:
+				break;
+			case I_MINUS:
+				break;
+			case I_MUL:
+				break;
+			case I_DIV:
+				printf("%s=%s/%s", ((string*)instruction->adr3)->str, ((string*)instruction->adr1)->str, ((string*)instruction->adr2)->str);
+				break;
+			case I_EQUAL:
+				break;
+			case I_NOTEQUAL:
+				break;
+			case I_GREATER:
+				break;
+			case I_LESSER:
+				break;
+			case I_GEQUAL:
+				break;
+			case I_LEQUAL:
+				break;
+			case I_UMINUS:
+				break;
+			case I_INC:
+				break;
+			case I_DEC:
+				break;
+			case I_LOG_NOT:
+				break;
+			case I_LOG_AND:
+				break;
+			case I_LOG_OR:
+				break;
+			case I_CBF:
+				break;
+			case I_CF:
+				break;
+			case I_ASSIGN:
+				printf("%s=%s", ((string*)instruction->adr3)->str, ((string*)instruction->adr1)->str);
+				break;
+			case I_SP:
+				printf("%s=%s", ((string*)instruction->adr3)->str, ((string*)instruction->adr1)->str);
+				break;
+			case I_DBF:
+				break;
+			case I_RETURN:
+				break;
+			case I_IFZERO:
+				break;
+			case I_IFNZERO:
+				break;
+			case I_GOTO:
+				break;
+			case I_SORT:
+				break;
+			case I_FIND:
+				break;
+			case I_CONCAT:
+				break;
+			case I_SUBSTR:
+				break;
+			case I_SUBSTR_DEST:
+				break;
+			case I_LENGTH:
+				break;
+			case I_LABEL:
+				break;
+			case I_DECLARE:
+				printf("%s", ((string*)instruction->adr1)->str);
+				break;
+			default:
+				break;
+		}
+
+		printf("\n");
 		instruction = instruction->rptr;
 	}
 	printf("Konec pasky\n");

@@ -54,6 +54,9 @@ int executeTape(tInsTapeInsPtr ins) {
 			//kontrola navratoveho kodu
 			ret = executeIns(&instruction, frameStack);
 			if (ret != ERR_OK) {
+				//vypise "callstack" funkci od te kde nastala chyba
+				//zpet po main
+				//printTape(ins);
 				//pokud nastala chyba, prvni uroven rekurze smaze frame stack
 				//zde by slo udelat stack dump
 				if(frameStack)
@@ -804,7 +807,9 @@ int executeIns(tInsTapeInsPtr* instruction, tStack* stack) {
 		strFree(&dest->data.stringVal);
 		dest->data.stringVal = substr(oper1->data.stringVal, tmp1, tmp2,&retErr);
 		dest->init = true;//dest je nyni inicializovan
-        if(retErr) return ERR_RUNTIME_REST;
+		if (retErr) {
+			return ERR_RUNTIME_REST;
+		}
 
 		break;
 	case I_LENGTH:
@@ -869,6 +874,7 @@ int setParams(tInsTapeInsPtr* ins, tStack* stack) {
 			strCopyString(&dest->data.stringVal, &oper1->data.stringVal);
 		}
 		dest->init = true;//dest je nyni inicializovan
+		dest->deklared = true;//tudiz je i deklarovana
 	}
 	*ins = istruction;
 	return ERR_OK;

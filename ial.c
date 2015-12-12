@@ -170,8 +170,8 @@ void BSTSearchTree(tBSTNodePtr rootPtr, string* key, tBSTNodePtr* store) {
  * @return	0-chyba, 1-v poradku
  */
 int BSTCreateNode(tBSTNodePtr* node, string* key, void* data) {
-	tBSTNodePtr newNode = malloc(sizeof(struct tBSTNode));
-	string* newString = malloc(sizeof(string));
+	tBSTNodePtr newNode = (tBSTNodePtr)malloc(sizeof(struct tBSTNode));
+	string* newString = (string*)malloc(sizeof(string));
 	if (newNode == NULL || newString==NULL) {
 		//pokus o alokaci se nazdaril
 		return 0;

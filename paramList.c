@@ -19,7 +19,7 @@ int createParamListElem(string *idName, tParamListElemPtr elem,
                         tTabSymVarNoAutoDataType dataType) {
     
     if (idName != NULL) {
-        string *newString = malloc(sizeof(string));
+        string *newString = (string *)malloc(sizeof(string));
 
         if (newString == NULL) {
             return 0;
