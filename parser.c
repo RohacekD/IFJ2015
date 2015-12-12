@@ -2813,7 +2813,7 @@ int parseElse(tTabSym *localTable, tTabSymList *blockList,
     switch(token->typ) {
         //pravidlo 31 <else> -> else <block>
         case KEYW_ELSE:
-
+            freeTokenMem(&token);
             //------------------------------------
             return parseBlock(localTable, blockList, blockListElem, instructionTape);
             //------------------------------------
