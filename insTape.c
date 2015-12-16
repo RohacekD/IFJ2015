@@ -314,6 +314,17 @@ void insTapeGoto(tInsTape *tape, tInsTapeInsPtr gotoInstr)
   tape->act = gotoInstr;
 }
 
+char* printVarName(string* name) {
+	if (isdigit(name->str[0])) {
+		string s;
+		strInit(&s);
+		strConConstString(&s, "$tmp");
+		strConConstString(&s, name->str);
+		return s.str;
+	}
+	return name->str;
+}
+
 const char* insToName(tInstructTypes ins) {
 	switch (ins)
 	{
@@ -432,13 +443,14 @@ void printTape(tInsTapeInsPtr ins) {
 	tInsTapeInsPtr instruction;
 	instruction = ins;
 	while (instruction!=NULL) {
-		printf("->%s\t", insToName(instruction->type));
+		printf("0x%p -> %s\t", instruction, insToName(instruction->type));
 		switch (instruction->type)
 		{
 			case I_CIN:
+				printf("%s", printVarName((string*)instruction->adr3));
 				break;
 			case I_COUT:
-				printf("%s", ((string*)instruction->adr1)->str);
+				printf("%s", printVarName((string*)instruction->adr1));
 				break;
 			case I_PLUS:
 				break;
@@ -447,7 +459,7 @@ void printTape(tInsTapeInsPtr ins) {
 			case I_MUL:
 				break;
 			case I_DIV:
-				printf("%s=%s/%s", ((string*)instruction->adr3)->str, ((string*)instruction->adr1)->str, ((string*)instruction->adr2)->str);
+				printf("%s=%s/%s", printVarName((string*)instruction->adr3), printVarName((string*)instruction->adr1), printVarName((string*)instruction->adr2));
 				break;
 			case I_EQUAL:
 				break;
@@ -456,6 +468,7 @@ void printTape(tInsTapeInsPtr ins) {
 			case I_GREATER:
 				break;
 			case I_LESSER:
+				printf("%s=%s<%s", printVarName((string*)instruction->adr3), printVarName((string*)instruction->adr1), printVarName((string*)instruction->adr2));
 				break;
 			case I_GEQUAL:
 				break;
@@ -468,6 +481,7 @@ void printTape(tInsTapeInsPtr ins) {
 			case I_DEC:
 				break;
 			case I_LOG_NOT:
+				printf("%s=!%s", printVarName((string*)instruction->adr3), printVarName((string*)instruction->adr1));
 				break;
 			case I_LOG_AND:
 				break;
@@ -476,12 +490,13 @@ void printTape(tInsTapeInsPtr ins) {
 			case I_CBF:
 				break;
 			case I_CF:
+				printf("instruction 0x%p, return to %s", instruction->adr2, (instruction->adr3)? printVarName((string*)instruction->adr2) :"NULL");
 				break;
 			case I_ASSIGN:
-				printf("%s=%s", ((string*)instruction->adr3)->str, ((string*)instruction->adr1)->str);
+				printf("%s=%s", printVarName((string*)instruction->adr3), printVarName((string*)instruction->adr1));
 				break;
 			case I_SP:
-				printf("%s=%s", ((string*)instruction->adr3)->str, ((string*)instruction->adr1)->str);
+				printf("%s=%s", printVarName((string*)instruction->adr3), printVarName((string*)instruction->adr1));
 				break;
 			case I_DBF:
 				break;
@@ -490,8 +505,10 @@ void printTape(tInsTapeInsPtr ins) {
 			case I_IFZERO:
 				break;
 			case I_IFNZERO:
+				printf("if %s != 0 then jump", printVarName((string*)instruction->adr1));
 				break;
 			case I_GOTO:
+				printf("0x%p", instruction->adr1);
 				break;
 			case I_SORT:
 				break;
@@ -508,7 +525,7 @@ void printTape(tInsTapeInsPtr ins) {
 			case I_LABEL:
 				break;
 			case I_DECLARE:
-				printf("%s", ((string*)instruction->adr1)->str);
+				printf("%s", printVarName((string*)instruction->adr1));
 				break;
 			default:
 				break;

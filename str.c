@@ -76,7 +76,6 @@ int strConConstString(string *s1, char *s2){
 		}
 		i++;
 	}
-	s1->length=s1->length+i;
 	return STR_SUCCESS;
 }
 
