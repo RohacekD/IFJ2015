@@ -51,6 +51,8 @@ SIMPLE 100% (100/100)
 
 Celkem bez rozšíření: 95% (1928/2027)
 
+##Video k obhajobě
+https://youtu.be/3nZq1pYcz4w
 
 ##Skore po alokaci Honzíkova testovacího programu
 v(jednotkách B)
