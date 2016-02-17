@@ -35,7 +35,7 @@ Projekt byl vypracován do předmětu Formální jazyky a překladače na Vysok�
 * Celkem bez rozšíření: 95% (1928/2027)
 
 ##Video k obhajobě
-https://youtu.be/3nZq1pYcz4w
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/3nZq1pYcz4w/0.jpg)](http://www.youtube.com/watch?v=3nZq1pYcz4w)
 
 ##Skore po alokaci Honzíkova testovacího programu 
 v(jednotkách B)
