@@ -13,6 +13,9 @@
 
 #include "insTape.h"
 
+
+DECL_NAMED_ENUM_NAMES(tInstructTypes, T_INSTRUCT_TYPES)
+
 tInsTape* insTapeCreate() {
 	tInsTape* newTape = malloc(sizeof(tInsTape));
 
@@ -326,117 +329,21 @@ char* printVarName(string* name) {
 }
 
 const char* insToName(tInstructTypes ins) {
-	switch (ins)
-	{
-	case I_CIN:
-		return "I_CIN";
-		break;
-	case I_COUT:
-		return "I_COUT";
-		break;
-	case I_PLUS:
-		return "I_PLUS";
-		break;
-	case I_MINUS:
-		return "I_MINUS";
-		break;
-	case I_MUL:
-		return "I_MUL";
-		break;
-	case I_DIV:
-		return "I_DIV";
-		break;
-	case I_EQUAL:
-		return "I_EQUAL";
-		break;
-	case I_NOTEQUAL:
-		return "I_NOTEQUAL";
-		break;
-	case I_GREATER:
-		return "I_GREATER";
-		break;
-	case I_LESSER:
-		return "I_LESSER";
-		break;
-	case I_GEQUAL:
-		return "I_GEQUAL";
-		break;
-	case I_LEQUAL:
-		return "I_LEQUAL";
-		break;
-	case I_UMINUS:
-		return "I_UMINUS";
-		break;
-	case I_INC:
-		return "I_INC";
-		break;
-	case I_DEC:
-		return "I_DEC";
-		break;
-	case I_LOG_NOT:
-		return "I_LOG_NOT";
-		break;
-	case I_LOG_AND:
-		return "I_LOG_AND";
-		break;
-	case I_LOG_OR:
-		return "I_LOG_OR";
-		break;
-	case I_CBF:
-		return "I_CBF";
-		break;
-	case I_CF:
-		return "I_CF";
-		break;
-	case I_ASSIGN:
-		return "I_ASSIGN";
-		break;
-	case I_SP:
-		return "I_SP";
-		break;
-	case I_DBF:
-		return "I_DBF";
-		break;
-	case I_RETURN:
-		return "I_RETURN";
-		break;
-	case I_IFZERO:
-		return "I_IFZERO";
-		break;
-	case I_IFNZERO:
-		return "I_IFNZERO";
-		break;
-	case I_GOTO:
-		return "I_GOTO";
-		break;
-	case I_SORT:
-		return "I_SORT";
-		break;
-	case I_FIND:
-		return "I_FIND";
-		break;
-	case I_CONCAT:
-		return "I_CONCAT";
-		break;
-	case I_SUBSTR:
-		return "I_SUBSTR";
-		break;
-	case I_SUBSTR_DEST:
-		return "I_SUBSTR_DEST";
-		break;
-	case I_LENGTH:
-		return "I_LENGTH";
-		break;
-	case I_LABEL:
-		return "I_LABEL";
-		break;
-	case I_DECLARE:
-		return "I_DECLARE";
-		break;
-	default:
-		return "neznama instrukce?";
-		break;
+	return Convert_tInstructTypes(ins);
+}
+
+int insTapeLength(tInsTapeInsPtr ins)
+{
+	int length = 0;
+
+	tInsTapeInsPtr act = ins;
+
+	while (act!=NULL) {
+		length++;
+		act = act->rptr;
 	}
+
+	return length;
 }
 
 void printTape(tInsTapeInsPtr ins) {
@@ -466,6 +373,7 @@ void printTape(tInsTapeInsPtr ins) {
 			case I_NOTEQUAL:
 				break;
 			case I_GREATER:
+				printf("%s=%s>%s", printVarName((string*)instruction->adr3), printVarName((string*)instruction->adr1), printVarName((string*)instruction->adr2));
 				break;
 			case I_LESSER:
 				printf("%s=%s<%s", printVarName((string*)instruction->adr3), printVarName((string*)instruction->adr1), printVarName((string*)instruction->adr2));
@@ -490,7 +398,7 @@ void printTape(tInsTapeInsPtr ins) {
 			case I_CBF:
 				break;
 			case I_CF:
-				printf("instruction 0x%p, return to %s", instruction->adr2, (instruction->adr3)? printVarName((string*)instruction->adr2) :"NULL");
+				printf("instruction 0x%p, return to %s", instruction->adr2, /*(instruction->adr3)? printVarName((string*)instruction->adr2) :*/"NULL");
 				break;
 			case I_ASSIGN:
 				printf("%s=%s", printVarName((string*)instruction->adr3), printVarName((string*)instruction->adr1));
@@ -534,6 +442,7 @@ void printTape(tInsTapeInsPtr ins) {
 		printf("\n");
 		instruction = instruction->rptr;
 	}
+	printf("Celkova delka pasky: %d\n", insTapeLength(ins));
 	printf("Konec pasky\n");
 }
 /*** End of file: insTape.c ***/

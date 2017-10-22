@@ -13,7 +13,7 @@ int executeTape(tInsTapeInsPtr ins) {
 	ERR_CODES ret;
 
 	//toto vytiskne pasku kazde fce na stdout
-	//printTape(ins);
+	printTape(ins);
 
 	/*Prvotni inicializace stacku*/
 	if (!frameStack) {

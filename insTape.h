@@ -16,51 +16,51 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "str.h"
+#include "PrintableEnum.h"
 
-//todo: vsechny instrukce musi mit variantu 
-//pokud jde o operaci vyuzivajici 3 adresy tak oper1,oper2,vysledek
-typedef enum{
-	I_CIN,//adr3 = kam to mam ulozit
-	I_COUT,//adr1 = co mam vypsat
-	I_PLUS,//bezna konvence
-	I_MINUS,//bezna konvence
-	I_MUL,//bezna konvence
-	I_DIV,//bezna konvence
-	I_EQUAL,//bezna konvence - 3. operand je bool
-	I_NOTEQUAL,//bezna konvence - 3. operand je bool
-	I_GREATER,//bezna konvence - 3. operand je bool adr1>adr2
-	I_LESSER,//bezna konvence - 3. operand je bool adr1<adr2
-	I_GEQUAL,//bezna konvence - 3. operand je bool adr1>=adr2
-	I_LEQUAL,//bezna konvence - 3. operand je bool adr1<=adr2
-	I_UMINUS,//adr1 operand adr3 vysledek
-	I_INC,//adr1 operand adr3 dest
-	I_DEC,//adr1 operand adr3 dest
-	I_LOG_NOT,//adr1 operand adr3 vysledek
-	I_LOG_AND,//bezna konvence - 3. operand je bool
-	I_LOG_OR,//bezna konvence - 3. operand je bool
-	I_CBF, //create block frame - adr1 - locTab
-	/*
-		Ve volane fci se vytvori promenna $ret kam bude ulozena vracena hodnota. Na adr3 je dana adresa
-		promenne ve volajici fci kam ulozit vysledek fce
-	*/
-	I_CF, //call function adr1 - locTab adr2 - ins adr3 - adresa kam ulozit vysledek fce(u main NULL)
-	I_ASSIGN, //prirazeni = adr1(source) => adr3(dest)
-	I_SP, // adr1 -z volajici funkce, , adr3-z volane | set parametr - musis se podivat o jeden niz
-	I_DBF, //delete block frame
-	I_RETURN, //nepotrebuje nic
-	I_IFZERO,//jmp if adr1 == 0 to adr2 (ins)
-	I_IFNZERO,//jmp if adr1 != 0 to adr2 (ins)
-    I_GOTO, //adr1 - ins
-	I_SORT,//adr1 string(argument 1), adr3 string kam ma byt ulozen
-	I_FIND,//adr1 string s adr2 search adr3 int
-	I_CONCAT,//adr1 argument 1, adr2 argument 2 adr3 destination
-	I_SUBSTR,//adr1 string(argument 1), adr2,adr3 variable INT (argument 2 a 3)
-	I_SUBSTR_DEST, //adr3 kam ulozit vysledek
-	I_LENGTH,//adr1 string adr3 int
-	I_LABEL, //adr1 == adr2 == adr3 == NULL cil skoku pri skokovych instr.
-	I_DECLARE //adr1 meno nove promenne
-}tInstructTypes;
+ //todo: vsechny instrukce musi mit variantu 
+ //pokud jde o operaci vyuzivajici 3 adresy tak oper1,oper2,vysledek
+#define T_INSTRUCT_TYPES(XX) \
+	XX(I_CIN)			/* adr3 = kam to mam ulozit												*/ \
+	XX(I_COUT)			/* adr1 = co mam vypsat													*/ \
+	XX(I_PLUS)			/* bezna konvence														*/ \
+	XX(I_MINUS)			/* bezna konvence														*/ \
+	XX(I_MUL)			/* bezna konvence														*/ \
+	XX(I_DIV)			/* bezna konvence														*/ \
+	XX(I_EQUAL)			/* bezna konvence - 3. operand je bool									*/ \
+	XX(I_NOTEQUAL)		/* bezna konvence - 3. operand je bool									*/ \
+	XX(I_GREATER)		/* bezna konvence - 3. operand je bool adr1>adr2						*/ \
+	XX(I_LESSER)		/* bezna konvence - 3. operand je bool adr1<adr2						*/ \
+	XX(I_GEQUAL)		/* bezna konvence - 3. operand je bool adr1>=adr2						*/ \
+	XX(I_LEQUAL)		/* bezna konvence - 3. operand je bool adr1<=adr2						*/ \
+	XX(I_UMINUS)		/* adr1 operand adr3 vysledek											*/ \
+	XX(I_INC)			/* adr1 operand adr3 dest												*/ \
+	XX(I_DEC)			/* adr1 operand adr3 dest												*/ \
+	XX(I_LOG_NOT)		/* adr1 operand adr3 vysledek											*/ \
+	XX(I_LOG_AND)		/* bezna konvence - 3. operand je bool									*/ \
+	XX(I_LOG_OR)		/* bezna konvence - 3. operand je bool									*/ \
+	XX(I_CBF)			/* create block frame - adr1 - locTab									*/ \
+	/*    Ve volane fci se vytvori promenna $ret kam bude ulozena vracena hodnota. Na adr3 je dana adresa	*/ \
+	/*   promenne ve volajici fci kam ulozit vysledek fce													*/ \
+	XX(I_CF)			/* call function adr1 - locTab adr2 - ins adr3 - adresa kam ulozit vysledek fce(u main NULL)	*/ \
+	XX(I_ASSIGN)		/* prirazeni = adr1(source) => adr3(dest)														*/ \
+	XX(I_SP)			/* adr1 -z volajici funkce, , adr3-z volane | set parametr - musis se podivat o jeden niz		*/ \
+	XX(I_DBF)			/* delete block frame													*/ \
+	XX(I_RETURN)		/* nepotrebuje nic														*/ \
+	XX(I_IFZERO)		/* jmp if adr1 == 0 to adr2 (ins)										*/ \
+	XX(I_IFNZERO)		/* jmp if adr1 != 0 to adr2 (ins)										*/ \
+	XX(I_GOTO)			/* adr1 - ins															*/ \
+	XX(I_SORT)			/* adr1 string(argument 1), adr3 string kam ma byt ulozen				*/ \
+	XX(I_FIND)			/* adr1 string s adr2 search adr3 int									*/ \
+	XX(I_CONCAT)		/* adr1 argument 1, adr2 argument 2 adr3 destination					*/ \
+	XX(I_SUBSTR)		/* adr1 string(argument 1), adr2,adr3 variable INT (argument 2 a 3)		*/ \
+	XX(I_SUBSTR_DEST)	/* adr3 kam ulozit vysledek												*/ \
+	XX(I_LENGTH)		/* adr1 string adr3 int													*/ \
+	XX(I_LABEL)			/* adr1 == adr2 == adr3 == NULL cil skoku pri skokovych instr.			*/ \
+	XX(I_DECLARE)		/* adr1 meno nove promenne												*/ 
 
+//DECL_NAMED_ENUM_ENUM(tInstructTypes, T_INSTRUCT_TYPES)
+DECL_NAMED_ENUM(tInstructTypes, T_INSTRUCT_TYPES)
 
 /**
  * 3 adresova instrukce na instrukce na instrukcni pasce
@@ -239,6 +239,8 @@ int insTapeActive (tInsTape* tape);
  * @param gotoInstr[in]     -   instrukce, na kterou se ma nastavit aktivita
  */
 void insTapeGoto(tInsTape *tape, tInsTapeInsPtr gotoInstr);
+
+int insTapeLength(tInsTape*tape);
 void printTape(tInsTapeInsPtr ins);
 #endif /* INSTAPE_H_ */
 /*** End of file: insTape.h ***/

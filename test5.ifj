@@ -1,10 +1,14 @@
+// Spocita modulo
+int addabc(int n, int b){
+    return n+b;
+}
+
 int main()
 {
 	int a;
 	cout << "Zadejte cislo";
 	cin >> a;
-	if (a > 0) {
-		cout << a << ">" << 0;
-	}
-	return 0;
+	int b;
+	b = addabc(5,1);
+	return b;
 }
